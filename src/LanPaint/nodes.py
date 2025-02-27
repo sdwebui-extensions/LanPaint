@@ -291,7 +291,7 @@ class LanPaint_KSampler():
                 "latent_image": ("LATENT", {"tooltip": "The latent image to denoise."}),
                 "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01, "tooltip": "The amount of denoising applied, lower values will maintain the structure of the initial image allowing for image to image sampling."}),
                 "LanPaint_NumSteps": ("INT", {"default": 5, "min": 0, "max": 20, "tooltip": "The number of steps for the Langevin dynamics."}),
-                "LanPaint_Lambda": ("FLOAT", {"default": 10, "min": 0.1, "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The lambda parameter for the bidirectional guidance."}),    }
+                "LanPaint_Lambda": ("FLOAT", {"default": 4, "min": 0.1, "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The lambda parameter for the bidirectional guidance."}),    }
         }
 
     RETURN_TYPES = ("LATENT",)
@@ -329,7 +329,7 @@ class LanPaint_KSamplerAdvanced:
                     "end_at_step": ("INT", {"default": 10000, "min": 0, "max": 10000}),
                     "return_with_leftover_noise": (["disable", "enable"], ),
                 "LanPaint_NumSteps": ("INT", {"default": 5, "min": 0, "max": 20, "tooltip": "The number of steps for the Langevin dynamics."}),
-                "LanPaint_Lambda": ("FLOAT", {"default": 10, "min": 0.1, "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The lambda parameter for the bidirectional guidance."}),
+                "LanPaint_Lambda": ("FLOAT", {"default": 4, "min": 0.1, "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The lambda parameter for the bidirectional guidance."}),
                 "LanPaint_StepSize": ("FLOAT", {"default": 0.1, "min": 0.0001, "max": 0.5, "step": 0.01, "round": 0.001, "tooltip": "The step size for the Langevin dynamics."}),
                 "LanPaint_Beta": ("FLOAT", {"default": 2, "min": 0.0001, "max": 5, "step": 0.1, "round": 0.1, "tooltip": "The beta parameter for the bidirectional guidance."}),
                 "LanPaint_Friction": ("FLOAT", {"default": 20, "min": 1., "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The friction parameter for the Langevin dynamics."}),
@@ -364,7 +364,7 @@ class LanPaint_VAEEncodeForInpaint:
     @classmethod
     def INPUT_TYPES(s):
         return {"required": { "pixels": ("IMAGE", ), "vae": ("VAE", ), "mask": ("MASK", ), 
-        "grow_mask_by": ("INT", {"default": 6, "min": 0, "max": 64, "step": 1}),
+        "grow_mask_by": ("INT", {"default": 0, "min": 0, "max": 64, "step": 1}),
         #"Keep_Luminance": (["disable", "enable"], ),
         #"Keep_Red": (["disable", "enable"], ),
         #"Keep_Lime": (["disable", "enable"], ),
