@@ -77,7 +77,11 @@ class KSamplerX0Inpaint:
             args = None
             for i in range(self.n_steps):
                 score_func = partial( self.score_model, y = self.latent_image, mask = latent_mask, abt = abt, sigma = sigma, model_options = model_options, seed = seed )
-                x_t, args = self.langevin_dynamics(x_t, score_func , latent_mask, step_size * (1 - i/(2*self.n_steps) ), current_times, sigma_x = self.sigma_x(abt), sigma_y = self.sigma_y(abt), args = args)  
+                if self.step_size_schedule == "linear":
+                    step_size_i = step_size * (1 - i/(self.n_steps) )
+                else:
+                    step_size_i = step_size 
+                x_t, args = self.langevin_dynamics(x_t, score_func , latent_mask, step_size_i , current_times, sigma_x = self.sigma_x(abt), sigma_y = self.sigma_y(abt), args = args)  
             x = x_t * ( 1+sigma**2 )**0.5
             # out is x_0
             out = self.inner_model(x, sigma, model_options=model_options, seed=seed)
@@ -251,6 +255,7 @@ class KSAMPLER(comfy.samplers.KSAMPLER):
         model_k.alpha = model_wrap.model_patcher.LanPaint_Alpha
         model_k.tamed = model_wrap.model_patcher.LanPaint_Tamed
         model_k.beta_scale = model_wrap.model_patcher.LanPaint_BetaScale
+        model_k.step_size_schedule = model_wrap.model_patcher.LanPaint_StepSizeSchedule
         noise = model_wrap.inner_model.model_sampling.noise_scaling(sigmas[0], noise, latent_image, self.max_denoise(model_wrap, sigmas))
         #if not inpainting, after noise_scaling, noise = noise * sigma, which is the noise added to the clean latent image in the variance exploding diffusion model notation.
         #if inpainting, after noise_scaling, noise = latent_image + noise * sigma, which is x_t in the variance exploding diffusion model notation for the known region.
@@ -291,7 +296,9 @@ class LanPaint_KSampler():
                 "latent_image": ("LATENT", {"tooltip": "The latent image to denoise."}),
                 "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01, "tooltip": "The amount of denoising applied, lower values will maintain the structure of the initial image allowing for image to image sampling."}),
                 "LanPaint_NumSteps": ("INT", {"default": 5, "min": 0, "max": 20, "tooltip": "The number of steps for the Langevin dynamics."}),
-                "LanPaint_Lambda": ("FLOAT", {"default": 4, "min": 0.1, "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The lambda parameter for the bidirectional guidance."}),    }
+                "LanPaint_Lambda": ("FLOAT", {"default": 4, "min": 0.1, "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The lambda parameter for the bidirectional guidance."}),  
+                "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler. For more information, visit https://github.com/scraed/LanPaint", "multiline": True}),
+                  }
         }
 
     RETURN_TYPES = ("LATENT",)
@@ -301,7 +308,7 @@ class LanPaint_KSampler():
     CATEGORY = "sampling"
     DESCRIPTION = "Uses the provided model, positive and negative conditioning to denoise the latent image."
 
-    def sample(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_NumSteps=5,):
+    def sample(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_NumSteps=5, LanPaint_Info=""):
         model.LanPaint_StepSize = 0.1
         model.LanPaint_Lambda = LanPaint_Lambda
         model.LanPaint_Beta = 2
@@ -310,6 +317,7 @@ class LanPaint_KSampler():
         model.LanPaint_Alpha = 1.
         model.LanPaint_Tamed = 6
         model.LanPaint_BetaScale = "fixed"
+        model.LanPaint_StepSizeSchedule = "const"
         return common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise)
 class LanPaint_KSamplerAdvanced:
     @classmethod
@@ -336,7 +344,9 @@ class LanPaint_KSamplerAdvanced:
                 "LanPaint_Alpha": ("FLOAT", {"default": 1, "min": 0.0001, "max": 1., "step": 0.1, "round": 0.1, "tooltip": "The alpha parameter for the Langevin dynamics."}),
                 "LanPaint_Tamed": ("FLOAT", {"default": 6, "min": 0.000, "max": 10., "step": 0.1, "round": 0.1, "tooltip": "The tame strength"}),
                 "LanPaint_BetaScale": (["shrink", "fixed", "dual_shrink", "back_shrink"], {"default": "fixed", "tooltip": "The beta scale"}),
-                     }
+                "LanPaint_StepSizeSchedule": (["const", "linear"], {"default": "const", "tooltip": "The step size schedule"}),
+                "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler Advanced. For more information, visit https://github.com/scraed/LanPaint", "multiline": True}),
+                     },
                 }
 
     RETURN_TYPES = ("LATENT",)
@@ -344,7 +354,7 @@ class LanPaint_KSamplerAdvanced:
 
     CATEGORY = "sampling"
 
-    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_Beta=1, LanPaint_NumSteps=5, LanPaint_Friction=5, LanPaint_Alpha=1, LanPaint_Tamed=0., LanPaint_BetaScale="fixed"):
+    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_Beta=1, LanPaint_NumSteps=5, LanPaint_Friction=5, LanPaint_Alpha=1, LanPaint_Tamed=0., LanPaint_BetaScale="fixed", LanPaint_StepSizeSchedule = "const",LanPaint_Info=""):
         force_full_denoise = True
         if return_with_leftover_noise == "enable":
             force_full_denoise = False
@@ -359,6 +369,7 @@ class LanPaint_KSamplerAdvanced:
         model.LanPaint_Alpha = LanPaint_Alpha
         model.LanPaint_Tamed = LanPaint_Tamed
         model.LanPaint_BetaScale = LanPaint_BetaScale
+        model.LanPaint_StepSizeSchedule = LanPaint_StepSizeSchedule
         return common_ksampler(model, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise, disable_noise=disable_noise, start_step=start_at_step, last_step=end_at_step, force_full_denoise=force_full_denoise)
 class LanPaint_VAEEncodeForInpaint:
     @classmethod
