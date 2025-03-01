@@ -72,7 +72,7 @@ class KSamplerX0Inpaint:
 
             # self.inner_model.inner_model.scale_latent_inpaint returns variance exploding x_t values
             x = x * (1 - latent_mask) +  self.inner_model.inner_model.scale_latent_inpaint(x=x, sigma=sigma, noise=self.noise, latent_image=self.latent_image)* latent_mask
-            x_t = x / ( 1+sigma**2 )**0.5 # switch to variance perserving x_t values
+            x_t = x #/ ( 1+sigma**2 )**0.5 # switch to variance perserving x_t values
             # after noise_scaling, noise = latent_image + noise * sigma, which is x_t in the variance exploding diffusion model notation for the known region.
             args = None
             for i in range(self.n_steps):
@@ -82,7 +82,7 @@ class KSamplerX0Inpaint:
                 else:
                     step_size_i = step_size 
                 x_t, args = self.langevin_dynamics(x_t, score_func , latent_mask, step_size_i , current_times, sigma_x = self.sigma_x(abt), sigma_y = self.sigma_y(abt), args = args)  
-            x = x_t * ( 1+sigma**2 )**0.5
+            x = x_t #* ( 1+sigma**2 )**0.5
             # out is x_0
             out = self.inner_model(x, sigma, model_options=model_options, seed=seed)
             #out = out * denoise_mask + self.latent_image * latent_mask
@@ -97,14 +97,16 @@ class KSamplerX0Inpaint:
         abt_mid = 1/(1+sigma_mid**2)
         return sigma_mid, abt_mid
     def score_model(self, x_t, y, mask, abt, sigma, model_options, seed):
+        
         # the score function for the Langevin dynamics
         lamb = self.chara_lamb
         beta = self.chara_beta * (1-abt)**0.5
 
-        x_0 = self.inner_model(x_t*( 1+sigma**2 )**0.5, sigma, model_options=model_options, seed=seed)
-        e_t = (x_t - abt ** 0.5 * x_0) / (1 - abt) ** 0.5
+        x_0 = self.inner_model(x_t, sigma, model_options=model_options, seed=seed)
+        e_t = x_t / ((1 - abt) ** 0.5 * (1 + sigma**2) ** 0.5 )- (abt ** 0.5  / (1 - abt) ** 0.5) * x_0
+        
         score_x = -e_t
-        score_y = (- (1 + lamb) * ( x_t - abt**0.5 * y ) /(1 - abt)**0.5 + lamb *  e_t)
+        score_y = - (1 + lamb) * ( x_t/ ((1 + sigma**2) ** 0.5 *(1 - abt)**0.5) - abt**0.5 /(1 - abt)**0.5 * y )  + lamb *  e_t
         return score_x * (1 - mask) + score_y * mask
     def sigma_x(self, abt):
         # the time scale for the x_t update
@@ -185,7 +187,7 @@ class KSamplerX0Inpaint:
         eps = eps_x * (1 - mask) + eps_y * mask
 
         # Transform x to z using z = x * sqrt(1+sigma^2)
-        z_t = x_t * (1 + sigma**2) ** 0.5
+        z_t = x_t #* (1 + sigma**2) ** 0.5
 
         # Compute the mid-point update in z-space for each branch:
         z_mid_x = z_t + eps_denoise * (sigma_mid_x - sigma)
@@ -230,7 +232,7 @@ class KSamplerX0Inpaint:
         z_final = z_mid + Z_comb * dsigma
 
         # Transform back to x-space: x = z / sqrt(1+sigma^2)
-        x_t = z_final / (1 + sigma**2) ** 0.5
+        x_t = z_final #/ (1 + sigma**2) ** 0.5
 
         return x_t, (eps, Z_next)
 # Custom sampler class extending ComfyUI's KSAMPLER for LanPaint
