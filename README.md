@@ -12,9 +12,48 @@ Powerful Inpainting Tool Works for Every SD Model.
 1. Look up this extension in ComfyUI-Manager. If you are installing manually, clone this repository under `ComfyUI/custom_nodes`.
 1. Restart ComfyUI.
 
-# Features
 
-- A list of features
+
+# LanPaint Inpainting Nodes for ComfyUI
+
+High-quality inpainting nodes that work out-of-the-box with any Stable Diffusion model (including custom models trained privately).
+
+![ComfyUI Node Preview](https://github.com/scraed/LanPaint/raw/main/assets/node_preview.png)
+
+## Features
+
+- 🎨 **Zero-Training Inpainting** - Works immediately with ANY SD model, even custom models you've trained yourself
+- 🛠️ **Simple Integration** - Same workflow as standard ComfyUI KSampler
+- 🚀 **Quality Enhancements** - High quality and seamless inpainting
+
+## Installation
+
+1. Place `LanPaint_Nodes.py` in your `ComfyUI/custom_nodes` folder
+2. Restart ComfyUI
+3. Use like regular KSampler with inpainting workflows
+
+## Usage
+
+**Workflow Setup**  
+Same as default ComfyUI KSampler - simply replace with LanPaint nodes:
+
+1. Connect your model
+2. Link conditioning (positive/negative prompts)
+3. Provide latent image and mask
+4. Adjust sampling parameters
+
+![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)
+
+## Advanced Options (Optional)
+
+Fine-tune results with these key parameters:
+
+| Parameter | Typical Range | Effect |
+|-----------|---------------|--------|
+| `NumSteps` | 1-10 | Thinking iterations per step |
+| `Lambda` | 4-8 | Content preservation strength |
+| `StepSize` | 0.05-0.2 | Detail refinement intensity |
+
 
 ## Develop
 
