@@ -8,7 +8,7 @@ Powerful Training Free Inpainting Tool Works for Every SD Model.
 - 🛠️ **Simple Integration** - Same workflow as standard ComfyUI KSampler
 - 🚀 **Quality Enhancements** - High quality and seamless inpainting
 
-- 
+Previews:
 ![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)
 ![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_05.jpg)
 ![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_06.jpg)
