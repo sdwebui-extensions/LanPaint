@@ -29,12 +29,10 @@ Powerful Inpainting Tool Works for Every SD Model.
 ## Usage
 
 **Workflow Setup**  
-Same as default ComfyUI KSampler - simply replace with LanPaint nodes:
+Same as default ComfyUI KSampler - simply replace with LanPaint KSampler nodes. The inpainting workflow is the same as the [SetLatentNoiseMask](https://comfyui-wiki.com/zh/comfyui-nodes/latent/inpaint/set-latent-noise-mask) inpainting workflow.
 
-1. Connect your model
-2. Link conditioning (positive/negative prompts)
-3. Provide latent image and mask
-4. Adjust sampling parameters
+**Note**
+LanPaint only support binary mask (0,1) with no smoothing. Any mask with smooting will be converted to binary mask during inpainting.
 
 
 
