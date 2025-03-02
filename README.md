@@ -1,9 +1,17 @@
 # LanPaint
 
-Powerful Inpainting Tool Works for Every SD Model.
+Powerful Training Free Inpainting Tool Works for Every SD Model.
 
-> [!NOTE]
-> This projected was created with a [cookiecutter](https://github.com/Comfy-Org/cookiecutter-comfy-extension) template. It helps you start writing custom nodes without worrying about the Python setup.
+## Features
+
+- 🎨 **Zero-Training Inpainting** - Works immediately with ANY SD model, even custom models you've trained yourself
+- 🛠️ **Simple Integration** - Same workflow as standard ComfyUI KSampler
+- 🚀 **Quality Enhancements** - High quality and seamless inpainting
+
+Previews:
+![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)
+![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_05.jpg)
+![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_06.jpg)
 
 ## Quickstart
 
@@ -12,9 +20,33 @@ Powerful Inpainting Tool Works for Every SD Model.
 1. Look up this extension in ComfyUI-Manager. If you are installing manually, clone this repository under `ComfyUI/custom_nodes`.
 1. Restart ComfyUI.
 
-# Features
 
-- A list of features
+## Installation
+
+1. Place `LanPaint_Nodes.py` in your `ComfyUI/custom_nodes` folder
+2. Restart ComfyUI
+3. Use like regular KSampler with inpainting workflows
+
+## Usage
+
+**Workflow Setup**  
+Same as default ComfyUI KSampler - simply replace with LanPaint KSampler nodes. The inpainting workflow is the same as the [SetLatentNoiseMask](https://comfyui-wiki.com/zh/comfyui-nodes/latent/inpaint/set-latent-noise-mask) inpainting workflow.
+
+**Note**
+LanPaint only support binary mask (0,1) with no smoothing. Any mask with smooting will be converted to binary mask during inpainting.
+
+
+
+## Advanced Options (Optional)
+
+Fine-tune results with these key parameters:
+
+| Parameter | Typical Range | Effect |
+|-----------|---------------|--------|
+| `NumSteps` | 1-10 | Thinking iterations per step |
+| `Lambda` | 4-8 | Content preservation strength |
+| `StepSize` | 0.05-0.2 | Detail refinement intensity |
+
 
 ## Develop
 
