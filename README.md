@@ -2,8 +2,15 @@
 
 Powerful Inpainting Tool Works for Every SD Model.
 
-> [!NOTE]
-> This projected was created with a [cookiecutter](https://github.com/Comfy-Org/cookiecutter-comfy-extension) template. It helps you start writing custom nodes without worrying about the Python setup.
+![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)
+![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_05.jpg)
+![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_06.jpg)
+
+## Features
+
+- 🎨 **Zero-Training Inpainting** - Works immediately with ANY SD model, even custom models you've trained yourself
+- 🛠️ **Simple Integration** - Same workflow as standard ComfyUI KSampler
+- 🚀 **Quality Enhancements** - High quality and seamless inpainting
 
 ## Quickstart
 
@@ -20,11 +27,6 @@ High-quality inpainting nodes that work out-of-the-box with any Stable Diffusion
 
 ![ComfyUI Node Preview](https://github.com/scraed/LanPaint/raw/main/assets/node_preview.png)
 
-## Features
-
-- 🎨 **Zero-Training Inpainting** - Works immediately with ANY SD model, even custom models you've trained yourself
-- 🛠️ **Simple Integration** - Same workflow as standard ComfyUI KSampler
-- 🚀 **Quality Enhancements** - High quality and seamless inpainting
 
 ## Installation
 
@@ -42,7 +44,7 @@ Same as default ComfyUI KSampler - simply replace with LanPaint nodes:
 3. Provide latent image and mask
 4. Adjust sampling parameters
 
-![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)
+
 
 ## Advanced Options (Optional)
 
