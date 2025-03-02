@@ -20,14 +20,6 @@ Powerful Inpainting Tool Works for Every SD Model.
 1. Restart ComfyUI.
 
 
-
-# LanPaint Inpainting Nodes for ComfyUI
-
-High-quality inpainting nodes that work out-of-the-box with any Stable Diffusion model (including custom models trained privately).
-
-![ComfyUI Node Preview](https://github.com/scraed/LanPaint/raw/main/assets/node_preview.png)
-
-
 ## Installation
 
 1. Place `LanPaint_Nodes.py` in your `ComfyUI/custom_nodes` folder
