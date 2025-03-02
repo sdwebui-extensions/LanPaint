@@ -1,16 +1,17 @@
 # LanPaint
 
-Powerful Inpainting Tool Works for Every SD Model.
-
-![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)
-![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_05.jpg)
-![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_06.jpg)
+Powerful Training Free Inpainting Tool Works for Every SD Model.
 
 ## Features
 
 - 🎨 **Zero-Training Inpainting** - Works immediately with ANY SD model, even custom models you've trained yourself
 - 🛠️ **Simple Integration** - Same workflow as standard ComfyUI KSampler
 - 🚀 **Quality Enhancements** - High quality and seamless inpainting
+
+- 
+![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)
+![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_05.jpg)
+![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_06.jpg)
 
 ## Quickstart
 
