@@ -61,6 +61,22 @@ Fine-tune results with these key parameters:
 | `Lambda` | 4-8 | Content preservation strength |
 | `StepSize` | 0.05-0.2 | Detail refinement intensity |
 
+## Citation
+
+If you use LanPaint in your research or projects, please cite our work:
+
+```bibtex
+@misc{zheng2025lanpainttrainingfreediffusioninpainting,
+      title={Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference}, 
+      author={Candi Zheng and Yuan Lan and Yang Wang},
+      year={2025},
+      eprint={2502.03491},
+      archivePrefix={arXiv},
+      primaryClass={eess.IV},
+      url={https://arxiv.org/abs/2502.03491}, 
+}
+```
+
 
 ## Publishing to Registry
 
