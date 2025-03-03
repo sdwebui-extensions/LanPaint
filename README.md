@@ -12,16 +12,16 @@ Powerful Training Free Inpainting Tool Works for Every SD Model. Official Implem
 
 ### Example 1 (LanPaint K Sampler)
 ![Inpainting Result 1](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)  
-[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_1)
-
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_1) 
+[Model](https://civitai.com/models/1188071?modelVersionId=1408658) 
 ### Example 2: (LanPaint K Sampler (Advanced))
 ![Inpainting Result 2](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_05.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_2)
-
+[Model](https://civitai.com/models/1188071?modelVersionId=1408658)
 ### Example 3: (LanPaint K Sampler (Advanced))
 ![Inpainting Result 3](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_06.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_3)
-
+[Model](https://civitai.com/models/133005/juggernaut-xl)
 Each example includes:
 - Original masked image
 - Full ComfyUI workflow
@@ -48,9 +48,7 @@ Once installed, you'll find the LanPaint nodes under the "sampling" category in 
 Same as default ComfyUI KSampler - simply replace with LanPaint KSampler nodes. The inpainting workflow is the same as the [SetLatentNoiseMask](https://comfyui-wiki.com/zh/comfyui-nodes/latent/inpaint/set-latent-noise-mask) inpainting workflow.
 
 **Note**
-LanPaint only support binary mask (0,1) with no smoothing. Any mask with smooting will be converted to binary mask during inpainting.
-
-
+LanPaint requires binary masks (values of 0 or 1) without opacity or smoothing. To ensure compatibility, set the mask's **opacity and hardness to maximum** in your mask editor. During inpainting, any mask with smoothing or gradients will automatically be converted to a binary mask.
 
 ### Basic Sampler
 
