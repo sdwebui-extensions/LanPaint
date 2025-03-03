@@ -12,15 +12,16 @@ Powerful Training Free Inpainting Tool Works for Every SD Model. Official Implem
 
 ### Example 1 (LanPaint K Sampler)
 ![Inpainting Result 1](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)  
-[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_1)
-
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_1) 
+[Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658) 
 ### Example 2: (LanPaint K Sampler (Advanced))
 ![Inpainting Result 2](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_05.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_2)
-
+[Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658)
 ### Example 3: (LanPaint K Sampler (Advanced))
 ![Inpainting Result 3](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_06.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_3)
+[Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl)
 
 Each example includes:
 - Original masked image
@@ -29,17 +30,18 @@ Each example includes:
 
 ## Quickstart
 
-1. Install [ComfyUI](https://docs.comfy.org/get_started).
-1. Install [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager)
-1. Look up this extension in ComfyUI-Manager. If you are installing manually, clone this repository under `ComfyUI/custom_nodes`.
-1. Restart ComfyUI.
+1. **Install ComfyUI**: Follow the official [ComfyUI installation guide](https://docs.comfy.org/get_started) to set up ComfyUI on your system.  
+2. **Install ComfyUI-Manager**: Add the [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager) for easy extension management.  
+3. **Install LanPaint Nodes**:  
+   - **Via ComfyUI-Manager**: Search for "LanPaint" in the manager and install it directly.  
+   - **Manually**: Click "Install via Git URL" in ComfyUI-Manager and input the GitHub repository link:  
+     ```
+     https://github.com/scraed/LanPaint.git
+     ```  
+     Alternatively, clone this repository into the `ComfyUI/custom_nodes` folder.  
+4. **Restart ComfyUI**: Restart ComfyUI to load the LanPaint nodes.  
 
-
-## Installation
-
-1. Place `LanPaint_Nodes.py` in your `ComfyUI/custom_nodes` folder
-2. Restart ComfyUI
-3. Use like regular KSampler with inpainting workflows
+Once installed, you'll find the LanPaint nodes under the "sampling" category in ComfyUI. Use them just like the default KSampler for high-quality inpainting!
 
 ## Usage
 
@@ -47,19 +49,40 @@ Each example includes:
 Same as default ComfyUI KSampler - simply replace with LanPaint KSampler nodes. The inpainting workflow is the same as the [SetLatentNoiseMask](https://comfyui-wiki.com/zh/comfyui-nodes/latent/inpaint/set-latent-noise-mask) inpainting workflow.
 
 **Note**
-LanPaint only support binary mask (0,1) with no smoothing. Any mask with smooting will be converted to binary mask during inpainting.
+- LanPaint requires binary masks (values of 0 or 1) without opacity or smoothing. To ensure compatibility, set the mask's **opacity and hardness to maximum** in your mask editor. During inpainting, any mask with smoothing or gradients will automatically be converted to a binary mask.
+- LanPaint relies heavily on your text prompts to guide inpainting - explicitly describe the content you want generated in the masked area. If results show artifacts or mismatched elements, counteract them with targeted negative prompts.
 
+### Basic Sampler
 
+**LanPaint KSampler**  
+Simplified interface with recommended defaults:
 
-## Advanced Options (Optional)
+- Steps: 50+ recommended
+- LanPaint NumSteps: 1-10 (complexity of edits)
+- Built-in parameter presets
 
-Fine-tune results with these key parameters:
+### Advanced Sampler 
 
-| Parameter | Typical Range | Effect |
-|-----------|---------------|--------|
-| `NumSteps` | 1-10 | Thinking iterations per step |
-| `Lambda` | 4-8 | Content preservation strength |
-| `StepSize` | 0.05-0.2 | Detail refinement intensity |
+**LanPaint KSampler (Advanced)**  
+Full parameter control:
+## Key Parameters
+
+| Parameter | Range | Description |
+|-----------|-------|-------------|
+| `LanPaint_NumSteps` | 0-20 | Reasoning iterations per denoising step ("thinking depth") |
+| `LanPaint_Lambda` | 0.1-50 | Content preservation strength (higher = stricter) |
+| `LanPaint_StepSize` | 0.0001-0.5 | Convergence speed (higher = faster but riskier) |
+| `LanPaint_Beta` | 0.0001-5 | Novelty generation intensity |
+| `LanPaint_Friction` | 1-50 | System stability (higher = more stable) |
+| `LanPaint_Tamed` | 0-20 | Noise regularization strength |
+
+## Usage Tips
+
+1. **Start Simple** - Begin with basic sampler and default values
+2. **Increase Steps** - 50-100 steps recommended for complex edits
+3. **Tune Gradually** - Adjust parameters in 10-20% increments
+4. **Monitor Stability** - If artifacts appear, increase Friction/Tamed
+
 
 ## Citation
 
@@ -78,16 +101,4 @@ If you use LanPaint in your research or projects, please cite our work:
 ```
 
 
-## Publishing to Registry
-
-If you wish to share this custom node with others in the community, you can publish it to the registry. We've already auto-populated some fields in `pyproject.toml` under `tool.comfy`, but please double-check that they are correct.
-
-You need to make an account on https://registry.comfy.org and create an API key token.
-
-- [ ] Go to the [registry](https://registry.comfy.org). Login and create a publisher id (everything after the `@` sign on your registry profile). 
-- [ ] Add the publisher id into the pyproject.toml file.
-- [ ] Create an api key on the Registry for publishing from Github. [Instructions](https://docs.comfy.org/registry/publishing#create-an-api-key-for-publishing).
-- [ ] Add it to your Github Repository Secrets as `REGISTRY_ACCESS_TOKEN`.
-
-A Github action will run on every git push. You can also run the Github action manually. Full instructions [here](https://docs.comfy.org/registry/publishing). Join our [discord](https://discord.com/invite/comfyorg) if you have any questions!
 
