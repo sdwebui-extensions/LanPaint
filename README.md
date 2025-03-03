@@ -13,15 +13,16 @@ Powerful Training Free Inpainting Tool Works for Every SD Model. Official Implem
 ### Example 1 (LanPaint K Sampler)
 ![Inpainting Result 1](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_1) 
-[Model](https://civitai.com/models/1188071?modelVersionId=1408658) 
+[Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658) 
 ### Example 2: (LanPaint K Sampler (Advanced))
 ![Inpainting Result 2](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_05.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_2)
-[Model](https://civitai.com/models/1188071?modelVersionId=1408658)
+[Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658)
 ### Example 3: (LanPaint K Sampler (Advanced))
 ![Inpainting Result 3](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_06.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_3)
-[Model](https://civitai.com/models/133005/juggernaut-xl)
+[Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl)
+
 Each example includes:
 - Original masked image
 - Full ComfyUI workflow
