@@ -8,10 +8,24 @@ Powerful Training Free Inpainting Tool Works for Every SD Model.
 - 🛠️ **Simple Integration** - Same workflow as standard ComfyUI KSampler
 - 🚀 **Quality Enhancements** - High quality and seamless inpainting
 
-Previews:
-![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)
-![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_05.jpg)
-![Node Comparison](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_06.jpg)
+## Example Results
+
+### Example 1 (LanPaint K Sampler)
+![Inpainting Result 1](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)  
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_1)
+
+### Example 2: (LanPaint K Sampler (Advanced))
+![Inpainting Result 2](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_05.jpg)  
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_3)
+
+### Example 3: (LanPaint K Sampler (Advanced))
+![Inpainting Result 3](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_06.jpg)  
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_2)
+
+Each example includes:
+- Original masked image
+- Full ComfyUI workflow
+
 
 ## Quickstart
 
