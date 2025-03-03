@@ -61,8 +61,6 @@ Simplified interface with recommended defaults:
 - LanPaint NumSteps: 1-10 (complexity of edits)
 - Built-in parameter presets
 
-### Advanced Sampler 
-
 **LanPaint KSampler (Advanced)**  
 Full parameter control:
 ## Key Parameters
