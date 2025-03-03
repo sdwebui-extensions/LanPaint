@@ -62,42 +62,6 @@ Fine-tune results with these key parameters:
 | `StepSize` | 0.05-0.2 | Detail refinement intensity |
 
 
-## Develop
-
-To install the dev dependencies and pre-commit (will run the ruff hook), do:
-
-```bash
-cd LanPaint
-pip install -e .[dev]
-pre-commit install
-```
-
-The `-e` flag above will result in a "live" install, in the sense that any changes you make to your node extension will automatically be picked up the next time you run ComfyUI.
-
-## Publish to Github
-
-Install Github Desktop or follow these [instructions](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for ssh.
-
-1. Create a Github repository that matches the directory name. 
-2. Push the files to Git
-```
-git add .
-git commit -m "project scaffolding"
-git push
-``` 
-
-## Writing custom nodes
-
-An example custom node is located in [node.py](src/LanPaint/nodes.py). To learn more, read the [docs](https://docs.comfy.org/essentials/custom_node_overview).
-
-
-## Tests
-
-This repo contains unit tests written in Pytest in the `tests/` directory. It is recommended to unit test your custom node.
-
-- [build-pipeline.yml](.github/workflows/build-pipeline.yml) will run pytest and linter on any open PRs
-- [validate.yml](.github/workflows/validate.yml) will run [node-diff](https://github.com/Comfy-Org/node-diff) to check for breaking changes
-
 ## Publishing to Registry
 
 If you wish to share this custom node with others in the community, you can publish it to the registry. We've already auto-populated some fields in `pyproject.toml` under `tool.comfy`, but please double-check that they are correct.
