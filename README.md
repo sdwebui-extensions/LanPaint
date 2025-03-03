@@ -69,12 +69,12 @@ Full parameter control:
 
 | Parameter | Range | Description |
 |-----------|-------|-------------|
+| `Steps` | 0-100 | Total steps of diffusion sampling. Higher means better inpainting. Recommend 50. |
 | `LanPaint_NumSteps` | 0-20 | Reasoning iterations per denoising step ("thinking depth") |
 | `LanPaint_Lambda` | 0.1-50 | Content alignment strength (higher = stricter) |
-| `LanPaint_StepSize` | 0.0001-0.5 | Convergence speed (higher = faster but riskier) |
-| `LanPaint_Beta` | 0.0001-5 | Bidirectional guidance convergence speed |
-| `LanPaint_Friction` | 1-50 | System stability / fast convergence trade off (higher = more stable) |
-| `LanPaint_Tamed` | 0-20 | Noise regularization strength |
+| `LanPaint_cfg_BIG` | 0-20 | CFG scale used when aligning masked and unmasked region (higher = better alignment). |
+
+For detailed descriptions of each parameter, simply hover your mouse over the corresponding input field to view tooltips with additional information.
 
 ## Usage Tips
 
