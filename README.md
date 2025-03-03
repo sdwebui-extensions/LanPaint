@@ -1,6 +1,6 @@
 # LanPaint
 
-Powerful Training Free Inpainting Tool Works for Every SD Model.
+Powerful Training Free Inpainting Tool Works for Every SD Model. Official Implementation of "Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference".
 
 ## Features
 
