@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "LanPaint"
 version = "0.0.1"
-description = "Powerful Inpainting Tool Works for Every SD Model."
+description = "Powerful Training-Free Inpainting Tool Works for Every SD Model."
 authors = [
   {name = "LanPaint", email = "czhengac@connect.ust.hk"}
 ]
