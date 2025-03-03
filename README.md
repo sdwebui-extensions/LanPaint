@@ -53,7 +53,7 @@ Same as default ComfyUI KSampler - simply replace with LanPaint KSampler nodes. 
 - LanPaint relies heavily on your text prompts to guide inpainting - explicitly describe the content you want generated in the masked area. If results show artifacts or mismatched elements, counteract them with targeted negative prompts.
 
 ### Basic Sampler
-
+![Samplers](https://github.com/scraed/LanPaint/blob/master/Nodes.JPG)  
 **LanPaint KSampler**  
 Simplified interface with recommended defaults:
 
