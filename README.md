@@ -16,11 +16,11 @@ Powerful Training Free Inpainting Tool Works for Every SD Model.
 
 ### Example 2: (LanPaint K Sampler (Advanced))
 ![Inpainting Result 2](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_05.jpg)  
-[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_3)
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_2)
 
 ### Example 3: (LanPaint K Sampler (Advanced))
 ![Inpainting Result 3](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_06.jpg)  
-[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_2)
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_3)
 
 Each example includes:
 - Original masked image
