@@ -1,6 +1,6 @@
 # LanPaint
 
-Powerful Training Free Inpainting Tool Works for Every SD Model.
+Powerful Training Free Inpainting Tool Works for Every SD Model. Official Implementation of "Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference".
 
 ## Features
 
@@ -61,42 +61,22 @@ Fine-tune results with these key parameters:
 | `Lambda` | 4-8 | Content preservation strength |
 | `StepSize` | 0.05-0.2 | Detail refinement intensity |
 
+## Citation
 
-## Develop
+If you use LanPaint in your research or projects, please cite our work:
 
-To install the dev dependencies and pre-commit (will run the ruff hook), do:
-
-```bash
-cd LanPaint
-pip install -e .[dev]
-pre-commit install
+```bibtex
+@misc{zheng2025lanpainttrainingfreediffusioninpainting,
+      title={Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference}, 
+      author={Candi Zheng and Yuan Lan and Yang Wang},
+      year={2025},
+      eprint={2502.03491},
+      archivePrefix={arXiv},
+      primaryClass={eess.IV},
+      url={https://arxiv.org/abs/2502.03491}, 
+}
 ```
 
-The `-e` flag above will result in a "live" install, in the sense that any changes you make to your node extension will automatically be picked up the next time you run ComfyUI.
-
-## Publish to Github
-
-Install Github Desktop or follow these [instructions](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent) for ssh.
-
-1. Create a Github repository that matches the directory name. 
-2. Push the files to Git
-```
-git add .
-git commit -m "project scaffolding"
-git push
-``` 
-
-## Writing custom nodes
-
-An example custom node is located in [node.py](src/LanPaint/nodes.py). To learn more, read the [docs](https://docs.comfy.org/essentials/custom_node_overview).
-
-
-## Tests
-
-This repo contains unit tests written in Pytest in the `tests/` directory. It is recommended to unit test your custom node.
-
-- [build-pipeline.yml](.github/workflows/build-pipeline.yml) will run pytest and linter on any open PRs
-- [validate.yml](.github/workflows/validate.yml) will run [node-diff](https://github.com/Comfy-Org/node-diff) to check for breaking changes
 
 ## Publishing to Registry
 
