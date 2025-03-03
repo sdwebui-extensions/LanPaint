@@ -1,6 +1,6 @@
 # LanPaint
 
-Powerful Training Free Inpainting Tool Works for Every SD Model. Official Implementation of "Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference".
+Unlock precise inpainting without additional training. LanPaint lets the model "think" through multiple iterations before denoising, aiming for seamless and accurate results. This is the official implementation of "Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference".
 
 ## Features
 
@@ -70,10 +70,10 @@ Full parameter control:
 | Parameter | Range | Description |
 |-----------|-------|-------------|
 | `LanPaint_NumSteps` | 0-20 | Reasoning iterations per denoising step ("thinking depth") |
-| `LanPaint_Lambda` | 0.1-50 | Content preservation strength (higher = stricter) |
+| `LanPaint_Lambda` | 0.1-50 | Content alignment strength (higher = stricter) |
 | `LanPaint_StepSize` | 0.0001-0.5 | Convergence speed (higher = faster but riskier) |
-| `LanPaint_Beta` | 0.0001-5 | Novelty generation intensity |
-| `LanPaint_Friction` | 1-50 | System stability (higher = more stable) |
+| `LanPaint_Beta` | 0.0001-5 | Bidirectional guidance convergence speed |
+| `LanPaint_Friction` | 1-50 | System stability / fast convergence trade off (higher = more stable) |
 | `LanPaint_Tamed` | 0-20 | Noise regularization strength |
 
 ## Usage Tips
