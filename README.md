@@ -76,7 +76,7 @@ For detailed descriptions of each parameter, simply hover your mouse over the co
 
 
 
-## LanPaint KSampler Tuning Guide
+## LanPaint KSampler (Advanced) Tuning Guide
 For challenging inpainting tasks:  
 
 1️⃣ **Primary Adjustments**:
@@ -87,7 +87,12 @@ For challenging inpainting tasks:
     
 3️⃣ **Balance Speed vs Stability**:  
 - Reduce **LanPaint_Friction** to prioritize faster results with fewer "thinking" steps (*may risk instability*).  
-- Increase **LanPaint_Tamed** (error correction) or **LanPaint_Alpha** (constraint flexibility) to suppress artifacts.  
+- Increase **LanPaint_Tamed** (error correction) or **LanPaint_Alpha** (constraint flexibility) to suppress artifacts.
+
+⚠️ **Notes**:  
+- Optimal parameters vary depending on the **model** and the **size of the inpainting area**.  
+- For effective tuning, **fix the seed** and adjust parameters incrementally while observing the results. This helps isolate the impact of each setting.  
+
 
 ## Citation
 
