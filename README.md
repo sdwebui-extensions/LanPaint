@@ -22,11 +22,26 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 ![Inpainting Result 3](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_06.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_3)
 [Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl)
+### Example 4: (LanPaint K Sampler (Advanced))
+![Inpainting Result 3](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_07.jpg)  
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_4)
+[Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl)
 
-Each example includes:
-- Original masked image
-- Full ComfyUI workflow
+**How to Use These Examples:**  
+1. Navigate to the **example** folder (i.e example_1) using the above provided link.  
+2. Drag **InPainted_Drag_Me_to_ComfyUI.png** into ComfyUI to load the workflow.  
+3. Download the required model from Civitai using the above provided link.  
+4. Load the model into the **"Load Checkpoint"** node.  
+5. Upload **Original_No_Mask.png** to the **"Load image"** node in the **"Original Image"** group (far left).  
+6. Upload **Masked_Load_Me_in_Loader.png** to the **"Load image"** node in the **"Mask image for inpainting"** group (second from left).  
+7. Queue the task to generate inpainted results using three methods:  
+   - **VAE Encode for Inpainting** (middle),  
+   - **Set Latent Noise Mask** (second from right),  
+   - **LanPaint** (far right).  
 
+Compare and explore the results from each method!
+
+![WorkFlow](https://github.com/scraed/LanPaint/blob/master/Example.JPG)  
 
 ## Quickstart
 
