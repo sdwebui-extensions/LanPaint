@@ -29,7 +29,7 @@ dev = [
 [project.urls]
 bugs = "https://github.com/scraed/LanPaint/issues"
 homepage = "https://github.com/scraed/LanPaint"
-
+Repository = "https://github.com/scraed/LanPaint"
 
 [tool.comfy]
 PublisherId = "scraed"
