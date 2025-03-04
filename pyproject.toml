@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "LanPaint"
-version = "0.0.2"
-description = "Powerful Training-Free Inpainting Tool Works for Every SD Model."
+version = "0.0.3"
+description = "Achieve seamless inpainting results without needing a specialized inpainting model. Visit https://github.com/scraed/LanPaint for tutorial and examples."
 authors = [
   {name = "LanPaint", email = "czhengac@connect.ust.hk"}
 ]
