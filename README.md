@@ -34,7 +34,7 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 4. Load the model into the **"Load Checkpoint"** node.  
 5. Upload **Original_No_Mask.png** to the **"Load image"** node in the **"Original Image"** group (far left).  
 6. Upload **Masked_Load_Me_in_Loader.png** to the **"Load image"** node in the **"Mask image for inpainting"** group (second from left).  
-7. Queue the task to generate inpainted results using three methods:  
+7. Queue the task, you will get inpainted results from three methods:  
    - **VAE Encode for Inpainting** (middle),  
    - **Set Latent Noise Mask** (second from right),  
    - **LanPaint** (far right).  
