@@ -35,8 +35,8 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 5. Upload **Original_No_Mask.png** to the **"Load image"** node in the **"Original Image"** group (far left).  
 6. Upload **Masked_Load_Me_in_Loader.png** to the **"Load image"** node in the **"Mask image for inpainting"** group (second from left).  
 7. Queue the task, you will get inpainted results from three methods:  
-   - **VAE Encode for Inpainting** (middle),  
-   - **Set Latent Noise Mask** (second from right),  
+   - **[VAE Encode for Inpainting](https://comfyanonymous.github.io/ComfyUI_examples/inpaint/)** (middle),  
+   - **[Set Latent Noise Mask](https://comfyui-wiki.com/en/tutorial/basic/how-to-inpaint-an-image-in-comfyui)** (second from right),  
    - **LanPaint** (far right).  
 
 Compare and explore the results from each method!
