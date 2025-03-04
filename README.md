@@ -28,9 +28,9 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 [Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl)
 
 **How to Use These Examples:**  
-1. Navigate to the **example** folder (i.e example_1) using the above provided link.  
+1. Navigate to the **example** folder (i.e example_1) by clicking **View Workflow & Masks**, download all pictures.  
 2. Drag **InPainted_Drag_Me_to_ComfyUI.png** into ComfyUI to load the workflow.  
-3. Download the required model from Civitai using the above provided link.  
+3. Download the required model from Civitai by clicking **Model Used in This Example**.  
 4. Load the model into the **"Load Checkpoint"** node.  
 5. Upload **Original_No_Mask.png** to the **"Load image"** node in the **"Original Image"** group (far left).  
 6. Upload **Masked_Load_Me_in_Loader.png** to the **"Load image"** node in the **"Mask image for inpainting"** group (second from left).  
