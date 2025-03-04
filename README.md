@@ -53,15 +53,13 @@ Same as default ComfyUI KSampler - simply replace with LanPaint KSampler nodes. 
 - LanPaint relies heavily on your text prompts to guide inpainting - explicitly describe the content you want generated in the masked area. If results show artifacts or mismatched elements, counteract them with targeted negative prompts.
 
 ### Basic Sampler
-
+![Samplers](https://github.com/scraed/LanPaint/blob/master/Nodes.JPG)  
 **LanPaint KSampler**  
 Simplified interface with recommended defaults:
 
 - Steps: 50+ recommended
 - LanPaint NumSteps: 1-10 (complexity of edits)
 - Built-in parameter presets
-
-### Advanced Sampler 
 
 **LanPaint KSampler (Advanced)**  
 Full parameter control:
@@ -76,12 +74,24 @@ Full parameter control:
 
 For detailed descriptions of each parameter, simply hover your mouse over the corresponding input field to view tooltips with additional information.
 
-## Usage Tips
 
-1. **Start Simple** - Begin with basic sampler and default values
-2. **Increase Steps** - 50-100 steps recommended for complex edits
-3. **Tune Gradually** - Adjust parameters in 10-20% increments
-4. **Monitor Stability** - If artifacts appear, increase Friction/Tamed
+
+## LanPaint KSampler (Advanced) Tuning Guide
+For challenging inpainting tasks:  
+
+1️⃣ **Primary Adjustments**:
+- Increase **steps**, **LanPaint_NumSteps** (thinking iterations), and **LanPaint_cfg_BIG** (guidance scale).
+  
+2️⃣ **Secondary Tweaks**:  
+- Boost **LanPaint_Lambda** (spatial constraint strength) or **LanPaint_StepSize** (denoising aggressiveness).
+    
+3️⃣ **Balance Speed vs Stability**:  
+- Reduce **LanPaint_Friction** to prioritize faster results with fewer "thinking" steps (*may risk instability*).  
+- Increase **LanPaint_Tamed** (noise normalization onto a sphere) or **LanPaint_Alpha** (constraint the friction of underdamped Langevin dynamics) to suppress artifacts.
+
+⚠️ **Notes**:  
+- Optimal parameters vary depending on the **model** and the **size of the inpainting area**.  
+- For effective tuning, **fix the seed** and adjust parameters incrementally while observing the results. This helps isolate the impact of each setting.  
 
 
 ## Citation
