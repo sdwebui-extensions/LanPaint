@@ -87,7 +87,7 @@ For challenging inpainting tasks:
     
 3️⃣ **Balance Speed vs Stability**:  
 - Reduce **LanPaint_Friction** to prioritize faster results with fewer "thinking" steps (*may risk instability*).  
-- Increase **LanPaint_Tamed** (error correction) or **LanPaint_Alpha** (constraint flexibility) to suppress artifacts.
+- Increase **LanPaint_Tamed** (noise normalization onto a sphere) or **LanPaint_Alpha** (constraint the friction of underdamped Langevin dynamics) to suppress artifacts.
 
 ⚠️ **Notes**:  
 - Optimal parameters vary depending on the **model** and the **size of the inpainting area**.  
