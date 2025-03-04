@@ -74,13 +74,20 @@ Full parameter control:
 
 For detailed descriptions of each parameter, simply hover your mouse over the corresponding input field to view tooltips with additional information.
 
-## Usage Tips
 
-1. **Start Simple** - Begin with basic sampler and default values
-2. **Increase Steps** - 50-100 steps recommended for complex edits
-3. **Tune Gradually** - Adjust parameters in 10-20% increments
-4. **Monitor Stability** - If artifacts appear, increase Friction/Tamed
 
+## LanPaint KSampler Tuning Guide
+For challenging inpainting tasks:  
+
+1️⃣ **Primary Adjustments**:
+- Increase **steps**, **LanPaint_NumSteps** (thinking iterations), and **LanPaint_cfg_BIG** (guidance scale).
+  
+2️⃣ **Secondary Tweaks**:  
+- Boost **LanPaint_Lambda** (spatial constraint strength) or **LanPaint_StepSize** (denoising aggressiveness).
+    
+3️⃣ **Balance Speed vs Stability**:  
+- Reduce **LanPaint_Friction** to prioritize faster results with fewer "thinking" steps (*may risk instability*).  
+- Increase **LanPaint_Tamed** (error correction) or **LanPaint_Alpha** (constraint flexibility) to suppress artifacts.  
 
 ## Citation
 
