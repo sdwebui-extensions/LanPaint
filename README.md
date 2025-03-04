@@ -93,6 +93,9 @@ For challenging inpainting tasks:
 - Optimal parameters vary depending on the **model** and the **size of the inpainting area**.  
 - For effective tuning, **fix the seed** and adjust parameters incrementally while observing the results. This helps isolate the impact of each setting.  
 
+## Contribute
+
+Help us improve LanPaint! 🚀 **Report bugs**, share **example cases**, or contribute your **personal parameter settings** to benefit the community. 
 
 ## Citation
 
