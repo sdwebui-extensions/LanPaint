@@ -48,7 +48,7 @@ Compare and explore the results from each method!
 1. **Install ComfyUI**: Follow the official [ComfyUI installation guide](https://docs.comfy.org/get_started) to set up ComfyUI on your system.  
 2. **Install ComfyUI-Manager**: Add the [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager) for easy extension management.  
 3. **Install LanPaint Nodes**:  
-   - **Via ComfyUI-Manager**: Search for "LanPaint" in the manager and install it directly.  
+   - **Via ComfyUI-Manager**: Search for "[LanPaint](https://registry.comfy.org/publishers/scraed/nodes/LanPaint)" in the manager and install it directly.  
    - **Manually**: Click "Install via Git URL" in ComfyUI-Manager and input the GitHub repository link:  
      ```
      https://github.com/scraed/LanPaint.git
