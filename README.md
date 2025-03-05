@@ -10,19 +10,19 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 
 ## Example Results
 
-### Example 1 (LanPaint K Sampler)
+### Example 1: Basket to Basket Ball (LanPaint K Sampler)
 ![Inpainting Result 1](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_1) 
 [Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658) 
-### Example 2: (LanPaint K Sampler (Advanced))
+### Example 2: White Shirt to Blue Shirt (LanPaint K Sampler (Advanced))
 ![Inpainting Result 2](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_05.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_2)
 [Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658)
-### Example 3: (LanPaint K Sampler (Advanced))
+### Example 3: Smile to Sad (LanPaint K Sampler (Advanced))
 ![Inpainting Result 3](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_06.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_3)
 [Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl)
-### Example 4: (LanPaint K Sampler (Advanced))
+### Example 4: Damage Restoration (LanPaint K Sampler (Advanced))
 ![Inpainting Result 3](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_07.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_4)
 [Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl)
