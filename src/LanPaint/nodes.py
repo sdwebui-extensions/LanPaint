@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from inspect import cleandoc
 import inspect
 # import nodes.py
@@ -6,8 +7,9 @@ import nodes
 import latent_preview
 from functools import partial
 from comfy.utils import repeat_to_batch_size
+from comfy.samplers import *
 # Monkey patch comfy.samplers module by importing with absolute package path
-exec(inspect.getsource(comfy.samplers).replace("from .", "from comfy."))
+#exec(inspect.getsource(comfy.samplers).replace("from .", "from comfy."))
 
 def reshape_mask(input_mask, output_shape):
     dims = len(output_shape) - 2
@@ -65,8 +67,8 @@ class CFGGuider_LanPaint:
     def predict_noise(self, x, timestep, model_options={}, seed=None):
         return sampling_function_LanPaint(self.inner_model, x, timestep, self.conds.get("negative", None), self.conds.get("positive", None), self.cfg, self.cfg_BIG, model_options=model_options, seed=seed)
 
-CFGGuider.outer_sample = CFGGuider_LanPaint.outer_sample
-CFGGuider.predict_noise = CFGGuider_LanPaint.predict_noise
+#CFGGuider.outer_sample = CFGGuider_LanPaint.outer_sample
+#CFGGuider.predict_noise = CFGGuider_LanPaint.predict_noise
 
 class KSamplerX0Inpaint:
     def __init__(self, model, sigmas):
@@ -324,12 +326,25 @@ class KSAMPLER(comfy.samplers.KSAMPLER):
         samples = model_wrap.inner_model.model_sampling.inverse_noise_scaling(sigmas[-1], samples)
         return samples
 
-# Monkey patch ComfyUI's sample function to use our custom KSAMPLER
-comfy_sample_sample = inspect.getsource(comfy.sample.sample).replace("def sample(", "def comfy_sample_sample(").replace("comfy.samplers.KSampler", "KSampler")
-exec(comfy_sample_sample)
-# Modify nodes.common_ksampler function to use our patched sample function
-common_ksampler = inspect.getsource(nodes.common_ksampler).replace("comfy.sample.sample", "comfy_sample_sample")
-exec(common_ksampler)
+@contextmanager
+def override_sample_function():
+    original_outer_sample = comfy.samplers.CFGGuider.outer_sample
+    comfy.samplers.CFGGuider.outer_sample = CFGGuider_LanPaint.outer_sample
+
+    original_predict_noise = comfy.samplers.CFGGuider.predict_noise
+    comfy.samplers.CFGGuider.predict_noise = CFGGuider_LanPaint.predict_noise
+
+    original_sample = comfy.samplers.KSAMPLER.sample
+    comfy.samplers.KSAMPLER.sample = KSAMPLER.sample
+
+    try:
+        yield
+    finally:
+        comfy.samplers.KSAMPLER.sample = original_sample
+        comfy.samplers.CFGGuider.predict_noise = original_predict_noise
+        comfy.samplers.CFGGuider.outer_sample = original_outer_sample
+
+
 
 
 KSAMPLER_NAMES = ["euler", "dpmpp_2m", "uni_pc"]
@@ -375,7 +390,8 @@ class LanPaint_KSampler():
         model.LanPaint_StartSigma = 20.
         model.LanPaint_EndSigma = 1.
         model.LanPaint_cfg_BIG = cfg
-        return common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise)
+        with override_sample_function():
+            return nodes.common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise)
 class LanPaint_KSamplerAdvanced:
     @classmethod
     def INPUT_TYPES(s):
@@ -435,7 +451,8 @@ class LanPaint_KSamplerAdvanced:
         model.LanPaint_StartSigma = LanPaint_StartSigma
         model.LanPaint_EndSigma = LanPaint_EndSigma
         model.LanPaint_cfg_BIG = LanPaint_cfg_BIG
-        return common_ksampler(model, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise, disable_noise=disable_noise, start_step=start_at_step, last_step=end_at_step, force_full_denoise=force_full_denoise)
+        with override_sample_function():
+            return nodes.common_ksampler(model, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise, disable_noise=disable_noise, start_step=start_at_step, last_step=end_at_step, force_full_denoise=force_full_denoise)
 
 
 # A dictionary that contains all nodes you want to export with their names
