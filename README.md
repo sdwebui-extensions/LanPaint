@@ -110,7 +110,10 @@ For challenging inpainting tasks:
 
 ## Contribute
 
+# 2025/03/06: Bug Fix for str not callable error and unpack error. Big thanks to [jamesWalker55](https://github.com/jamesWalker55) and [EricBCoding](https://github.com/EricBCoding).
+
 Help us improve LanPaint! 🚀 **Report bugs**, share **example cases**, or contribute your **personal parameter settings** to benefit the community. 
+
 
 
 
