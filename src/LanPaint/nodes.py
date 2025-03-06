@@ -1,4 +1,3 @@
-from contextlib import contextmanager
 from inspect import cleandoc
 import inspect
 # import nodes.py
@@ -121,10 +120,10 @@ class KSamplerX0Inpaint:
                 x_t, args = self.langevin_dynamics(x_t, score_func , latent_mask, step_size_i , current_times, sigma_x = self.sigma_x(abt), sigma_y = self.sigma_y(abt), args = args)  
             x = x_t #* ( 1+sigma**2 )**0.5
             # out is x_0
-            out = self.inner_model(x, sigma, model_options=model_options, seed=seed)
+            out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
             out = out * denoise_mask + self.latent_image * latent_mask
         else:
-            out = self.inner_model(x, sigma, model_options=model_options, seed=seed)
+            out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
         return out
     def mid_times(self, current_times, step_size):
         sigma, abt = current_times
@@ -143,8 +142,7 @@ class KSamplerX0Inpaint:
         lamb = self.chara_lamb
         beta = self.chara_beta * (1-abt)**0.5
 
-        x_0 = self.inner_model(x_t, sigma, model_options=model_options, seed=seed)
-        x_0_BIG = self.inner_model.cfg_BIG
+        x_0, x_0_BIG = self.inner_model(x_t, sigma, model_options=model_options, seed=seed)
         e_t = x_t / ((1 - abt) ** 0.5 * (1 + sigma**2) ** 0.5 )- (abt ** 0.5  / (1 - abt) ** 0.5) * x_0
         e_t_BIG = x_t / ((1 - abt) ** 0.5 * (1 + sigma**2) ** 0.5 )- (abt ** 0.5  / (1 - abt) ** 0.5) * x_0_BIG
         
@@ -326,20 +324,15 @@ class KSAMPLER(comfy.samplers.KSAMPLER):
         samples = model_wrap.inner_model.model_sampling.inverse_noise_scaling(sigmas[-1], samples)
         return samples
 
-@contextmanager
-def override_sample_function():
-    original_sample = comfy.samplers.KSAMPLER.sample
-    comfy.samplers.KSAMPLER.sample = KSAMPLER.sample
-    print("comfy.samplers.KSAMPLER:sample function overriden")
-
-    try:
-        yield
-    finally:
-        comfy.samplers.KSAMPLER.sample = original_sample
-        print("comfy.samplers.KSAMPLER:sample function reverted")
+# Monkey patch ComfyUI's sample function to use our custom KSAMPLER
+comfy_sample_sample = inspect.getsource(comfy.sample.sample).replace("def sample(", "def comfy_sample_sample(").replace("comfy.samplers.KSampler", "KSampler")
+exec(comfy_sample_sample)
+# Modify nodes.common_ksampler function to use our patched sample function
+common_ksampler = inspect.getsource(nodes.common_ksampler).replace("comfy.sample.sample", "comfy_sample_sample")
+exec(common_ksampler)
 
 
-KSAMPLER_NAMES = ["euler", "lcm", "dpmpp_2m", "uni_pc"]
+KSAMPLER_NAMES = ["euler", "dpmpp_2m", "uni_pc"]
 
 class LanPaint_KSampler():
     @classmethod
@@ -382,8 +375,7 @@ class LanPaint_KSampler():
         model.LanPaint_StartSigma = 20.
         model.LanPaint_EndSigma = 1.
         model.LanPaint_cfg_BIG = cfg
-        with override_sample_function():
-            return nodes.common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise)
+        return common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise)
 class LanPaint_KSamplerAdvanced:
     @classmethod
     def INPUT_TYPES(s):
@@ -443,8 +435,7 @@ class LanPaint_KSamplerAdvanced:
         model.LanPaint_StartSigma = LanPaint_StartSigma
         model.LanPaint_EndSigma = LanPaint_EndSigma
         model.LanPaint_cfg_BIG = LanPaint_cfg_BIG
-        with override_sample_function():
-            return nodes.common_ksampler(model, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise, disable_noise=disable_noise, start_step=start_at_step, last_step=end_at_step, force_full_denoise=force_full_denoise)
+        return common_ksampler(model, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise, disable_noise=disable_noise, start_step=start_at_step, last_step=end_at_step, force_full_denoise=force_full_denoise)
 
 
 # A dictionary that contains all nodes you want to export with their names
