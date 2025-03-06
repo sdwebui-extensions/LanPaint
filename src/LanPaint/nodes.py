@@ -327,15 +327,23 @@ class KSAMPLER(comfy.samplers.KSAMPLER):
 
 @contextmanager
 def override_sample_function():
+    original_outer_sample = comfy.samplers.CFGGuider.outer_sample
+    comfy.samplers.CFGGuider.outer_sample = CFGGuider_LanPaint.outer_sample
+
+    original_predict_noise = comfy.samplers.CFGGuider.predict_noise
+    comfy.samplers.CFGGuider.predict_noise = CFGGuider_LanPaint.predict_noise
+
     original_sample = comfy.samplers.KSAMPLER.sample
     comfy.samplers.KSAMPLER.sample = KSAMPLER.sample
-    print("comfy.samplers.KSAMPLER:sample function overriden")
 
     try:
         yield
     finally:
         comfy.samplers.KSAMPLER.sample = original_sample
-        print("comfy.samplers.KSAMPLER:sample function reverted")
+        comfy.samplers.CFGGuider.predict_noise = original_predict_noise
+        comfy.samplers.CFGGuider.outer_sample = original_outer_sample
+
+
 
 
 KSAMPLER_NAMES = ["euler", "dpmpp_2m", "uni_pc"]
