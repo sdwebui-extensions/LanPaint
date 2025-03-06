@@ -26,6 +26,10 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 ![Inpainting Result 3](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_07.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_4)
 [Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl)
+### Example 5: Huge Damage Restoration (LanPaint K Sampler (Advanced))
+![Inpainting Result 3](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_08.jpg)  
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_5)
+[Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl) (The key is increase LanPaint_stepsize to 0.5)
 
 **How to Use These Examples:**  
 1. Navigate to the **example** folder (i.e example_1) by clicking **View Workflow & Masks**, download all pictures.  
