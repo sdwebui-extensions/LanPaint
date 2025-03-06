@@ -7,8 +7,9 @@ import nodes
 import latent_preview
 from functools import partial
 from comfy.utils import repeat_to_batch_size
+from comfy.samplers import *
 # Monkey patch comfy.samplers module by importing with absolute package path
-exec(inspect.getsource(comfy.samplers).replace("from .", "from comfy."))
+#exec(inspect.getsource(comfy.samplers).replace("from .", "from comfy."))
 
 def reshape_mask(input_mask, output_shape):
     dims = len(output_shape) - 2
@@ -66,8 +67,8 @@ class CFGGuider_LanPaint:
     def predict_noise(self, x, timestep, model_options={}, seed=None):
         return sampling_function_LanPaint(self.inner_model, x, timestep, self.conds.get("negative", None), self.conds.get("positive", None), self.cfg, self.cfg_BIG, model_options=model_options, seed=seed)
 
-CFGGuider.outer_sample = CFGGuider_LanPaint.outer_sample
-CFGGuider.predict_noise = CFGGuider_LanPaint.predict_noise
+#CFGGuider.outer_sample = CFGGuider_LanPaint.outer_sample
+#CFGGuider.predict_noise = CFGGuider_LanPaint.predict_noise
 
 class KSamplerX0Inpaint:
     def __init__(self, model, sigmas):
