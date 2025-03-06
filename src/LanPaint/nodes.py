@@ -74,7 +74,7 @@ class KSamplerX0Inpaint:
     def __init__(self, model, sigmas):
         self.inner_model = model
         self.sigmas = sigmas
-        self.model_sigmas = torch.cat( (torch.tensor([0.], device = sigmas.device) , self.inner_model.model_patcher.get_model_object("model_sampling").sigmas ) )
+        self.model_sigmas = torch.cat( (torch.tensor([0.], device = sigmas.device) , torch.tensor( self.inner_model.model_patcher.get_model_object("model_sampling").sigmas, device = sigmas.device) ) )
         self.model_sigmas = torch.tensor( self.model_sigmas, dtype = self.sigmas.dtype )
     def __call__(self, x, sigma, denoise_mask, model_options={}, seed=None):
         # x is x_t in the notation of variance exploding diffusion model, x_t = x_0 + sigma * noise
