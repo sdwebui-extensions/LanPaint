@@ -9,7 +9,7 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 - 🚀 **Quality Enhancements** - High quality and seamless inpainting
 
 ## Example Results
-
+All examples use random seed 0 to ensure fair comparison.
 ### Example 1: Basket to Basket Ball (LanPaint K Sampler)
 ![Inpainting Result 1](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_1) 
