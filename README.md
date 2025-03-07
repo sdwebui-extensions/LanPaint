@@ -10,11 +10,11 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 
 ## Example Results
 All examples use random seed 0 to ensure fair comparison.
-### Example 1: Basket to Basket Ball (LanPaint K Sampler)
+### Example 1: Basket to Basket Ball (LanPaint K Sampler, It is Fast).
 ![Inpainting Result 1](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_1) 
 [Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658) 
-### Example 2: White Shirt to Blue Shirt (LanPaint K Sampler (Advanced))
+### Example 2: White Shirt to Blue Shirt (LanPaint K Sampler (Advanced), it is slower.)
 ![Inpainting Result 2](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_05.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_2)
 [Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658)
