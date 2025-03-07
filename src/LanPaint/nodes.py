@@ -377,7 +377,7 @@ class LanPaint_KSampler():
     DESCRIPTION = "Uses the provided model, positive and negative conditioning to denoise the latent image."
 
     def sample(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_NumSteps=5, LanPaint_Info=""):
-        model.LanPaint_StepSize = 0.1
+        model.LanPaint_StepSize = 0.3
         model.LanPaint_Lambda = 6.0
         model.LanPaint_Beta = 0.6
         model.LanPaint_NumSteps = LanPaint_NumSteps
@@ -411,7 +411,7 @@ class LanPaint_KSamplerAdvanced:
                     "return_with_leftover_noise": (["disable", "enable"], ),
                 "LanPaint_NumSteps": ("INT", {"default": 10, "min": 0, "max": 20, "tooltip": "The number of steps for the Langevin dynamics, representing the turns of thinking per step."}),
                 "LanPaint_Lambda": ("FLOAT", {"default": 6., "min": 0.1, "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The lambda parameter for the bidirectional guidance. Higher values align with known regions more closely, but may result in instability."}),
-                "LanPaint_StepSize": ("FLOAT", {"default": 0.1, "min": 0.0001, "max": 1., "step": 0.01, "round": 0.001, "tooltip": "The step size for the Langevin dynamics. Higher values result in faster convergence but may be unstable."}),
+                "LanPaint_StepSize": ("FLOAT", {"default": 0.3, "min": 0.0001, "max": 1., "step": 0.01, "round": 0.001, "tooltip": "The step size for the Langevin dynamics. Higher values result in faster convergence but may be unstable."}),
                 "LanPaint_Beta": ("FLOAT", {"default": 0.6, "min": 0.0001, "max": 5, "step": 0.1, "round": 0.1, "tooltip": "The beta parameter for the bidirectional guidance. Scale the step size for the known region independently for the Langevin dynamics. Higher values result in faster convergence but may be unstable."}),
                 "LanPaint_Friction": ("FLOAT", {"default": 10., "min": 1., "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The friction parameter for the underdamped Langevin dynamics, higher values result in faster convergence but may be unstable."}),
                 "LanPaint_Alpha": ("FLOAT", {"default": 0.5, "min": 0.0001, "max": 1., "step": 0.1, "round": 0.1, "tooltip": "The (rescaled) alpha parameter for the HFHR langevin dynamics, mixes Langevin dynamics and underdamped Langevin dynamics with a friction term. 0 corresponds to Langevin dynamics, 1 corresponds to underdamped Langevin dynamics."}),
