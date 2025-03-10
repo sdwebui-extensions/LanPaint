@@ -26,7 +26,8 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 
 
 ## Example Results
-All examples use random seed 0 to ensure fair comparison.
+All examples use a random seed 0 to generate batch of 4 images for fair comparison. (Warning: Generating 4 images may exceed GPU memory; adjust batch size as needed.)
+
 ### Example 1: Basket to Basket Ball (LanPaint K Sampler, 2 steps of thinking).
 ![Inpainting Result 1](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_1) 
@@ -51,6 +52,7 @@ All examples use random seed 0 to ensure fair comparison.
 ![Inpainting Result 6](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_09.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_6)
 [Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658) 
+
 **How to Use These Examples:**  
 1. Navigate to the **example** folder (i.e example_1) by clicking **View Workflow & Masks**, download all pictures.  
 2. Drag **InPainted_Drag_Me_to_ComfyUI.png** into ComfyUI to load the workflow.  
