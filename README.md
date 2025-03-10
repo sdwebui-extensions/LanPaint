@@ -96,18 +96,19 @@ Same as default ComfyUI KSampler - simply replace with LanPaint KSampler nodes. 
 - LanPaint requires binary masks (values of 0 or 1) without opacity or smoothing. To ensure compatibility, set the mask's **opacity and hardness to maximum** in your mask editor. During inpainting, any mask with smoothing or gradients will automatically be converted to a binary mask.
 - LanPaint relies heavily on your text prompts to guide inpainting - explicitly describe the content you want generated in the masked area. If results show artifacts or mismatched elements, counteract them with targeted negative prompts.
 
-### Basic Sampler
+## Basic Sampler
 ![Samplers](https://github.com/scraed/LanPaint/blob/master/Nodes.JPG)  
-**LanPaint KSampler**  
+### LanPaint KSampler
 Simplified interface with recommended defaults:
 
 - Steps: 50+ recommended
-- LanPaint NumSteps: 1-10 (complexity of edits)
-- Built-in parameter presets
+- LanPaint NumSteps: The turns of thinking before denoising. Recommend 5 for most of tasks.
+- LanPaint EndSigma: The noise level below which thinking is disabled. Recommend 0.6 for realistic style (tested on Juggernaut-xl), 3.0 for anime style (tested on Animagine XL 4.0)
 
-**LanPaint KSampler (Advanced)**  
+
+### LanPaint KSampler (Advanced)
 Full parameter control:
-## Key Parameters
+**Key Parameters**
 
 | Parameter | Range | Description |
 |-----------|-------|-------------|
