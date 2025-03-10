@@ -10,27 +10,30 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 
 ## Example Results
 All examples use random seed 0 to ensure fair comparison.
-### Example 1: Basket to Basket Ball (LanPaint K Sampler, It is fast).
+### Example 1: Basket to Basket Ball (LanPaint K Sampler, 2 steps of thinking).
 ![Inpainting Result 1](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_1) 
 [Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658) 
-### Example 2: White Shirt to Blue Shirt (LanPaint K Sampler (Advanced), it is slower.)
+### Example 2: White Shirt to Blue Shirt (LanPaint K Sampler, 5 steps of thinking)
 ![Inpainting Result 2](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_05.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_2)
 [Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658)
-### Example 3: Smile to Sad (LanPaint K Sampler (Advanced))
+### Example 3: Smile to Sad (LanPaint K Sampler, 5 steps of thinking)
 ![Inpainting Result 3](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_06.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_3)
 [Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl)
-### Example 4: Damage Restoration (LanPaint K Sampler (Advanced))
-![Inpainting Result 3](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_07.jpg)  
+### Example 4: Damage Restoration (LanPaint K Sampler, 5 steps of thinking)
+![Inpainting Result 4](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_07.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_4)
 [Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl)
-### Example 5: Huge Damage Restoration (LanPaint K Sampler (Advanced))
-![Inpainting Result 3](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_08.jpg)  
+### Example 5: Huge Damage Restoration (LanPaint K Sampler, 20 steps of thinking)
+![Inpainting Result 5](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_08.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_5)
-[Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl) (The key is increase LanPaint_stepsize to 0.5)
-
+[Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl)
+### Example 6: Character Consistency (Side View Generation) (LanPaint K Sampler, 5 steps of thinking)
+![Inpainting Result 6](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_09.jpg)  
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_6)
+[Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658) 
 **How to Use These Examples:**  
 1. Navigate to the **example** folder (i.e example_1) by clicking **View Workflow & Masks**, download all pictures.  
 2. Drag **InPainted_Drag_Me_to_ComfyUI.png** into ComfyUI to load the workflow.  
