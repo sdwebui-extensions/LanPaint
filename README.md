@@ -1,12 +1,16 @@
 # LanPaint (Thinking mode Inpaint)
 
-Unlock precise inpainting without additional training. LanPaint lets the model "think" through multiple iterations before denoising, aiming for seamless and accurate results. We encourage you to try it out and share your feedback through issues or discussions, as your input will help us enhance the algorithm's performance and stability.
+Unlock precise inpainting without additional training. LanPaint lets the model "think" through multiple iterations before denoising, aiming for seamless and accurate results.
+
+
+We encourage you to try it out and share your feedback through issues or discussions, as your input will help us enhance the algorithm's performance and stability.
 
 ## Features
 
 - 🎨 **Zero-Training Inpainting** - Works immediately with ANY SD model, even custom models you've trained yourself
 - 🛠️ **Simple Integration** - Same workflow as standard ComfyUI KSampler
 - 🎯 **True Blank-Slate Generation** - No need to set default denoise at 0.7 (preserving 30% original pixels in masks) used in conventional methods: 100% **new content creation**, No "painting over" existing content.
+- 🌈 **Not only inpaint**: You can even use it as a simple way to generate consistent characters.
 
 ## How It Works? 
 - 🤝 **Langevin Dynamics** 
@@ -56,6 +60,10 @@ All examples use a random seed 0 to generate batch of 4 images for fair comparis
 ![Inpainting Result 6](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_09.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_6)
 [Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658) 
+
+(Tricks 1: You can emphasize the character by copy the image multiple times with Photoshop.)
+
+(Tricks 2: Use prompts like multiple views, multiple angles, clone, turnaround.)
 
 **How to Use These Examples:**  
 1. Navigate to the **example** folder (i.e example_1) by clicking **View Workflow & Masks**, download all pictures.  
