@@ -9,7 +9,8 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 - 🎯 **True Blank-Slate Generation** - No need to set default denoise at 0.7 (preserving 30% original pixels in masks) used in conventional methods: 100% **new content creation**, No "painting over" existing content.
 
 ## How It Works? 
-
+- 🤝 **Langevin Dynamics** 
+    - Repeated denoise / add noise operation to refine the inpainted area
 - 🤝 **Bidirectional Context Control** 
     - Creates **two-way alignment** between masked/unmaksed areas  
     - Unlike single-direction approaches, our system continuously checks:  
