@@ -6,10 +6,31 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 
 - 🎨 **Zero-Training Inpainting** - Works immediately with ANY SD model, even custom models you've trained yourself
 - 🛠️ **Simple Integration** - Same workflow as standard ComfyUI KSampler
-- 🚀 **Quality Enhancements** - High quality and seamless inpainting
+- 🎯 **True Blank-Slate Generation** - No need to set default denoise at 0.7 (preserving 30% original pixels in masks) used in conventional methods: 100% **new content creation**, No "painting over" existing content.
+
+## How It Works? 
+
+- 🤝 **Bidirectional Context Control** 
+    - Creates **two-way alignment** between masked/unmaksed areas  
+    - Unlike single-direction approaches, our system continuously checks:  
+      *"Does the new content make sense with existing elements?"*  
+      *"Do existing elements support the new creation?"*  
+
+
+## Key Differences at a Glance  
+
+|                      | Common Tools | LanPaint |  
+|----------------------|--------------|----------|  
+| Works with any SD model | ❌           | ✅       |  
+| Context awareness    | ❌ One-way   | ✅ Two-way |  
+
+## Updates
+
+LanPaint has received a major update! All examples now use the LanPaint K Sampler, offering a simplified interface with enhanced performance and stability.
 
 ## Example Results
-All examples use random seed 0 to ensure fair comparison.
+All examples use a random seed 0 to generate batch of 4 images for fair comparison. (Warning: Generating 4 images may exceed GPU memory; adjust batch size as needed.)
+
 ### Example 1: Basket to Basket Ball (LanPaint K Sampler, 2 steps of thinking).
 ![Inpainting Result 1](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_1) 
@@ -34,6 +55,7 @@ All examples use random seed 0 to ensure fair comparison.
 ![Inpainting Result 6](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_09.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_6)
 [Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658) 
+
 **How to Use These Examples:**  
 1. Navigate to the **example** folder (i.e example_1) by clicking **View Workflow & Masks**, download all pictures.  
 2. Drag **InPainted_Drag_Me_to_ComfyUI.png** into ComfyUI to load the workflow.  
