@@ -90,6 +90,8 @@ class KSamplerX0Inpaint:
 
             abt = 1/( 1+sigma**2 )
 
+            
+
             if self.step_time_schedule == "dual_shrink":
                 step_size = self.step_size * (1 - abt) ** 0.5 * abt ** 0.5
             elif self.step_time_schedule == "follow_sampler":
@@ -101,6 +103,13 @@ class KSamplerX0Inpaint:
             else:
                 step_size = self.step_size * (1 - abt) ** 0.5
 
+            a = self.LanPaint_a
+            b = self.LanPaint_b
+            #step_size = self.step_size * (1 - abt) ** b * abt ** a / ( ((a/(a+b))**a*(b/(a+b))**b) )
+            abt_end = 1/( 1+self.end_sigma**2 ) 
+            step_size = self.step_size * (1 -  torch.minimum(abt/abt_end, abt**0) ) ** 0.5
+            step_size = step_size[:, None, None, None]
+
             
             current_times = (sigma, abt)
 
@@ -110,16 +119,16 @@ class KSamplerX0Inpaint:
             # after noise_scaling, noise = latent_image + noise * sigma, which is x_t in the variance exploding diffusion model notation for the known region.
             args = None
             for i in range(self.n_steps):
-
-                if sigma > self.start_sigma or sigma < self.end_sigma:
+                if torch.mean(sigma) > self.start_sigma or torch.mean(sigma) < self.end_sigma:
+                    
                     break
 
-                score_func = partial( self.score_model, y = self.latent_image, mask = latent_mask, abt = abt, sigma = sigma, model_options = model_options, seed = seed )
+                score_func = partial( self.score_model, y = self.latent_image, mask = latent_mask, abt = abt[:, None,None,None], sigma = sigma[:, None,None,None], model_options = model_options, seed = seed )
                 if self.step_size_schedule == "linear":
                     step_size_i = step_size * (1 - i/(self.n_steps) )
                 else:
                     step_size_i = step_size 
-                x_t, args = self.langevin_dynamics(x_t, score_func , latent_mask, step_size_i , current_times, sigma_x = self.sigma_x(abt), sigma_y = self.sigma_y(abt), args = args)  
+                x_t, args = self.langevin_dynamics(x_t, score_func , latent_mask, step_size_i , current_times, sigma_x = self.sigma_x(abt)[:, None,None,None], sigma_y = self.sigma_y(abt)[:, None,None,None], args = args)  
             x = x_t #* ( 1+sigma**2 )**0.5
             # out is x_0
             out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
@@ -144,7 +153,8 @@ class KSamplerX0Inpaint:
         lamb = self.chara_lamb
         beta = self.chara_beta * (1-abt)**0.5
 
-        x_0, x_0_BIG = self.inner_model(x_t, sigma, model_options=model_options, seed=seed)
+        x_0, x_0_BIG = self.inner_model(x_t, sigma[:, 0,0,0], model_options=model_options, seed=seed)
+        print("x_0", x_0.shape, "x_0_BIG", x_0_BIG.shape, "abt" , abt.shape, "sigma", sigma.shape)
         e_t = x_t / ((1 - abt) ** 0.5 * (1 + sigma**2) ** 0.5 )- (abt ** 0.5  / (1 - abt) ** 0.5) * x_0
         e_t_BIG = x_t / ((1 - abt) ** 0.5 * (1 + sigma**2) ** 0.5 )- (abt ** 0.5  / (1 - abt) ** 0.5) * x_0_BIG
         
@@ -153,7 +163,7 @@ class KSamplerX0Inpaint:
         return score_x * (1 - mask) + score_y * mask
     def sigma_x(self, abt):
         # the time scale for the x_t update
-        return 1
+        return abt**0
     def sigma_y(self, abt):
         # the time scale for the y_t update
         if self.beta_scale == "shrink":
@@ -163,33 +173,44 @@ class KSamplerX0Inpaint:
         elif self.beta_scale == "back_shrink":
             beta = self.chara_beta * abt ** 0.5
         else:
-            beta = self.chara_beta
+            beta = self.chara_beta * abt ** 0
         return beta
     def langevin_dynamics(self, x_t, score, mask, step_size, current_times, sigma_x=1, sigma_y=0, args=None):
         # -------------------------------------------------------------------------
         # Unpack current times parameters (sigma and abt)
         sigma, abt = current_times
-
+        sigma = sigma[:, None,None,None]
+        abt = abt[:, None,None,None]
         # Compute time step (dtx, dty) for x and y branches.
         dtx = 2 * step_size * sigma_x
         dty = 2 * step_size * sigma_y
 
-        if self.step_time_schedule == "dual_shrink":
-            ref_dt = 0.1 * (1-abt)**0.5 * abt ** 0.5
-        else:
-            ref_dt = 0.1 * (1-abt)**0.5
+        a = self.LanPaint_a
+        b = self.LanPaint_b
 
+
+        #ref_dt = 0.1 * (1 - abt) ** b * abt ** a / ( ((a/(a+b))**a*(b/(a+b))**b) )
+        abt_end = 1/( 1+self.end_sigma**2 ) 
+        ref_dt = 0.1 * (1 -  torch.minimum(abt/abt_end, abt**0) ) ** 0.5
         # -------------------------------------------------------------------------
         # Define friction parameter Gamma_hat for each branch.
         # Using dtx**0 provides a tensor of the proper device/dtype.
+        print("dtx", dtx.shape, "sigma_x", sigma_x.shape, "ref_dt", ref_dt.shape)
         Gamma_hat_x = self.friction * dtx / (1e-4+ 2 * sigma_x * ref_dt)
         Gamma_hat_y = self.friction * dty / (1e-4+ 2 * sigma_y * ref_dt)
 
         # Get mid time parameters (sigma_mid and abt_mid) for each branch.
-        sigma_mid_x, abt_mid_x = self.mid_times(current_times, dtx)
-        sigma_mid_y, abt_mid_y = self.mid_times(current_times, dty)
+        sigma_mid_x, abt_mid_x = self.mid_times(current_times, torch.squeeze(dtx))
+        sigma_mid_y, abt_mid_y = self.mid_times(current_times, torch.squeeze(dty))
 
-        if sigma_mid_x >= sigma or sigma_mid_y >= sigma:
+        sigma_mid_x = sigma_mid_x[:, None,None,None]
+        sigma_mid_y = sigma_mid_y[:, None,None,None]
+        abt_mid_x = abt_mid_x[:, None,None,None]
+        abt_mid_y = abt_mid_y[:, None,None,None]
+
+
+
+        if torch.mean(sigma_mid_x) >= torch.mean(sigma) or torch.mean(sigma_mid_y) >= torch.mean(sigma):
             return x_t, args
 
         # -------------------------------------------------------------------------
@@ -226,9 +247,9 @@ class KSamplerX0Inpaint:
 
         # tamed
         eps_model_x = eps_denoise* (1 - mask)
-        eps_model_x = eps_model_x* (torch.sum(1 - mask, dim = (1,2,3))/torch.sum(eps_model_x**2, dim = (1,2,3))) **0.5 ** torch.minimum(self.tamed*(dtx),sigma**0)#/( 1 + self.tamed*(sigma - sigma_mid_x) * (torch.sum(eps_model_x**2)/torch.sum((1 - mask)))**0.5 )
+        eps_model_x = eps_model_x* (torch.sum(1 - mask, dim = (1,2,3), keepdim = True)/torch.sum(eps_model_x**2, dim = (1,2,3), keepdim = True)) **0.5 ** torch.minimum(self.tamed*(dtx),sigma**0)#/( 1 + self.tamed*(sigma - sigma_mid_x) * (torch.sum(eps_model_x**2)/torch.sum((1 - mask)))**0.5 )
         eps_model_y = eps_denoise* mask
-        eps_model_y = eps_model_y* (torch.sum(mask, dim = (1,2,3))/torch.sum(eps_model_y**2, dim = (1,2,3))) **0.5 ** torch.minimum(self.tamed*(dty),sigma**0)#/( 1 + self.tamed*(sigma - sigma_mid_y) * (torch.sum(eps_model_y**2)/torch.sum(mask))**0.5 )
+        eps_model_y = eps_model_y* (torch.sum(mask, dim = (1,2,3), keepdim = True)/torch.sum(eps_model_y**2, dim = (1,2,3), keepdim = True)) **0.5 ** torch.minimum(self.tamed*(dty),sigma**0)#/( 1 + self.tamed*(sigma - sigma_mid_y) * (torch.sum(eps_model_y**2)/torch.sum(mask))**0.5 )
         eps_denoise = eps_model_x * (1 - mask) + eps_model_y * mask
 
 
@@ -239,6 +260,8 @@ class KSamplerX0Inpaint:
 
         # Transform x to z using z = x * sqrt(1+sigma^2). Here we have already set x to z to avoid floating point stability issue.
         z_t = x_t #* (1 + sigma**2) ** 0.5
+
+        print("eps_denoise", eps_denoise.shape, "sigma", sigma.shape, "sigma_mid_x", sigma_mid_x.shape)
 
         # Compute the mid-point update in z-space for each branch:
         z_mid_x = z_t + eps_denoise * (sigma_mid_x - sigma)
@@ -312,6 +335,9 @@ class KSAMPLER(comfy.samplers.KSAMPLER):
         model_k.step_time_schedule = model_wrap.model_patcher.LanPaint_StepTimeSchedule
         model_k.start_sigma = model_wrap.model_patcher.LanPaint_StartSigma
         model_k.end_sigma = model_wrap.model_patcher.LanPaint_EndSigma
+        model_k.LanPaint_a = model_wrap.model_patcher.LanPaint_a
+        model_k.LanPaint_b = model_wrap.model_patcher.LanPaint_b
+
         noise = model_wrap.inner_model.model_sampling.noise_scaling(sigmas[0], noise, latent_image, self.max_denoise(model_wrap, sigmas))
         #if not inpainting, after noise_scaling, noise = noise * sigma, which is the noise added to the clean latent image in the variance exploding diffusion model notation.
         #if inpainting, after noise_scaling, noise = latent_image + noise * sigma, which is x_t in the variance exploding diffusion model notation for the known region.
@@ -359,13 +385,14 @@ class LanPaint_KSampler():
                 "steps": ("INT", {"default": 50, "min": 1, "max": 10000, "tooltip": "The number of steps used in the denoising process."}),
                 "cfg": ("FLOAT", {"default": 5.0, "min": 0.0, "max": 100.0, "step":0.1, "round": 0.01, "tooltip": "The Classifier-Free Guidance scale balances creativity and adherence to the prompt. Higher values result in images more closely matching the prompt however too high values will negatively impact quality."}),
                 "sampler_name": (KSAMPLER_NAMES, {"tooltip": "Recommended: euler."}),
-                "scheduler": (comfy.samplers.KSampler.SCHEDULERS, {"tooltip": "The scheduler controls how noise is gradually removed to form the image."}),
+                "scheduler": (comfy.samplers.KSampler.SCHEDULERS, {"default": "karras", "tooltip": "The scheduler controls how noise is gradually removed to form the image."}),
                 "positive": ("CONDITIONING", {"tooltip": "The conditioning describing the attributes you want to include in the image."}),
                 "negative": ("CONDITIONING", {"tooltip": "The conditioning describing the attributes you want to exclude from the image."}),
                 "latent_image": ("LATENT", {"tooltip": "The latent image to denoise."}),
                 "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01, "tooltip": "The amount of denoising applied, lower values will maintain the structure of the initial image allowing for image to image sampling."}),
-                "LanPaint_NumSteps": ("INT", {"default": 10, "min": 0, "max": 20, "tooltip": "The number of steps for the Langevin dynamics, representing the turns of thinking per step."}),  
-                "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler. Recommend steps 50 ( increase steps boosts performance ), LanPaint NumSteps 1-10 depending on the difficulty of task. For more information, visit https://github.com/scraed/LanPaint", "multiline": True}),
+                "LanPaint_NumSteps": ("INT", {"default": 5, "min": 0, "max": 20, "tooltip": "The number of steps for the Langevin dynamics, representing the turns of thinking per step."}),  
+                "LanPaint_EndSigma": ("FLOAT", {"default": 3.0, "min": 0.0, "max": 20.0, "step": 0.01, "tooltip": "The noise level at which the thinking process stops. Higher value give less thinking but helps to deal with blurring when turns of thinking is too high."}),
+                "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler. Recommend steps 50, LanPaint NumSteps 1-20 depending on the difficulty of task. LanPaint_EndSigma = 3.0 for anime style, 0.6 for realistic style. For more information, visit https://github.com/scraed/LanPaint", "multiline": True}),
                   }
         }
 
@@ -376,20 +403,22 @@ class LanPaint_KSampler():
     CATEGORY = "sampling"
     DESCRIPTION = "Uses the provided model, positive and negative conditioning to denoise the latent image."
 
-    def sample(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_NumSteps=5, LanPaint_Info=""):
-        model.LanPaint_StepSize = 0.3
-        model.LanPaint_Lambda = 6.0
-        model.LanPaint_Beta = 0.6
+    def sample(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_NumSteps=5, LanPaint_EndSigma = 3., LanPaint_Info=""):
+        model.LanPaint_StepSize = 0.5
+        model.LanPaint_Lambda = 8.0
+        model.LanPaint_Beta = 1.2
         model.LanPaint_NumSteps = LanPaint_NumSteps
-        model.LanPaint_Friction = 10.
-        model.LanPaint_Alpha = 0.5
-        model.LanPaint_Tamed = 0.1
+        model.LanPaint_Friction = 5.
+        model.LanPaint_Alpha = 0.9
+        model.LanPaint_Tamed = 1.
         model.LanPaint_BetaScale = "shrink"
         model.LanPaint_StepSizeSchedule = "linear"
         model.LanPaint_StepTimeSchedule = "shrink"
         model.LanPaint_StartSigma = 20.
-        model.LanPaint_EndSigma = 1.
-        model.LanPaint_cfg_BIG = cfg
+        model.LanPaint_EndSigma = LanPaint_EndSigma
+        model.LanPaint_cfg_BIG = -0.5
+        model.LanPaint_a = 0.001
+        model.LanPaint_b = 1.5
         with override_sample_function():
             return nodes.common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise)
 class LanPaint_KSamplerAdvanced:
@@ -421,7 +450,9 @@ class LanPaint_KSamplerAdvanced:
                 "LanPaint_StepTimeSchedule": (["shrink", "dual_shrink", "follow_sampler"], {"default": "shrink", "tooltip": "The step size schedule for the first step of Langevin dynamics during diffusion sampling, shrink: step size = step size * (1 - alpha bar) ** 0.5; Dual_shrink: step size = step size * (1 - alpha bar) ** 0.5 *  alpha bar ** 0.5; Follow_sampler: scale with the sampler step size."}),
                 "LanPaint_StartSigma": ("FLOAT", {"default": 20., "min": 0.0001, "max": 20.0, "step": 0.1, "round": 0.1, "tooltip": "Start 'thinking' with Langevin dynamics at this sigma value."}),
                 "LanPaint_EndSigma": ("FLOAT", {"default": 1., "min": 0.000, "max": 20.0, "step": 0.1, "round": 0.1, "tooltip": "Stop 'thinking' with Langevin dynamics at this sigma value."}),
-                "LanPaint_cfg_BIG": ("FLOAT", {"default": 8., "min": 0., "max": 20.0, "step": 0.1, "round": 0.1, "tooltip": "The CFG scale used in the bidirectional guidance (for the known region only). Higher value results in more closely matching the known region."}),
+                "LanPaint_cfg_BIG": ("FLOAT", {"default": 8., "min": -20, "max": 20.0, "step": 0.1, "round": 0.1, "tooltip": "The CFG scale used in the bidirectional guidance (for the known region only). Higher value results in more closely matching the known region."}),
+                "LanPaint_a": ("FLOAT", {"default": 0.001, "min": 0.0001, "max": 20., "step": 0.001, "round": 0.001, "tooltip": "The a parameter for the HFHR langevin dynamics, the scale of the noise added to the latent image."}),
+                "LanPaint_b": ("FLOAT", {"default": 0.5, "min": 0.0001, "max": 20., "step": 0.001, "round": 0.001, "tooltip": "The b parameter for the HFHR langevin dynamics, the scale of the noise added to the latent image."}),
                 "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler Advanced. For difficult tasks, first try increasing steps, LanPaint_NumSteps, and LanPaint_cfg_BIG. Then try increase LanPaint_Lambda or LanPaint_StepSize. Decrease LanPaint_Friction if you want to obtain good results with fewer turns of thinking (LanPaint_NumSteps) at the risk of irregular behavior. Increase LanPaint_Tamed or LanPaint_Alpha can suppress irregular behavior. For more information, visit https://github.com/scraed/LanPaint", "multiline": True}),
                      },
                 }
@@ -431,7 +462,7 @@ class LanPaint_KSamplerAdvanced:
 
     CATEGORY = "sampling"
 
-    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_Beta=1, LanPaint_NumSteps=5, LanPaint_Friction=5, LanPaint_Alpha=1, LanPaint_Tamed=0., LanPaint_BetaScale="fixed", LanPaint_StepSizeSchedule = "const", LanPaint_StepTimeSchedule = "shrink",  LanPaint_StartSigma=20, LanPaint_EndSigma=0, LanPaint_cfg_BIG = 5., LanPaint_Info=""):
+    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_Beta=1, LanPaint_NumSteps=5, LanPaint_Friction=5, LanPaint_Alpha=1, LanPaint_Tamed=0., LanPaint_BetaScale="fixed", LanPaint_StepSizeSchedule = "const", LanPaint_StepTimeSchedule = "shrink",  LanPaint_StartSigma=20, LanPaint_EndSigma=0, LanPaint_cfg_BIG = 5., LanPaint_a=0.001, LanPaint_b=0.5, LanPaint_Info=""):
         force_full_denoise = True
         if return_with_leftover_noise == "enable":
             force_full_denoise = False
@@ -451,6 +482,8 @@ class LanPaint_KSamplerAdvanced:
         model.LanPaint_StartSigma = LanPaint_StartSigma
         model.LanPaint_EndSigma = LanPaint_EndSigma
         model.LanPaint_cfg_BIG = LanPaint_cfg_BIG
+        model.LanPaint_a = LanPaint_a
+        model.LanPaint_b = LanPaint_b
         with override_sample_function():
             return nodes.common_ksampler(model, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise, disable_noise=disable_noise, start_step=start_at_step, last_step=end_at_step, force_full_denoise=force_full_denoise)
 
