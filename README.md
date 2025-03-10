@@ -6,7 +6,24 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 
 - 🎨 **Zero-Training Inpainting** - Works immediately with ANY SD model, even custom models you've trained yourself
 - 🛠️ **Simple Integration** - Same workflow as standard ComfyUI KSampler
-- 🚀 **Quality Enhancements** - High quality and seamless inpainting
+- 🎯 **True Blank-Slate Generation** - No need to set default denoise at 0.7 (preserving 30% original pixels in masks) used in conventional methods: 100% **new content creation**, No "painting over" existing content.
+
+## How It Works? 
+
+- 🤝 **Bidirectional Context Control** 
+    - Creates **two-way alignment** between masked/unmaksed areas  
+    - Unlike single-direction approaches, our system continuously checks:  
+      *"Does the new content make sense with existing elements?"*  
+      *"Do existing elements support the new creation?"*  
+
+
+## Key Differences at a Glance  
+
+|                      | Common Tools | LanPaint |  
+|----------------------|--------------|----------|  
+| Works with any SD model | ❌           | ✅       |  
+| Context awareness    | ❌ One-way   | ✅ Two-way |  
+
 
 ## Example Results
 All examples use random seed 0 to ensure fair comparison.
