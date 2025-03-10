@@ -34,7 +34,7 @@ We encourage you to try it out and share your feedback through issues or discuss
 LanPaint has received a major update! All examples now use the LanPaint K Sampler, offering a simplified interface with enhanced performance and stability.
 
 ## Example Results
-All examples use a random seed 0 to generate batch of 4 images for fair comparison. (Warning: Generating 4 images may exceed GPU memory; adjust batch size as needed.)
+All examples use a random seed 0 to generate batch of 4 images for fair comparison. (Warning: Generating 4 images may exceed your GPU memory; adjust batch size as needed.)
 
 ### Example 1: Basket to Basket Ball (LanPaint K Sampler, 2 steps of thinking).
 ![Inpainting Result 1](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)  
