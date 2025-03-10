@@ -24,6 +24,9 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 | Works with any SD model | ❌           | ✅       |  
 | Context awareness    | ❌ One-way   | ✅ Two-way |  
 
+## Updates
+
+LanPaint has received a major update! All examples now use the LanPaint K Sampler, offering a simplified interface with enhanced performance and stability.
 
 ## Example Results
 All examples use a random seed 0 to generate batch of 4 images for fair comparison. (Warning: Generating 4 images may exceed GPU memory; adjust batch size as needed.)
