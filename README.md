@@ -146,6 +146,11 @@ For challenging inpainting tasks:
 - Optimal parameters vary depending on the **model** and the **size of the inpainting area**.  
 - For effective tuning, **fix the seed** and adjust parameters incrementally while observing the results. This helps isolate the impact of each setting.  
 
+## Know Issues (ToDo)
+
+- Does not work with v-pridictuion
+- Problems with the waiNSFWIllustrious model.
+
 ## Contribute
 
 - 2025/03/06: Bug Fix for str not callable error and unpack error. Big thanks to [jamesWalker55](https://github.com/jamesWalker55) and [EricBCoding](https://github.com/EricBCoding).
