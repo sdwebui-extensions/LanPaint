@@ -133,10 +133,10 @@ For detailed descriptions of each parameter, simply hover your mouse over the co
 For challenging inpainting tasks:  
 
 1️⃣ **Primary Adjustments**:
-- Increase **steps**, **LanPaint_StepSize**，**LanPaint_NumSteps** (thinking iterations), and **LanPaint_cfg_BIG** (guidance scale).
+- Increase **steps**, **LanPaint_StepSize**，**LanPaint_NumSteps** (thinking iterations), and **LanPaint_cfg_BIG** (cfg scale used for unmasked region ).
   
 2️⃣ **Secondary Tweaks**:  
-- Boost **LanPaint_Lambda** (spatial constraint strength) or **LanPaint_StepSize** (denoising aggressiveness).
+- Boost **LanPaint_Lambda** (bidirectional guidance scale) or **LanPaint_StepSize** (denoising aggressiveness).
     
 3️⃣ **Balance Speed vs Stability**:  
 - Reduce **LanPaint_Friction** to prioritize faster results with fewer "thinking" steps (*may risk instability*).  
