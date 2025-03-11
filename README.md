@@ -154,7 +154,7 @@ Help us improve LanPaint! 🚀 **Report bugs**, share **example cases**, or cont
 
 ## Benchmark Code
 
-For researchers looking for benchmark code, we provide the [code](https://colab.research.google.com/drive/1ZIySRlToPOZqrx-mCvbPpneToIk_y6LZ?usp=sharing) on colab with an implementation for stable diffusion 1.4 as well as some implementation of other inpaint methods. You can easily run it with a GPU version of colab.
+For researchers looking for benchmark code, we provide the [code](https://colab.research.google.com/drive/1ZIySRlToPOZqrx-mCvbPpneToIk_y6LZ?usp=sharing) (to be released) on colab with an implementation for stable diffusion 1.4 as well as some implementation of other inpaint methods. You can easily run it with a GPU version of colab.
 
 Note that the implementation in this code differs slightly from the ComfyUI version. Specifically, it lacks the `end_sigma` parameter, which stops the iteration at a particular noise level, and it does not support an independent CFG scale for the unmasked region.
 
