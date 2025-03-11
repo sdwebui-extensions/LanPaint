@@ -59,7 +59,7 @@ All examples use a random seed 0 to generate batch of 4 images for fair comparis
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_6)
 [Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658) 
 
-(Tricks 1: You can emphasize the character by copy the image multiple times with Photoshop.)
+(Tricks 1: You can emphasize the character by copy it's image multiple times with Photoshop. Here I have made one extra copy.)
 
 (Tricks 2: Use prompts like multiple views, multiple angles, clone, turnaround.)
 
