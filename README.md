@@ -121,8 +121,8 @@ Full parameter control:
 |-----------|-------|-------------|
 | `Steps` | 0-100 | Total steps of diffusion sampling. Higher means better inpainting. Recommend 50. |
 | `LanPaint_NumSteps` | 0-20 | Reasoning iterations per denoising step ("thinking depth"). Easy task: 1-2. Hard task: 5-10 |
-| `LanPaint_Lambda` | 0.1-50 | Content alignment strength (higher = stricter). Recommend 6.0 |
-| `LanPaint_StepSize` | 0.1-1.0 | The StepSize of each thinking step. Recommend 0.1 for most cases, 0.5 for some difficult cases. |
+| `LanPaint_Lambda` | 0.1-50 | Content alignment strength (higher = stricter). Recommend 8.0 |
+| `LanPaint_StepSize` | 0.1-1.0 | The StepSize of each thinking step. Recommend 0.5. |
 | `LanPaint_cfg_BIG` | -20-20 | CFG scale used when aligning masked and unmasked region (positive value tends to ignores promts, negative value enhances prompts.). Recommend 8 for seamless inpaint (i.e limbs, faces) when prompt is not important. -0.5 when prompt is important, like character consistency (i.e multiple view) |
 
 For detailed descriptions of each parameter, simply hover your mouse over the corresponding input field to view tooltips with additional information.
