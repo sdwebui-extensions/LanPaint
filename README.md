@@ -112,6 +112,8 @@ Simplified interface with recommended defaults:
 - LanPaint NumSteps: The turns of thinking before denoising. Recommend 5 for most of tasks.
 - LanPaint EndSigma: The noise level below which thinking is disabled. Recommend 0.6 for realistic style (tested on Juggernaut-xl), 3.0 for anime style (tested on Animagine XL 4.0)
 
+The default settings are tested on Animagine XL 4.0 and Juggernaut-xl. Other model might need some paramter tuning. Please raise issue or share your own setting if it doesn't work on your model.
+
 
 ### LanPaint KSampler (Advanced)
 Full parameter control:
@@ -123,6 +125,7 @@ Full parameter control:
 | `LanPaint_NumSteps` | 0-20 | Reasoning iterations per denoising step ("thinking depth"). Easy task: 1-2. Hard task: 5-10 |
 | `LanPaint_Lambda` | 0.1-50 | Content alignment strength (higher = stricter). Recommend 8.0 |
 | `LanPaint_StepSize` | 0.1-1.0 | The StepSize of each thinking step. Recommend 0.5. |
+| `LanPaint_EndSigma` | 0.0-20.0 | The noise level below which thinking is disabled. recommend 0.3 - 3. High value is faster, but may damage quality. Low value gives more thinking but might make the output blurry. |
 | `LanPaint_cfg_BIG` | -20-20 | CFG scale used when aligning masked and unmasked region (positive value tends to ignores promts, negative value enhances prompts.). Recommend 8 for seamless inpaint (i.e limbs, faces) when prompt is not important. -0.5 when prompt is important, like character consistency (i.e multiple view) |
 
 For detailed descriptions of each parameter, simply hover your mouse over the corresponding input field to view tooltips with additional information.
