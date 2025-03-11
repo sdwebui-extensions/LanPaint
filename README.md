@@ -13,8 +13,6 @@ We encourage you to try it out and share your feedback through issues or discuss
 - 🌈 **Not only inpaint**: You can even use it as a simple way to generate consistent characters.
 
 ## How It Works? 
-- 🤝 **Langevin Dynamics** 
-    - Repeated denoise / add noise operation to refine the inpainted area
 - 🤝 **Bidirectional Context Control** 
     - Creates **two-way alignment** between masked/unmaksed areas  
     - Unlike single-direction approaches, our system continuously checks:  
