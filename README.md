@@ -136,18 +136,21 @@ For detailed descriptions of each parameter, simply hover your mouse over the co
 For challenging inpainting tasks:  
 
 1️⃣ **Primary Adjustments**:
-- Increase **steps**, **LanPaint_StepSize**，**LanPaint_NumSteps** (thinking iterations), and **LanPaint_cfg_BIG** (cfg scale used for unmasked region ).
+- Decrease **LanPaint_endsigma** increase **LanPaint_NumSteps** (thinking iterations) if the inpainted area is not seamless.
+
   
 2️⃣ **Secondary Tweaks**:  
-- Boost **LanPaint_Lambda** (bidirectional guidance scale) or **LanPaint_StepSize** (denoising aggressiveness).
+- Boost **LanPaint_Lambda** (bidirectional guidance scale) will force the masked/unmasked region to align more closely.
+- If the output is blurry, increase **LanPaint_endsigma** to turn off thinking at the end of denoising. OR decrease **LanPaint_StepSize** to decrease thinking step size.
+- If prompt is not that important, try increase **LanPaint_cfg_BIG**(cfg scale used for unmasked region, default -0.5 ) to 8 for better inpainting.
     
 3️⃣ **Balance Speed vs Stability**:  
 - Reduce **LanPaint_Friction** to prioritize faster results with fewer "thinking" steps (*may risk instability*).  
-- Increase **LanPaint_Tamed** (noise normalization onto a sphere) or **LanPaint_Alpha** (constraint the friction of underdamped Langevin dynamics) to suppress artifacts.
+- Increase **LanPaint_Tamed** (noise normalization onto a sphere) or **LanPaint_Alpha** (constraint the friction of underdamped Langevin dynamics) to suppress artifacts like blurry/wired texture.
 
 ⚠️ **Notes**:  
 - Optimal parameters vary depending on the **model** and the **size of the inpainting area**.  
-- For effective tuning, **fix the seed** and adjust parameters incrementally while observing the results. This helps isolate the impact of each setting.  
+- For effective tuning, **fix the seed** and adjust parameters incrementally while observing the results. This helps isolate the impact of each setting.  Better to do it with a batche of images to avoid overfitting on a single image.
 
 ## Know Issues (ToDo)
 
