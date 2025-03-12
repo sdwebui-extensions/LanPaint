@@ -145,9 +145,7 @@ For challenging inpainting tasks:
 - For effective tuning, **fix the seed** and adjust parameters incrementally while observing the results. This helps isolate the impact of each setting.  Better to do it with a batche of images to avoid overfitting on a single image.
 
 ## Know Issues (ToDo)
-
-- It works with v-prediction, (but may have some issue)
-- Potential Problems with the waiNSFWIllustrious model.
+- Flux is not supported yet.
 
 ## Contribute
 
