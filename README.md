@@ -146,8 +146,8 @@ For challenging inpainting tasks:
 
 ## Know Issues (ToDo)
 
-- Does not work with v-pridictuion
-- Problems with the waiNSFWIllustrious model.
+- It works with v-prediction, (but may have some issue)
+- Potential Problems with the waiNSFWIllustrious model.
 
 ## Contribute
 
