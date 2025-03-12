@@ -19,14 +19,6 @@ We encourage you to try it out and share your feedback through issues or discuss
       *"Does the new content make sense with existing elements?"*  
       *"Do existing elements support the new creation?"*  
 
-
-## Key Differences at a Glance  
-
-|                      | Common Tools | LanPaint |  
-|----------------------|--------------|----------|  
-| Works with any SD model | ❌           | ✅       |  
-| Context awareness    | ❌ One-way   | ✅ Two-way |  
-
 ## Updates
 
 LanPaint has received a major update! All examples now use the LanPaint K Sampler, offering a simplified interface with enhanced performance and stability.
