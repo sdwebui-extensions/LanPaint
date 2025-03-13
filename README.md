@@ -12,13 +12,15 @@ We encourage you to try it out and share your feedback through issues or discuss
 - 🎯 **True Blank-Slate Generation** - No need to set default denoise at 0.7 (preserving 30% original pixels in masks) used in conventional methods: 100% **new content creation**, No "painting over" existing content.
 - 🌈 **Not only inpaint**: You can even use it as a simple way to generate consistent characters.
 
-## How It Works? 
-- 🤝 **Bidirectional Context Control** 
-    - Creates **two-way alignment** between masked/unmaksed areas  
-    - Unlike single-direction approaches, our system continuously checks:  
-      *"Does the new content make sense with existing elements?"*  
-      *"Do existing elements support the new creation?"*  
+## How It Works  
 
+LanPaint is inspired by [RePaint](https://github.com/andreas128/RePaint), extends its capabilities with several improvements:    
+- **Bidirectional Context Control**: 
+    LanPaint introduces **two-way alignment** between masked and unmasked areas. It continuously evaluates:  
+    - *"Does the new content make sense with the existing elements?"*  
+    - *"Do the existing elements support the new creation?"*
+- **Support for Fast Samplers**: LanPaint supports **fast ODE samplers**, as well as accelerated iteration convergence.
+  
 ## Updates
 
 LanPaint has received a major update! All examples now use the LanPaint K Sampler, offering a simplified interface with enhanced performance and stability.
