@@ -7,7 +7,7 @@ We encourage you to try it out and share your feedback through issues or discuss
 
 ## Features
 
-- 🎨 **Zero-Training Inpainting** - Works immediately with ANY SD model, even custom models you've trained yourself
+- 🎨 **Zero-Training Inpainting** - Works immediately with ANY SD model (and their ControlNet), even custom models you've trained yourself
 - 🛠️ **Simple Integration** - Same workflow as standard ComfyUI KSampler
 - 🎯 **True Blank-Slate Generation** - No need to set default denoise at 0.7 (preserving 30% original pixels in masks) used in conventional methods: 100% **new content creation**, No "painting over" existing content.
 - 🌈 **Not only inpaint**: You can even use it as a simple way to generate consistent characters.
