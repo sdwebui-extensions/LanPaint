@@ -14,12 +14,11 @@ We encourage you to try it out and share your feedback through issues or discuss
 
 ## How It Works  
 
-LanPaint is inspired by [RePaint](https://github.com/andreas128/RePaint), extends its capabilities with several improvements:    
-- **Bidirectional Context Control**: 
-    LanPaint introduces **two-way alignment** between masked and unmasked areas. It continuously evaluates:  
-    - *"Does the new content make sense with the existing elements?"*  
-    - *"Do the existing elements support the new creation?"*
-- **Support for Fast Samplers**: LanPaint supports **fast ODE samplers**, as well as accelerated iteration convergence.
+LanPaint introduces **two-way alignment** between masked and unmasked areas. It continuously evaluates:  
+- *"Does the new content make sense with the existing elements?"*  
+- *"Do the existing elements support the new creation?"*  
+
+Based on this evaluation, LanPaint iteratively updates the noise in both the masked and unmasked regions.  
   
 ## Updates
 
