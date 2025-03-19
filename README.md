@@ -145,8 +145,10 @@ For challenging inpainting tasks:
 - Optimal parameters vary depending on the **model** and the **size of the inpainting area**.  
 - For effective tuning, **fix the seed** and adjust parameters incrementally while observing the results. This helps isolate the impact of each setting.  Better to do it with a batche of images to avoid overfitting on a single image.
 
-## Know Issues (ToDo)
-- Flux is not supported yet.
+## ToDo
+- Flux is not supported yet. SD 3.5 also have problems
+- Tease Mode
+- Try Implement Detailer
 
 ## Contribute
 
