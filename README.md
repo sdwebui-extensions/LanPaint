@@ -21,8 +21,11 @@ LanPaint introduces **two-way alignment** between masked and unmasked areas. It 
 Based on this evaluation, LanPaint iteratively updates the noise in both the masked and unmasked regions.  
   
 ## Updates
-
-LanPaint has received a major update! All examples now use the LanPaint K Sampler, offering a simplified interface with enhanced performance and stability.
+- 2025/03/22
+    - Added Primary Flux support
+    - Added Tease Mode
+- 2025/03/10
+    - LanPaint has received a major update! All examples now use the LanPaint K Sampler, offering a simplified interface with enhanced performance and stability.
 
 ## Example Results
 All examples use a random seed 0 to generate batch of 4 images for fair comparison. (Warning: Generating 4 images may exceed your GPU memory; adjust batch size as needed.)
@@ -152,11 +155,6 @@ For challenging inpainting tasks:
 ⚠️ **Notes**:  
 - Optimal parameters vary depending on the **model** and the **size of the inpainting area**.  
 - For effective tuning, **fix the seed** and adjust parameters incrementally while observing the results. This helps isolate the impact of each setting.  Better to do it with a batche of images to avoid overfitting on a single image.
-
-## Updates
-- 2025/03/22
-    - Added Flux support
-    - Added Tease Mode
 
 ## ToDo
 - SD 3.5 also have problems
