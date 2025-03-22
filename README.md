@@ -154,8 +154,9 @@ For challenging inpainting tasks:
 - For effective tuning, **fix the seed** and adjust parameters incrementally while observing the results. This helps isolate the impact of each setting.  Better to do it with a batche of images to avoid overfitting on a single image.
 
 ## Updates
-- Added Flux support
-- Added Tease Mode
+- 2025/03/22
+    - Added Flux support
+    - Added Tease Mode
 
 ## ToDo
 - SD 3.5 also have problems
