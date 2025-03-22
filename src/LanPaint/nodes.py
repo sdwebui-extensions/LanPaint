@@ -347,7 +347,15 @@ class KSAMPLER(comfy.samplers.KSAMPLER):
             model_k.noise = torch.randn(noise.shape, generator=generator, device="cpu").to(noise.dtype).to(noise.device)
         else:
             model_k.noise = noise
-        model_wrap.cfg_BIG = model_wrap.model_patcher.LanPaint_cfg_BIG
+
+        IS_FLUX = model_wrap.inner_model.model_type == ModelType.FLUX
+
+        # unify the notations into variance exploding diffusion model
+        if IS_FLUX:
+            model_wrap.cfg_BIG = 1.0
+        else:
+            model_wrap.cfg_BIG = model_wrap.model_patcher.LanPaint_cfg_BIG
+
         model_k.step_size = model_wrap.model_patcher.LanPaint_StepSize
         model_k.chara_lamb = model_wrap.model_patcher.LanPaint_Lambda
         model_k.chara_beta = model_wrap.model_patcher.LanPaint_Beta
