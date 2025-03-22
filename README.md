@@ -7,18 +7,19 @@ We encourage you to try it out and share your feedback through issues or discuss
 
 ## Features
 
-- 🎨 **Zero-Training Inpainting** - Works immediately with ANY SD model, even custom models you've trained yourself
+- 🎨 **Zero-Training Inpainting** - Works immediately with ANY SD model (and their ControlNet), even custom models you've trained yourself
 - 🛠️ **Simple Integration** - Same workflow as standard ComfyUI KSampler
 - 🎯 **True Blank-Slate Generation** - No need to set default denoise at 0.7 (preserving 30% original pixels in masks) used in conventional methods: 100% **new content creation**, No "painting over" existing content.
 - 🌈 **Not only inpaint**: You can even use it as a simple way to generate consistent characters.
 
-## How It Works? 
-- 🤝 **Bidirectional Context Control** 
-    - Creates **two-way alignment** between masked/unmaksed areas  
-    - Unlike single-direction approaches, our system continuously checks:  
-      *"Does the new content make sense with existing elements?"*  
-      *"Do existing elements support the new creation?"*  
+## How It Works  
 
+LanPaint introduces **two-way alignment** between masked and unmasked areas. It continuously evaluates:  
+- *"Does the new content make sense with the existing elements?"*  
+- *"Do the existing elements support the new creation?"*  
+
+Based on this evaluation, LanPaint iteratively updates the noise in both the masked and unmasked regions.  
+  
 ## Updates
 
 LanPaint has received a major update! All examples now use the LanPaint K Sampler, offering a simplified interface with enhanced performance and stability.
@@ -73,7 +74,7 @@ Compare and explore the results from each method!
 
 ## Quickstart
 
-1. **Install ComfyUI**: Follow the official [ComfyUI installation guide](https://docs.comfy.org/get_started) to set up ComfyUI on your system.  
+1. **Install ComfyUI**: Follow the official [ComfyUI installation guide](https://docs.comfy.org/get_started) to set up ComfyUI on your system. Or ensure your ComfyUI version > 0.3.11.
 2. **Install ComfyUI-Manager**: Add the [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager) for easy extension management.  
 3. **Install LanPaint Nodes**:  
    - **Via ComfyUI-Manager**: Search for "[LanPaint](https://registry.comfy.org/publishers/scraed/nodes/LanPaint)" in the manager and install it directly.  
@@ -144,8 +145,10 @@ For challenging inpainting tasks:
 - Optimal parameters vary depending on the **model** and the **size of the inpainting area**.  
 - For effective tuning, **fix the seed** and adjust parameters incrementally while observing the results. This helps isolate the impact of each setting.  Better to do it with a batche of images to avoid overfitting on a single image.
 
-## Know Issues (ToDo)
-- Flux is not supported yet.
+## ToDo
+- Flux is not supported yet. SD 3.5 also have problems
+- Tease Mode
+- Try Implement Detailer
 
 ## Contribute
 
