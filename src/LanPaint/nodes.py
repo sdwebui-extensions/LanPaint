@@ -76,7 +76,7 @@ class KSamplerX0Inpaint:
         self.sigmas = sigmas
         self.model_sigmas = torch.cat( (torch.tensor([0.], device = sigmas.device) , torch.tensor( self.inner_model.model_patcher.get_model_object("model_sampling").sigmas, device = sigmas.device) ) )
         self.model_sigmas = torch.tensor( self.model_sigmas, dtype = self.sigmas.dtype )
-    def __call__(self, x, sigma, denoise_mask, model_options={}, seed=None):
+    def __call__(self, x, sigma, denoise_mask, model_options={}, seed=None,**kwargs):
         # x is x_t in the notation of variance exploding diffusion model, x_t = x_0 + sigma * noise
         # sigma is the noise level
         # print what is inside model_options
@@ -135,6 +135,18 @@ class KSamplerX0Inpaint:
             out = out * denoise_mask + self.latent_image * latent_mask
         else:
             out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
+        
+        # Add TAESD preview support - directly use the latent_preview module
+        current_step = model_options.get("i", kwargs.get("i", 0))
+        total_steps = model_options.get("total_steps", 0)
+
+        # Only show preview every few steps to improve performance
+        if current_step % 2 == 0:
+            # Directly call the preview callback if it exists
+            callback = model_options.get("callback", None)
+            if callback is not None:
+                callback({"i": current_step, "denoised": out, "x": x})
+    
         return out
     def mid_times(self, current_times, step_size):
         sigma, abt = current_times
@@ -484,6 +496,7 @@ class LanPaint_KSamplerAdvanced:
         model.LanPaint_cfg_BIG = LanPaint_cfg_BIG
         model.LanPaint_a = LanPaint_a
         model.LanPaint_b = LanPaint_b
+
         with override_sample_function():
             return nodes.common_ksampler(model, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise, disable_noise=disable_noise, start_step=start_at_step, last_step=end_at_step, force_full_denoise=force_full_denoise)
 
