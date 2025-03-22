@@ -77,7 +77,7 @@ class KSamplerX0Inpaint:
         self.sigmas = sigmas
         self.model_sigmas = torch.cat( (torch.tensor([0.], device = sigmas.device) , torch.tensor( self.inner_model.model_patcher.get_model_object("model_sampling").sigmas, device = sigmas.device) ) )
         self.model_sigmas = torch.tensor( self.model_sigmas, dtype = self.sigmas.dtype )
-    def __call__(self, x, sigma, denoise_mask, model_options={}, seed=None):
+    def __call__(self, x, sigma, denoise_mask, model_options={}, seed=None,**kwargs):
         ### For 1.5 and XL model
         # x is x_t in the notation of variance exploding diffusion model, x_t = x_0 + sigma * noise
         # sigma is the noise level
@@ -159,6 +159,18 @@ class KSamplerX0Inpaint:
             out = out * denoise_mask + self.latent_image * latent_mask
         else:
             out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
+        
+        # Add TAESD preview support - directly use the latent_preview module
+        current_step = model_options.get("i", kwargs.get("i", 0))
+        total_steps = model_options.get("total_steps", 0)
+
+        # Only show preview every few steps to improve performance
+        if current_step % 2 == 0:
+            # Directly call the preview callback if it exists
+            callback = model_options.get("callback", None)
+            if callback is not None:
+                callback({"i": current_step, "denoised": out, "x": x})
+    
         return out
     def mid_times(self, current_times, step_size):
         sigma, abt = current_times
