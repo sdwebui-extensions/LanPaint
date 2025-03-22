@@ -63,6 +63,7 @@ All examples use a random seed 0 to generate batch of 4 images for fair comparis
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_7)
 [Model Used in This Example](https://huggingface.co/Comfy-Org/flux1-dev/blob/main/flux1-dev-fp8.safetensors) 
 (Note: Use CFG scale 1.0 for Flux as it don't use CFG. LanPaint_cfg_BIG is also disabled on Flux)
+
 **How to Use These Examples:**  
 1. Navigate to the **example** folder (i.e example_1) by clicking **View Workflow & Masks**, download all pictures.  
 2. Drag **InPainted_Drag_Me_to_ComfyUI.png** into ComfyUI to load the workflow.  
