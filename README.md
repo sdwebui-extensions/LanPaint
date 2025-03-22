@@ -7,7 +7,7 @@ We encourage you to try it out and share your feedback through issues or discuss
 
 ## Features
 
-- 🎨 **Zero-Training Inpainting** - Works immediately with ANY SD model (and their ControlNet), even custom models you've trained yourself
+- 🎨 **Zero-Training Inpainting** - Works immediately with ANY SD model (with/without ControlNet), and Flux model! even custom models you've trained yourself
 - 🛠️ **Simple Integration** - Same workflow as standard ComfyUI KSampler
 - 🎯 **True Blank-Slate Generation** - No need to set default denoise at 0.7 (preserving 30% original pixels in masks) used in conventional methods: 100% **new content creation**, No "painting over" existing content.
 - 🌈 **Not only inpaint**: You can even use it as a simple way to generate consistent characters.
@@ -56,6 +56,13 @@ All examples use a random seed 0 to generate batch of 4 images for fair comparis
 
 (Tricks 2: Use prompts like multiple views, multiple angles, clone, turnaround.)
 
+(Tricks 3: Remeber LanPaint can in-paint: Mask non-consistent regions and try again!)
+
+### Example 7: Flux Model InPaint(LanPaint K Sampler, 5 steps of thinking)
+![Inpainting Result 7](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_10.jpg)  
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_7)
+[Model Used in This Example](https://huggingface.co/Comfy-Org/flux1-dev/blob/main/flux1-dev-fp8.safetensors) 
+(Note: Use CFG scale 1.0 for Flux as it don't use CFG. LanPaint_cfg_BIG is also disabled on Flux)
 **How to Use These Examples:**  
 1. Navigate to the **example** folder (i.e example_1) by clicking **View Workflow & Masks**, download all pictures.  
 2. Drag **InPainted_Drag_Me_to_ComfyUI.png** into ComfyUI to load the workflow.  
@@ -145,9 +152,12 @@ For challenging inpainting tasks:
 - Optimal parameters vary depending on the **model** and the **size of the inpainting area**.  
 - For effective tuning, **fix the seed** and adjust parameters incrementally while observing the results. This helps isolate the impact of each setting.  Better to do it with a batche of images to avoid overfitting on a single image.
 
+## Updates
+- Added Flux support
+- Added Tease Mode
+
 ## ToDo
-- Flux is not supported yet. SD 3.5 also have problems
-- Tease Mode
+- SD 3.5 also have problems
 - Try Implement Detailer
 
 ## Contribute
