@@ -42,6 +42,7 @@ You need to install [ComfyUI GGUF](https://github.com/city96/ComfyUI-GGUF) in or
 - [clip_l_hidream.safetensors](https://huggingface.co/Comfy-Org/HiDream-I1_ComfyUI/blob/main/split_files/text_encoders/clip_l_hidream.safetensors)
 - [T5 GGUF](https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/tree/main)
 - [Llama 3.1](https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/tree/main)
+- [Flux VAE](https://huggingface.co/StableDiffusionVN/Flux/blob/main/Vae/flux_vae.safetensors)
 
 
 ### Example 1: Basket to Basket Ball (LanPaint K Sampler, 2 steps of thinking).
