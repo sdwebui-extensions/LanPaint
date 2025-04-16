@@ -21,6 +21,8 @@ LanPaint introduces **two-way alignment** between masked and unmasked areas. It 
 Based on this evaluation, LanPaint iteratively updates the noise in both the masked and unmasked regions.  
   
 ## Updates
+- 2025/04/16
+    - Added Primary HiDream support
 - 2025/03/22
     - Added Primary Flux support
     - Added Tease Mode
