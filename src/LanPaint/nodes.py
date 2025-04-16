@@ -85,9 +85,10 @@ class KSamplerX0Inpaint:
         # x is rectified flow x_t = sigma * noise + (1.0 - sigma) * x_0
 
         IS_FLUX = self.inner_model.inner_model.model_type == ModelType.FLUX
+        IS_FLOW = self.inner_model.inner_model.model_type == ModelType.FLOW
 
         # unify the notations into variance exploding diffusion model
-        if IS_FLUX:
+        if IS_FLUX or IS_FLOW:
             LanPaint_Sigma = sigma / ( torch.maximum( 1 - sigma , sigma*0 + 5e-2  ))
             self.LanPaint_Sigmas = self.sigmas / ( torch.maximum( 1 - self.sigmas , self.sigmas*0 + 5e-2  ))
         else:
@@ -130,7 +131,7 @@ class KSamplerX0Inpaint:
             # self.inner_model.inner_model.scale_latent_inpaint returns variance exploding x_t values
             x = x * (1 - latent_mask) +  self.inner_model.inner_model.scale_latent_inpaint(x=x, sigma=sigma, noise=self.noise, latent_image=self.latent_image)* latent_mask
             
-            if IS_FLUX:
+            if IS_FLUX or IS_FLOW:
                 x_t = x * ( 1 + LanPaint_Sigma[:, None,None,None])
             else:
                 x_t = x #/ ( 1+sigma**2 )**0.5 # switch to variance perserving x_t values
@@ -149,7 +150,7 @@ class KSamplerX0Inpaint:
                 else:
                     step_size_i = step_size 
                 x_t, args = self.langevin_dynamics(x_t, score_func , latent_mask, step_size_i , current_times, sigma_x = self.sigma_x(abt)[:, None,None,None], sigma_y = self.sigma_y(abt)[:, None,None,None], args = args)  
-            if IS_FLUX:
+            if IS_FLUX or IS_FLOW:
                 x = x_t / ( 1 + LanPaint_Sigma[:, None,None,None] )
             else:
                 x = x_t #/ ( 1+sigma**2 )**0.5 # switch to variance perserving x_t values
@@ -190,7 +191,8 @@ class KSamplerX0Inpaint:
         beta = self.chara_beta * (1-abt)**0.5
 
         IS_FLUX = self.inner_model.inner_model.model_type == ModelType.FLUX
-        if IS_FLUX:
+        IS_FLOW = self.inner_model.inner_model.model_type == ModelType.FLOW
+        if IS_FLUX or IS_FLOW:
             x_0, x_0_BIG = self.inner_model(x_t / ( 1 + sigma ), sigma[:, 0,0,0] / ( 1 + sigma[:, 0,0,0] ), model_options=model_options, seed=seed)
         else:
             x_0, x_0_BIG = self.inner_model(x_t, sigma[:, 0,0,0], model_options=model_options, seed=seed)
