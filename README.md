@@ -69,7 +69,19 @@ All examples use a random seed 0 to generate batch of 4 images for fair comparis
 [Model Used in This Example](https://huggingface.co/Comfy-Org/flux1-dev/blob/main/flux1-dev-fp8.safetensors) 
 (Note: Use CFG scale 1.0 for Flux as it don't use CFG. LanPaint_cfg_BIG is also disabled on Flux)
 
-**How to Use These Examples:**  
+### Example 8: HiDream Model InPaint(LanPaint K Sampler, 5 steps of thinking)
+![Inpainting Result 8](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_11.jpg)  
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_8)
+
+You need to install [ComfyUI GGUF](https://github.com/city96/ComfyUI-GGUF) in order to load the models. Make sure you have the latest (nightly at 2025/04/16) comfyui installed. The following models are needed for Hidream:
+- [clip_g_hidream.safetensors](https://huggingface.co/Comfy-Org/HiDream-I1_ComfyUI/blob/main/split_files/text_encoders/clip_g_hidream.safetensors)
+- [clip_l_hidream.safetensors](https://huggingface.co/Comfy-Org/HiDream-I1_ComfyUI/blob/main/split_files/text_encoders/clip_l_hidream.safetensors)
+- [T5 GGUF](https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/tree/main)
+- [Llama 3.1](https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/tree/main)
+
+
+
+## **How to Use These Examples:**  
 1. Navigate to the **example** folder (i.e example_1) by clicking **View Workflow & Masks**, download all pictures.  
 2. Drag **InPainted_Drag_Me_to_ComfyUI.png** into ComfyUI to load the workflow.  
 3. Download the required model from Civitai by clicking **Model Used in This Example**.  
