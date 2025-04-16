@@ -32,6 +32,18 @@ Based on this evaluation, LanPaint iteratively updates the noise in both the mas
 ## Example Results
 All examples use a random seed 0 to generate batch of 4 images for fair comparison. (Warning: Generating 4 images may exceed your GPU memory; adjust batch size as needed.)
 
+
+### Example HiDream: InPaint(LanPaint K Sampler, 5 steps of thinking)
+![Inpainting Result 8](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_11.jpg)  
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_8)
+
+You need to install [ComfyUI GGUF](https://github.com/city96/ComfyUI-GGUF) in order to load the models. Make sure you have the latest (nightly at 2025/04/16) comfyui installed. The following models are needed for Hidream:
+- [clip_g_hidream.safetensors](https://huggingface.co/Comfy-Org/HiDream-I1_ComfyUI/blob/main/split_files/text_encoders/clip_g_hidream.safetensors)
+- [clip_l_hidream.safetensors](https://huggingface.co/Comfy-Org/HiDream-I1_ComfyUI/blob/main/split_files/text_encoders/clip_l_hidream.safetensors)
+- [T5 GGUF](https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/tree/main)
+- [Llama 3.1](https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/tree/main)
+
+
 ### Example 1: Basket to Basket Ball (LanPaint K Sampler, 2 steps of thinking).
 ![Inpainting Result 1](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_1) 
@@ -69,15 +81,6 @@ All examples use a random seed 0 to generate batch of 4 images for fair comparis
 [Model Used in This Example](https://huggingface.co/Comfy-Org/flux1-dev/blob/main/flux1-dev-fp8.safetensors) 
 (Note: Use CFG scale 1.0 for Flux as it don't use CFG. LanPaint_cfg_BIG is also disabled on Flux)
 
-### Example 8: HiDream Model InPaint(LanPaint K Sampler, 5 steps of thinking)
-![Inpainting Result 8](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_11.jpg)  
-[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_8)
-
-You need to install [ComfyUI GGUF](https://github.com/city96/ComfyUI-GGUF) in order to load the models. Make sure you have the latest (nightly at 2025/04/16) comfyui installed. The following models are needed for Hidream:
-- [clip_g_hidream.safetensors](https://huggingface.co/Comfy-Org/HiDream-I1_ComfyUI/blob/main/split_files/text_encoders/clip_g_hidream.safetensors)
-- [clip_l_hidream.safetensors](https://huggingface.co/Comfy-Org/HiDream-I1_ComfyUI/blob/main/split_files/text_encoders/clip_l_hidream.safetensors)
-- [T5 GGUF](https://huggingface.co/city96/t5-v1_1-xxl-encoder-gguf/tree/main)
-- [Llama 3.1](https://huggingface.co/bartowski/Meta-Llama-3.1-8B-Instruct-GGUF/tree/main)
 
 
 
