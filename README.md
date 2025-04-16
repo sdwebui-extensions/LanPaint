@@ -21,6 +21,8 @@ LanPaint introduces **two-way alignment** between masked and unmasked areas. It 
 Based on this evaluation, LanPaint iteratively updates the noise in both the masked and unmasked regions.  
   
 ## Updates
+- 2025/04/16
+    - Added Primary HiDream support
 - 2025/03/22
     - Added Primary Flux support
     - Added Tease Mode
@@ -166,6 +168,19 @@ For challenging inpainting tasks:
 
 Help us improve LanPaint! 🚀 **Report bugs**, share **example cases**, or contribute your **personal parameter settings** to benefit the community. 
 
+## Citation
+
+```
+@misc{zheng2025lanpainttrainingfreediffusioninpainting,
+      title={Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference}, 
+      author={Candi Zheng and Yuan Lan and Yang Wang},
+      year={2025},
+      eprint={2502.03491},
+      archivePrefix={arXiv},
+      primaryClass={eess.IV},
+      url={https://arxiv.org/abs/2502.03491}, 
+}
+```
 
 
 
