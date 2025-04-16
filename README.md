@@ -168,6 +168,19 @@ For challenging inpainting tasks:
 
 Help us improve LanPaint! 🚀 **Report bugs**, share **example cases**, or contribute your **personal parameter settings** to benefit the community. 
 
+## Citation
+
+```
+@misc{zheng2025lanpainttrainingfreediffusioninpainting,
+      title={Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference}, 
+      author={Candi Zheng and Yuan Lan and Yang Wang},
+      year={2025},
+      eprint={2502.03491},
+      archivePrefix={arXiv},
+      primaryClass={eess.IV},
+      url={https://arxiv.org/abs/2502.03491}, 
+}
+```
 
 
 
