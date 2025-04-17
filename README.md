@@ -1,6 +1,6 @@
 # LanPaint (Thinking mode Inpaint)
 
-Unlock precise inpainting without additional training. LanPaint lets the model "think" through multiple iterations before denoising, aiming for seamless and accurate results.
+Unlock precise inpainting without additional training. LanPaint lets the model "think" through multiple iterations before denoising, aiming for seamless and accurate results. This is the official implementation of "Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference".
 
 
 We encourage you to try it out and share your feedback through issues or discussions, as your input will help us enhance the algorithm's performance and stability.
