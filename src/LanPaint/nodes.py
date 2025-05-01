@@ -218,6 +218,50 @@ class KSamplerX0Inpaint:
             beta = self.chara_beta * abt ** 0
         return beta
     def langevin_dynamics(self, x_t, score, mask, step_size, current_times, sigma_x=1, sigma_y=0, args=None):
+
+        # prepare the step size and time parameters
+        step_sizes = self.prepare_step_size(current_times, step_size, sigma_x, sigma_y)
+        sigma, dtx, dty, Gamma_hat_x, Gamma_hat_y, sigma_mid_x, sigma_mid_y = step_sizes
+
+        if torch.mean(sigma_mid_x) >= torch.mean(sigma) or torch.mean(sigma_mid_y) >= torch.mean(sigma):
+            return x_t, args
+        # -------------------------------------------------------------------------
+        # A: Update epsilon (score estimate and noise initialization)
+        # -------------------------------------------------------------------------
+        eps_momentum, eps_model, Z = self.eps_evalutation(x_t, score, args)
+        x_t, eps_momentum, Z = self.Langevin_step(x_t, eps_model, eps_momentum, Z, mask, step_sizes)
+
+        return x_t, (eps_momentum, Z)
+    def Langevin_step(self, x_t, eps_model, eps_momentum, Z, mask, step_sizes):
+        sigma, dtx, dty, Gamma_hat_x, Gamma_hat_y, sigma_mid_x, sigma_mid_y = step_sizes
+        # -------------------------------------------------------------------------
+        # B: Update epsilon and noise Z with momentum
+        # -------------------------------------------------------------------------
+        # Compute the weighted combination term for epsilon mean update:
+        # term = (2/Γ_hat)*(1-exp(-0.5*Γ_hat))
+        eps_momentum, eps_denoise = self.eps_with_momentum(eps_momentum, eps_model, Gamma_hat_x, Gamma_hat_y, mask)
+        # tamed eps for more stable updates
+        eps_denoise = self.tamed_eps(eps_denoise, mask, sigma, dtx, dty)
+        Z_comb, Z_next = self.noise_with_momentum(Z, Gamma_hat_x, Gamma_hat_y, mask, x_t)
+        # -------------------------------------------------------------------------
+        # C: Langevin Dynamics splitted into denoise-addnoise steps with Euler Scheme
+        # -------------------------------------------------------------------------
+        # Transform x to z using z = x * sqrt(1+sigma^2). Here we have already set x to z to avoid floating point stability issue.
+        z_t = x_t #* (1 + sigma**2) ** 0.5
+        # Denoise
+        z_mid_x = z_t + eps_denoise * (sigma_mid_x - sigma)
+        z_mid_y = z_t + eps_denoise * (sigma_mid_y - sigma)
+        z_mid = z_mid_x * (1 - mask) + z_mid_y * mask
+        # Compute the change in noise level sigma (dsigma = sqrt(sigma^2 - sigma_mid^2)).
+        dsigma_x = sigma * torch.sqrt(1 - (sigma_mid_x / sigma) ** 2)
+        dsigma_y = sigma * torch.sqrt(1 - (sigma_mid_y / sigma) ** 2)
+        dsigma = dsigma_x * (1 - mask) + dsigma_y * mask
+        # Add noise
+        z_final = z_mid + Z_comb * dsigma
+        # Transform back to x-space: x = z / sqrt(1+sigma^2)
+        x_t = z_final #/ (1 + sigma**2) ** 0.5
+        return x_t, eps_momentum, Z_next
+    def prepare_step_size(self, current_times, step_size, sigma_x, sigma_y):
         # -------------------------------------------------------------------------
         # Unpack current times parameters (sigma and abt)
         sigma, abt = current_times
@@ -226,9 +270,6 @@ class KSamplerX0Inpaint:
         # Compute time step (dtx, dty) for x and y branches.
         dtx = 2 * step_size * sigma_x
         dty = 2 * step_size * sigma_y
-
-
-
 
         #ref_dt = 0.1 * (1 - abt) ** b * abt ** a / ( ((a/(a+b))**a*(b/(a+b))**b) )
         abt_end = 1/( 1+self.end_sigma**2 ) 
@@ -248,61 +289,17 @@ class KSamplerX0Inpaint:
         sigma_mid_y = sigma_mid_y[:, None,None,None]
         abt_mid_x = abt_mid_x[:, None,None,None]
         abt_mid_y = abt_mid_y[:, None,None,None]
-
-
-
-        if torch.mean(sigma_mid_x) >= torch.mean(sigma) or torch.mean(sigma_mid_y) >= torch.mean(sigma):
-            return x_t, args
-
-        # -------------------------------------------------------------------------
-        # A: Update epsilon (score estimate and noise initialization)
-        # -------------------------------------------------------------------------
-        # Compute the score-based epsilon (scaled as sqrt(1-abt))
+        return sigma, dtx, dty, Gamma_hat_x, Gamma_hat_y, sigma_mid_x, sigma_mid_y
+    def eps_evalutation(self, x_t, score, args):
         score_model = score(x_t)
         eps_model = -score_model 
-
-
-
         # Initialize epsilon and Z if not provided in args.
         if args is None:
             eps = eps_model
             Z = torch.randn_like(x_t)
         else:
             eps, Z = args
-
-        # -------------------------------------------------------------------------
-        # B: Update epsilon mean dynamics and compute the mid-point in z-space.
-        # -------------------------------------------------------------------------
-        # Compute the weighted combination term for epsilon mean update:
-        # term = (2/Γ_hat)*(1-exp(-0.5*Γ_hat))
-        eps, eps_denoise = self.eps_with_momentum(eps, eps_model, Gamma_hat_x, Gamma_hat_y, mask)
-        eps_denoise = self.tamed_eps(eps_denoise, mask, sigma, dtx, dty)
-
-        # Transform x to z using z = x * sqrt(1+sigma^2). Here we have already set x to z to avoid floating point stability issue.
-        z_t = x_t #* (1 + sigma**2) ** 0.5
-
-        # Compute the mid-point update in z-space for each branch:
-        z_mid_x = z_t + eps_denoise * (sigma_mid_x - sigma)
-        z_mid_y = z_t + eps_denoise * (sigma_mid_y - sigma)
-        z_mid = z_mid_x * (1 - mask) + z_mid_y * mask
-
-        # -------------------------------------------------------------------------
-        # C: Update noise terms and finalize the x update.
-        # -------------------------------------------------------------------------
-        Z_comb, Z_next = self.noise_with_momentum(Z, Gamma_hat_x, Gamma_hat_y, mask, x_t)
-
-        # Compute the change in sigma (dsigma = sqrt(sigma^2 - sigma_mid^2)).
-        dsigma_x = sigma * torch.sqrt(1 - (sigma_mid_x / sigma) ** 2)
-        dsigma_y = sigma * torch.sqrt(1 - (sigma_mid_y / sigma) ** 2)
-        dsigma = dsigma_x * (1 - mask) + dsigma_y * mask
-
-        # Final z update.
-        z_final = z_mid + Z_comb * dsigma
-
-        # Transform back to x-space: x = z / sqrt(1+sigma^2)
-        x_t = z_final #/ (1 + sigma**2) ** 0.5
-
-        return x_t, (eps, Z_next)
+        return eps, eps_model, Z
     def tamed_eps(self, eps_denoise, mask, sigma, dtx, dty):
         # tamed
         eps_model_x = eps_denoise* (1 - mask)
