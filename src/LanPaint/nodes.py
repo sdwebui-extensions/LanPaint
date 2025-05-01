@@ -275,29 +275,8 @@ class KSamplerX0Inpaint:
         # -------------------------------------------------------------------------
         # Compute the weighted combination term for epsilon mean update:
         # term = (2/Γ_hat)*(1-exp(-0.5*Γ_hat))
-        term_x = 2.0 / (Gamma_hat_x + 1e-4) * (1 - torch.exp(-0.5 * Gamma_hat_x))
-        term_y = 2.0 / (Gamma_hat_y + 1e-4) * (1 - torch.exp(-0.5 * Gamma_hat_y))
-        eps_bar_x = term_x * eps + (1 - term_x) * eps_model
-        eps_bar_y = term_y * eps + (1 - term_y) * eps_model
-        # Combine branches according to mask.
-        eps_bar = eps_bar_x * (1 - mask) + eps_bar_y * mask
-
-        # Form the denoised epsilon using self.alpha (assumed to be 1/Ψ)
-        eps_denoise = self.alpha * eps_bar + (1 - self.alpha) * eps_model
-
-
-        # tamed
-        eps_model_x = eps_denoise* (1 - mask)
-        eps_model_x = eps_model_x* (torch.sum(1 - mask, dim = (1,2,3), keepdim = True)/torch.sum(eps_model_x**2, dim = (1,2,3), keepdim = True)) **0.5 ** torch.minimum(self.tamed*(dtx),sigma**0)#/( 1 + self.tamed*(sigma - sigma_mid_x) * (torch.sum(eps_model_x**2)/torch.sum((1 - mask)))**0.5 )
-        eps_model_y = eps_denoise* mask
-        eps_model_y = eps_model_y* (torch.sum(mask, dim = (1,2,3), keepdim = True)/torch.sum(eps_model_y**2, dim = (1,2,3), keepdim = True)) **0.5 ** torch.minimum(self.tamed*(dty),sigma**0)#/( 1 + self.tamed*(sigma - sigma_mid_y) * (torch.sum(eps_model_y**2)/torch.sum(mask))**0.5 )
-        eps_denoise = eps_model_x * (1 - mask) + eps_model_y * mask
-
-
-        # Update the mean epsilon for the next step:
-        eps_x = eps * torch.exp(-0.5 * Gamma_hat_x) + eps_model * (1 - torch.exp(-0.5 * Gamma_hat_x))
-        eps_y = eps * torch.exp(-0.5 * Gamma_hat_y) + eps_model * (1 - torch.exp(-0.5 * Gamma_hat_y))
-        eps = eps_x * (1 - mask) + eps_y * mask
+        eps, eps_denoise = self.eps_with_momentum(eps, eps_model, Gamma_hat_x, Gamma_hat_y, mask)
+        eps_denoise = self.tamed_eps(eps_denoise, mask, sigma, dtx, dty)
 
         # Transform x to z using z = x * sqrt(1+sigma^2). Here we have already set x to z to avoid floating point stability issue.
         z_t = x_t #* (1 + sigma**2) ** 0.5
@@ -310,6 +289,45 @@ class KSamplerX0Inpaint:
         # -------------------------------------------------------------------------
         # C: Update noise terms and finalize the x update.
         # -------------------------------------------------------------------------
+        Z_comb, Z_next = self.noise_with_momentum(Z, Gamma_hat_x, Gamma_hat_y, mask, x_t)
+
+        # Compute the change in sigma (dsigma = sqrt(sigma^2 - sigma_mid^2)).
+        dsigma_x = sigma * torch.sqrt(1 - (sigma_mid_x / sigma) ** 2)
+        dsigma_y = sigma * torch.sqrt(1 - (sigma_mid_y / sigma) ** 2)
+        dsigma = dsigma_x * (1 - mask) + dsigma_y * mask
+
+        # Final z update.
+        z_final = z_mid + Z_comb * dsigma
+
+        # Transform back to x-space: x = z / sqrt(1+sigma^2)
+        x_t = z_final #/ (1 + sigma**2) ** 0.5
+
+        return x_t, (eps, Z_next)
+    def tamed_eps(self, eps_denoise, mask, sigma, dtx, dty):
+        # tamed
+        eps_model_x = eps_denoise* (1 - mask)
+        eps_model_x = eps_model_x* (torch.sum(1 - mask, dim = (1,2,3), keepdim = True)/torch.sum(eps_model_x**2, dim = (1,2,3), keepdim = True)) **0.5 ** torch.minimum(self.tamed*(dtx),sigma**0)#/( 1 + self.tamed*(sigma - sigma_mid_x) * (torch.sum(eps_model_x**2)/torch.sum((1 - mask)))**0.5 )
+        eps_model_y = eps_denoise* mask
+        eps_model_y = eps_model_y* (torch.sum(mask, dim = (1,2,3), keepdim = True)/torch.sum(eps_model_y**2, dim = (1,2,3), keepdim = True)) **0.5 ** torch.minimum(self.tamed*(dty),sigma**0)#/( 1 + self.tamed*(sigma - sigma_mid_y) * (torch.sum(eps_model_y**2)/torch.sum(mask))**0.5 )
+        eps_denoise = eps_model_x * (1 - mask) + eps_model_y * mask
+        return eps_denoise
+    def eps_with_momentum(self, eps, eps_model, Gamma_hat_x, Gamma_hat_y, mask):
+        zeta_x = 2.0 / (Gamma_hat_x + 1e-4) * (1 - torch.exp(-0.5 * Gamma_hat_x))
+        zeta_y = 2.0 / (Gamma_hat_y + 1e-4) * (1 - torch.exp(-0.5 * Gamma_hat_y))
+        eps_bar_x = zeta_x * eps + (1 - zeta_x) * eps_model
+        eps_bar_y = zeta_y * eps + (1 - zeta_y) * eps_model
+        # Combine branches according to mask.
+        eps_bar = eps_bar_x * (1 - mask) + eps_bar_y * mask
+
+        # Form the denoised epsilon using self.alpha (assumed to be 1/Ψ)
+        eps_denoise = self.alpha * eps_bar + (1 - self.alpha) * eps_model
+
+        # Update the mean epsilon for the next step:
+        eps_x = eps * torch.exp(-0.5 * Gamma_hat_x) + eps_model * (1 - torch.exp(-0.5 * Gamma_hat_x))
+        eps_y = eps * torch.exp(-0.5 * Gamma_hat_y) + eps_model * (1 - torch.exp(-0.5 * Gamma_hat_y))
+        eps = eps_x * (1 - mask) + eps_y * mask
+        return eps, eps_denoise
+    def noise_with_momentum(self, Z, Gamma_hat_x, Gamma_hat_y, mask, x_t):
         # Generate auxiliary noise terms.
         Z_q     = torch.randn_like(x_t)
         Z_q_avg = torch.randn_like(x_t)
@@ -335,19 +353,8 @@ class KSamplerX0Inpaint:
 
         # Combine with an additional noise term using self.alpha.
         Z_comb = self.alpha ** 0.5 * Z_comb + (1 - self.alpha) ** 0.5 * Z_z
+        return Z_comb, Z_next
 
-        # Compute the change in sigma (dsigma = sqrt(sigma^2 - sigma_mid^2)).
-        dsigma_x = sigma * torch.sqrt(1 - (sigma_mid_x / sigma) ** 2)
-        dsigma_y = sigma * torch.sqrt(1 - (sigma_mid_y / sigma) ** 2)
-        dsigma = dsigma_x * (1 - mask) + dsigma_y * mask
-
-        # Final z update.
-        z_final = z_mid + Z_comb * dsigma
-
-        # Transform back to x-space: x = z / sqrt(1+sigma^2)
-        x_t = z_final #/ (1 + sigma**2) ** 0.5
-
-        return x_t, (eps, Z_next)
 # Custom sampler class extending ComfyUI's KSAMPLER for LanPaint
 class KSAMPLER(comfy.samplers.KSAMPLER):
     def sample(self, model_wrap, sigmas, extra_args, callback, noise, latent_image=None, denoise_mask=None, disable_pbar=False):
