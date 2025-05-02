@@ -136,7 +136,7 @@ class KSamplerX0Inpaint:
             else:
                 x_t = x #/ ( 1+sigma**2 )**0.5 # switch to variance perserving x_t values
 
-
+            ############ LanPaint Iterations Start ###############
             # after noise_scaling, noise = latent_image + noise * sigma, which is x_t in the variance exploding diffusion model notation for the known region.
             args = None
             for i in range(self.n_steps):
@@ -154,7 +154,7 @@ class KSamplerX0Inpaint:
                 x = x_t / ( 1 + LanPaint_Sigma[:, None,None,None] )
             else:
                 x = x_t #/ ( 1+sigma**2 )**0.5 # switch to variance perserving x_t values
-
+            ############ LanPaint Iterations End ###############
             # out is x_0
             out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
             out = out * denoise_mask + self.latent_image * latent_mask
@@ -187,7 +187,10 @@ class KSamplerX0Inpaint:
     def score_model(self, x_t, y, mask, abt, sigma, model_options, seed):
         
         # the score function for the Langevin dynamics
-        lamb = self.chara_lamb
+        if self.LanPaint_Lambda_Schedule == "shrink":
+            lamb = self.chara_lamb * (1-abt)**0.5
+        else:
+            lamb = self.chara_lamb
         beta = self.chara_beta * (1-abt)**0.5
 
         IS_FLUX = self.inner_model.inner_model.model_type == ModelType.FLUX
@@ -411,6 +414,7 @@ class KSAMPLER(comfy.samplers.KSAMPLER):
         model_k.step_time_schedule = model_wrap.model_patcher.LanPaint_StepTimeSchedule
         model_k.start_sigma = model_wrap.model_patcher.LanPaint_StartSigma
         model_k.end_sigma = model_wrap.model_patcher.LanPaint_EndSigma
+        model_k.LanPaint_Lambda_Schedule = model_wrap.model_patcher.LanPaint_Lambda_Schedule
 
         noise = model_wrap.inner_model.model_sampling.noise_scaling(sigmas[0], noise, latent_image, self.max_denoise(model_wrap, sigmas))
         #if not inpainting, after noise_scaling, noise = noise * sigma, which is the noise added to the clean latent image in the variance exploding diffusion model notation.
@@ -513,6 +517,7 @@ class LanPaint_KSampler():
         model.LanPaint_StartSigma = 20.
         model.LanPaint_EndSigma = LanPaint_EndSigma
         model.LanPaint_cfg_BIG = -0.5
+        model.LanPaint_Lambda_Schedule = "shrink"
         with override_sample_function():
             return nodes.common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise)
 class LanPaint_KSamplerAdvanced:
@@ -545,6 +550,7 @@ class LanPaint_KSamplerAdvanced:
                 "LanPaint_StartSigma": ("FLOAT", {"default": 20., "min": 0.0001, "max": 20.0, "step": 0.1, "round": 0.1, "tooltip": "Start 'thinking' with Langevin dynamics at this sigma value."}),
                 "LanPaint_EndSigma": ("FLOAT", {"default": 3., "min": 0.000, "max": 20.0, "step": 0.1, "round": 0.1, "tooltip": "Stop 'thinking' with Langevin dynamics at this sigma value."}),
                 "LanPaint_cfg_BIG": ("FLOAT", {"default": -0.5, "min": -20, "max": 20.0, "step": 0.1, "round": 0.1, "tooltip": "The CFG scale used in the bidirectional guidance (for the known region only). Higher value results in more closely matching the known region."}),
+                "LanPaint_Lambda_Schedule": (["const", "shrink"], {"default": "const", "tooltip": "The lambda schedule for the bidirectional guidance, const: constant lambda, shrink: decreasing lambda."}),
                 "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler Advanced. For difficult tasks, first try increasing steps, LanPaint_NumSteps, and LanPaint_cfg_BIG. Then try increase LanPaint_Lambda or LanPaint_StepSize. Decrease LanPaint_Friction if you want to obtain good results with fewer turns of thinking (LanPaint_NumSteps) at the risk of irregular behavior. Increase LanPaint_Tamed or LanPaint_Alpha can suppress irregular behavior. For more information, visit https://github.com/scraed/LanPaint", "multiline": True}),
                      },
                 }
@@ -554,7 +560,7 @@ class LanPaint_KSamplerAdvanced:
 
     CATEGORY = "sampling"
 
-    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_Beta=1, LanPaint_NumSteps=5, LanPaint_Friction=5, LanPaint_Alpha=1, LanPaint_Tamed=0., LanPaint_BetaScale="fixed", LanPaint_StepSizeSchedule = "const", LanPaint_StepTimeSchedule = "shrink",  LanPaint_StartSigma=20, LanPaint_EndSigma=0, LanPaint_cfg_BIG = 5., LanPaint_Info=""):
+    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_Beta=1, LanPaint_NumSteps=5, LanPaint_Friction=5, LanPaint_Alpha=1, LanPaint_Tamed=0., LanPaint_BetaScale="fixed", LanPaint_StepSizeSchedule = "const", LanPaint_StepTimeSchedule = "shrink",  LanPaint_StartSigma=20, LanPaint_EndSigma=0, LanPaint_cfg_BIG = 5., LanPaint_Lambda_Schedule="const", LanPaint_Info=""):
         force_full_denoise = True
         if return_with_leftover_noise == "enable":
             force_full_denoise = False
@@ -574,6 +580,8 @@ class LanPaint_KSamplerAdvanced:
         model.LanPaint_StartSigma = LanPaint_StartSigma
         model.LanPaint_EndSigma = LanPaint_EndSigma
         model.LanPaint_cfg_BIG = LanPaint_cfg_BIG
+        model.LanPaint_Lambda_Schedule = LanPaint_Lambda_Schedule
+
         with override_sample_function():
             return nodes.common_ksampler(model, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise, disable_noise=disable_noise, start_step=start_at_step, last_step=end_at_step, force_full_denoise=force_full_denoise)
 
