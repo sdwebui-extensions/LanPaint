@@ -229,7 +229,8 @@ class KSamplerX0Inpaint:
         # A: Update epsilon (score estimate and noise initialization)
         # -------------------------------------------------------------------------
         eps_momentum, eps_model, Z = self.eps_evalutation(x_t, score, args)
-        x_t, eps_momentum, Z = self.Langevin_step(x_t, eps_model, eps_momentum, Z, mask, step_sizes)
+        with torch.autocast(device_type=x_t.device.type, dtype=torch.float32):
+            x_t, eps_momentum, Z = self.Langevin_step(x_t, eps_model, eps_momentum, Z, mask, step_sizes)
 
         return x_t, (eps_momentum, Z)
     def Langevin_step(self, x_t, eps_model, eps_momentum, Z, mask, step_sizes):
@@ -341,7 +342,6 @@ class KSamplerX0Inpaint:
         Z_x = torch.exp(-0.5 * Gamma_hat_x) * Z + (1 - torch.exp(-Gamma_hat_x)) ** 0.5 * Z_q
         Z_y = torch.exp(-0.5 * Gamma_hat_y) * Z + (1 - torch.exp(-Gamma_hat_y)) ** 0.5 * Z_q
         Z_next = Z_x * (1 - mask) + Z_y * mask
-
         def epxm1Dx(x):
             # Compute the (exp(x) - 1) / x term with a small value to avoid division by zero.
             result = torch.special.expm1(x) / x
@@ -358,32 +358,18 @@ class KSamplerX0Inpaint:
             exp_term = torch.special.expm1(-Gamma_hat / 2.)
             tanh_term = torch.tanh(Gamma_hat / 4.)
             
-            term1 = - exp_term / 2**0.5 * Z
-            term2 = - exp_term * tanh_term ** 0.5 / 2**0.5 * Z_q
-            term3 = torch.sqrt((Gamma_hat / 2.) - 2. * tanh_term) * Z_q_avg
-            
-            numerator = term1 + term2 + term3
-            denominator = torch.sqrt(exp_term + (Gamma_hat / 2.))
-            return numerator / denominator
+            term1 = - exp_term / 2**0.5 
+            term2 = - exp_term * tanh_term ** 0.5 / 2**0.5 
+            term3 = torch.sqrt((Gamma_hat / 2.) - 2. * tanh_term) 
+
+            terms = torch.stack([term1, term2, term3], dim=-1)
+            terms = torch.nn.functional.normalize(terms, dim=-1)
+
+            Zs = torch.stack([Z, Z_q, Z_q_avg], dim=-1)
+            return torch.sum( terms* Zs, dim=-1 )
         # Compute the combined noise update following the scheme:
         Z_comb_x = (1-zeta_x)**0.5 * noise_combination(Gamma_hat_x, Z, Z_q, Z_q_avg)
         Z_comb_y = (1-zeta_y)**0.5 * noise_combination(Gamma_hat_y, Z, Z_q, Z_q_avg)
-
-
-        Z_comb_x_old = (
-            (1 - torch.exp(-Gamma_hat_x / 2)) / torch.sqrt(Gamma_hat_x + 1e-4) *
-            (Z + torch.sqrt(torch.tanh(Gamma_hat_x / 4)) * Z_q)
-            + torch.sqrt(1 - (4 / (Gamma_hat_x + 1e-4)) * torch.tanh(Gamma_hat_x / 4)) * Z_q_avg
-        )
-        Z_comb_y_old = (
-            (1 - torch.exp(-Gamma_hat_y / 2)) / torch.sqrt(Gamma_hat_y + 1e-4) *
-            (Z + torch.sqrt(torch.tanh(Gamma_hat_y / 4)) * Z_q)
-            + torch.sqrt(1 - (4 / (Gamma_hat_y + 1e-4)) * torch.tanh(Gamma_hat_y / 4)) * Z_q_avg
-        )
-
-        print("The same Zx", torch.allclose(Z_comb_x, Z_comb_x_old, rtol=1e-4, atol=1e-4))
-        print("The same Zy", torch.allclose(Z_comb_y, Z_comb_y_old, rtol=1e-4, atol=1e-4))
-
 
         Z_comb = Z_comb_x * (1 - mask) + Z_comb_y * mask
 
