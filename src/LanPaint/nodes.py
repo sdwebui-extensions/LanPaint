@@ -311,13 +311,12 @@ class KSamplerX0Inpaint:
     def eps_with_momentum(self, eps, eps_model, Gamma_hat_x, Gamma_hat_y, mask):
         zeta_x = 2.0 / (Gamma_hat_x + 1e-4) * (1 - torch.exp(-0.5 * Gamma_hat_x))
         zeta_y = 2.0 / (Gamma_hat_y + 1e-4) * (1 - torch.exp(-0.5 * Gamma_hat_y))
-        eps_bar_x = zeta_x * eps + (1 - zeta_x) * eps_model
-        eps_bar_y = zeta_y * eps + (1 - zeta_y) * eps_model
-        # Combine branches according to mask.
-        eps_bar = eps_bar_x * (1 - mask) + eps_bar_y * mask
+        eps_bar_x = self.alpha * ( zeta_x * (eps - eps_model) ) + eps_model
+        eps_bar_y = self.alpha * ( zeta_y * (eps - eps_model) ) + eps_model
+         # Form the denoised epsilon using self.alpha (assumed to be 1/Ψ)
+        eps_denoise = eps_bar_x * (1 - mask) + eps_bar_y * mask 
 
-        # Form the denoised epsilon using self.alpha (assumed to be 1/Ψ)
-        eps_denoise = self.alpha * eps_bar + (1 - self.alpha) * eps_model
+       
 
         # Update the mean epsilon for the next step:
         eps_x = eps * torch.exp(-0.5 * Gamma_hat_x) + eps_model * (1 - torch.exp(-0.5 * Gamma_hat_x))
