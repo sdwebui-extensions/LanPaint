@@ -500,7 +500,7 @@ class LanPaint_KSampler():
         model.LanPaint_StartSigma = 20.
         model.LanPaint_EndSigma = LanPaint_EndSigma
         model.LanPaint_cfg_BIG = -0.5
-        model.LanPaint_Lambda_Schedule = "shrink"
+        model.LanPaint_Lambda_Schedule = "const"
         with override_sample_function():
             return nodes.common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise)
 class LanPaint_KSamplerAdvanced:
