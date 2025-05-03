@@ -104,8 +104,6 @@ class KSamplerX0Inpaint:
 
             abt = 1/( 1+LanPaint_Sigma**2 )
 
-            print("sigma", LanPaint_Sigma, "abt", abt)
-
             
 
             if self.step_time_schedule == "dual_shrink":
@@ -234,7 +232,6 @@ class KSamplerX0Inpaint:
         eps_momentum, eps_model, Z = self.eps_evalutation(x_t, score, args)
         with torch.autocast(device_type=x_t.device.type, dtype=torch.float32):
             x_t, eps_momentum, Z = self.Langevin_step(x_t, eps_model, eps_momentum, Z, mask, step_sizes)
-
         return x_t, (eps_momentum, Z)
     def Langevin_step(self, x_t, eps_model, eps_momentum, Z, mask, step_sizes):
         sigma, dtx, dty, Gamma_hat_x, Gamma_hat_y, sigma_mid_x, sigma_mid_y = step_sizes
@@ -537,11 +534,11 @@ class LanPaint_KSamplerAdvanced:
                     "start_at_step": ("INT", {"default": 0, "min": 0, "max": 10000}),
                     "end_at_step": ("INT", {"default": 10000, "min": 0, "max": 10000}),
                     "return_with_leftover_noise": (["disable", "enable"], ),
-                "LanPaint_NumSteps": ("INT", {"default": 5, "min": 0, "max": 20, "tooltip": "The number of steps for the Langevin dynamics, representing the turns of thinking per step."}),
+                "LanPaint_NumSteps": ("INT", {"default": 5, "min": 0, "max": 100, "tooltip": "The number of steps for the Langevin dynamics, representing the turns of thinking per step."}),
                 "LanPaint_Lambda": ("FLOAT", {"default": 8., "min": 0.1, "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The lambda parameter for the bidirectional guidance. Higher values align with known regions more closely, but may result in instability."}),
                 "LanPaint_StepSize": ("FLOAT", {"default": 0.5, "min": 0.0001, "max": 1., "step": 0.01, "round": 0.001, "tooltip": "The step size for the Langevin dynamics. Higher values result in faster convergence but may be unstable."}),
                 "LanPaint_Beta": ("FLOAT", {"default": 1.2, "min": 0.0001, "max": 5, "step": 0.1, "round": 0.1, "tooltip": "The beta parameter for the bidirectional guidance. Scale the step size for the known region independently for the Langevin dynamics. Higher values result in faster convergence but may be unstable."}),
-                "LanPaint_Friction": ("FLOAT", {"default": 5., "min": 1., "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The friction parameter for the underdamped Langevin dynamics, higher values result in faster convergence but may be unstable."}),
+                "LanPaint_Friction": ("FLOAT", {"default": 5., "min": 0., "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The friction parameter for the underdamped Langevin dynamics, higher values result in faster convergence but may be unstable."}),
                 "LanPaint_Alpha": ("FLOAT", {"default": 0.9, "min": 0.0001, "max": 1., "step": 0.1, "round": 0.1, "tooltip": "The (rescaled) alpha parameter for the HFHR langevin dynamics, mixes Langevin dynamics and underdamped Langevin dynamics with a friction term. 0 corresponds to Langevin dynamics, 1 corresponds to underdamped Langevin dynamics."}),
                 "LanPaint_Tamed": ("FLOAT", {"default": 1., "min": 0.000, "max": 20., "step": 0.1, "round": 0.1, "tooltip": "The tame strength for the noise, normalize and projects the noise onto unit sphere to enhance stability."}),
                 "LanPaint_BetaScale": (["shrink", "fixed", "dual_shrink", "back_shrink"], {"default": "shrink", "tooltip": "The beta scale, determines how the beta parameter changes over time. Shrink: beta = beta * (1 - alpha bar) ** 0.5; Fixed: beta = beta; Dual_shrink: beta = beta * (1 - alpha bar) ** 0.5 *  alpha bar ** 0.5; Back_shrink: beta = beta *  alpha bar ** 0.5; Alpha bar: the alpha cumprod."}),
