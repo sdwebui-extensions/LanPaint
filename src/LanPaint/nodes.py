@@ -104,20 +104,6 @@ class KSamplerX0Inpaint:
 
             abt = 1/( 1+LanPaint_Sigma**2 )
 
-            
-
-            if self.step_time_schedule == "dual_shrink":
-                step_size = self.step_size * (1 - abt) ** 0.5 * abt ** 0.5
-            elif self.step_time_schedule == "follow_sampler":
-                time_ind = torch.argmin(torch.abs(self.LanPaint_Sigmas - LanPaint_Sigma))
-                times = torch.log( 1+ self.LanPaint_Sigmas**2)
-                time_intervals = times[1:] - times[:-1]
-                time_intervals = time_intervals / time_intervals[0]
-                step_size = time_intervals[time_ind] * self.step_size 
-            else:
-                step_size = self.step_size * (1 - abt) ** 0.5
-
-
             #step_size = self.step_size * (1 - abt) ** b * abt ** a / ( ((a/(a+b))**a*(b/(a+b))**b) )
             abt_end = 1/( 1+self.end_sigma**2 ) 
             step_size = self.step_size * (1 -  torch.minimum(abt/abt_end, abt**0) ) ** 0.5
