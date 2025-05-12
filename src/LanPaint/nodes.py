@@ -290,9 +290,9 @@ class KSamplerX0Inpaint:
     def tamed_eps(self, eps_denoise, mask, sigma, dtx, dty):
         # tamed
         eps_model_x = eps_denoise* (1 - mask)
-        eps_model_x = eps_model_x* (torch.sum(1 - mask, dim = (1,2,3), keepdim = True)/torch.sum(eps_model_x**2, dim = (1,2,3), keepdim = True)) **0.5 ** torch.minimum(self.tamed*(dtx),sigma**0)#/( 1 + self.tamed*(sigma - sigma_mid_x) * (torch.sum(eps_model_x**2)/torch.sum((1 - mask)))**0.5 )
+        eps_model_x = eps_model_x* ((torch.sum(1 - mask, dim = (1,2,3), keepdim = True)/torch.sum(eps_model_x**2, dim = (1,2,3), keepdim = True)) **0.5) ** torch.minimum(self.tamed*(dtx),sigma**0)#/( 1 + self.tamed*(sigma - sigma_mid_x) * (torch.sum(eps_model_x**2)/torch.sum((1 - mask)))**0.5 )
         eps_model_y = eps_denoise* mask
-        eps_model_y = eps_model_y* (torch.sum(mask, dim = (1,2,3), keepdim = True)/torch.sum(eps_model_y**2, dim = (1,2,3), keepdim = True)) **0.5 ** torch.minimum(self.tamed*(dty),sigma**0)#/( 1 + self.tamed*(sigma - sigma_mid_y) * (torch.sum(eps_model_y**2)/torch.sum(mask))**0.5 )
+        eps_model_y = eps_model_y* ((torch.sum(mask, dim = (1,2,3), keepdim = True)/torch.sum(eps_model_y**2, dim = (1,2,3), keepdim = True)) **0.5) ** torch.minimum(self.tamed*(dty),sigma**0)#/( 1 + self.tamed*(sigma - sigma_mid_y) * (torch.sum(eps_model_y**2)/torch.sum(mask))**0.5 )
         eps_denoise = eps_model_x * (1 - mask) + eps_model_y * mask
         return eps_denoise
     def eps_with_momentum(self, eps, eps_model, Gamma_hat_x, Gamma_hat_y, mask):
