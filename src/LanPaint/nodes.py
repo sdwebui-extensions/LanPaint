@@ -240,11 +240,11 @@ class KSamplerX0Inpaint:
         z_t = x_t #* (1 + sigma**2) ** 0.5
         # Denoise
         z_mid_x = z_t + eps_denoise * (sigma_mid_x - sigma)
-        z_mid_y = z_t + eps_denoise * (sigma_mid_y - sigma)
+        z_mid_y = z_t - eps_denoise * (1+sigma**2) / sigma * dty / 2   
         z_mid = z_mid_x * (1 - mask) + z_mid_y * mask
         # Compute the change in noise level sigma (dsigma = sqrt(sigma^2 - sigma_mid^2)).
         dsigma_x = sigma * torch.sqrt(1 - (sigma_mid_x / sigma) ** 2)
-        dsigma_y = sigma * torch.sqrt(1 - (sigma_mid_y / sigma) ** 2)
+        dsigma_y = torch.sqrt( (1 + sigma**2) * dty ) 
         dsigma = dsigma_x * (1 - mask) + dsigma_y * mask
         # Add noise
         z_final = z_mid + Z_comb * dsigma
