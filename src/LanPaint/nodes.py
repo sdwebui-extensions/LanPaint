@@ -259,7 +259,7 @@ class KSamplerX0Inpaint:
         abt = abt[:, None,None,None]
         # Compute time step (dtx, dty) for x and y branches.
         dtx = self.truncate_times(current_times, torch.squeeze(2 * step_size * sigma_x))
-        dty = self.truncate_times(current_times, torch.squeeze(2 * step_size * sigma_y))
+        dty = torch.squeeze(2 * step_size * sigma_y)
         
         
 
@@ -267,7 +267,7 @@ class KSamplerX0Inpaint:
         abt_end = 1/( 1+self.end_sigma**2 ) 
         ref_dt = 0.1 * (1 -  torch.minimum(abt/abt_end, abt**0) ) ** 0.5
         ref_dtx = self.truncate_times(current_times, torch.squeeze(2 * sigma_x * ref_dt))
-        ref_dty = self.truncate_times(current_times, torch.squeeze(2 * sigma_y * ref_dt))
+        ref_dty = torch.squeeze(2 * sigma_y * ref_dt)
         # -------------------------------------------------------------------------
         # Define friction parameter Gamma_hat for each branch.
         # Using dtx**0 provides a tensor of the proper device/dtype.
