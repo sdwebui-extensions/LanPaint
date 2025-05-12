@@ -9,6 +9,7 @@ from functools import partial
 from comfy.utils import repeat_to_batch_size
 from comfy.samplers import *
 from comfy.model_base import ModelType
+from .utils import *
 # Monkey patch comfy.samplers module by importing with absolute package path
 #exec(inspect.getsource(comfy.samplers).replace("from .", "from comfy."))
 
@@ -157,6 +158,12 @@ class KSamplerX0Inpaint:
                 callback({"i": current_step, "denoised": out, "x": x})
     
         return out
+    def truncate_times(self, current_times, step_size):
+        sigma, abt = current_times
+        tt = torch.log(1+sigma**2)
+        tt_mid = torch.max( tt - step_size, tt*0 )
+        step_size = tt - tt_mid
+        return step_size
     def mid_times(self, current_times, step_size):
         sigma, abt = current_times
         tt = torch.log(1+sigma**2)
@@ -170,12 +177,7 @@ class KSamplerX0Inpaint:
         return sigma_mid, abt_mid
     def score_model(self, x_t, y, mask, abt, sigma, model_options, seed):
         
-        # the score function for the Langevin dynamics
-        if self.LanPaint_Lambda_Schedule == "shrink":
-            lamb = self.chara_lamb * (1-abt)**0.5
-        else:
-            lamb = self.chara_lamb
-        beta = self.chara_beta * (1-abt)**0.5
+        lamb = self.chara_lamb
 
         IS_FLUX = self.inner_model.inner_model.model_type == ModelType.FLUX
         IS_FLOW = self.inner_model.inner_model.model_type == ModelType.FLOW
@@ -207,8 +209,9 @@ class KSamplerX0Inpaint:
     def langevin_dynamics(self, x_t, score, mask, step_size, current_times, sigma_x=1, sigma_y=0, args=None):
 
         # prepare the step size and time parameters
-        step_sizes = self.prepare_step_size(current_times, step_size, sigma_x, sigma_y)
-        sigma, dtx, dty, Gamma_hat_x, Gamma_hat_y, sigma_mid_x, sigma_mid_y = step_sizes
+        with torch.autocast(device_type=x_t.device.type, dtype=torch.float32):
+            step_sizes = self.prepare_step_size(current_times, step_size, sigma_x, sigma_y)
+            sigma, dtx, dty, Gamma_hat_x, Gamma_hat_y, sigma_mid_x, sigma_mid_y, A_t_x, A_t_y = step_sizes
 
         if torch.mean(sigma_mid_x) >= torch.mean(sigma) or torch.mean(sigma_mid_y) >= torch.mean(sigma):
             return x_t, args
@@ -220,16 +223,16 @@ class KSamplerX0Inpaint:
             x_t, eps_momentum, Z = self.Langevin_step(x_t, eps_model, eps_momentum, Z, mask, step_sizes)
         return x_t, (eps_momentum, Z)
     def Langevin_step(self, x_t, eps_model, eps_momentum, Z, mask, step_sizes):
-        sigma, dtx, dty, Gamma_hat_x, Gamma_hat_y, sigma_mid_x, sigma_mid_y = step_sizes
+        sigma, dtx, dty, Gamma_hat_x, Gamma_hat_y, sigma_mid_x, sigma_mid_y, A_t_x, A_t_y = step_sizes
         # -------------------------------------------------------------------------
         # B: Update epsilon and noise Z with momentum
         # -------------------------------------------------------------------------
         # Compute the weighted combination term for epsilon mean update:
         # term = (2/Γ_hat)*(1-exp(-0.5*Γ_hat))
-        eps_momentum, eps_denoise = self.eps_with_momentum(eps_momentum, eps_model, Gamma_hat_x, Gamma_hat_y, mask)
+        eps_momentum, eps_denoise = self.eps_with_momentum(eps_momentum, eps_model, Gamma_hat_x, Gamma_hat_y, A_t_x, A_t_y, mask)
         # tamed eps for more stable updates
-        eps_denoise = self.tamed_eps(eps_denoise, mask, sigma, dtx, dty)
-        Z_comb, Z_next = self.noise_with_momentum(Z, Gamma_hat_x, Gamma_hat_y, mask, x_t)
+        #eps_denoise = self.tamed_eps(eps_denoise, mask, sigma, dtx, dty)
+        Z_comb, Z_next = self.noise_with_momentum(Z, Gamma_hat_x, Gamma_hat_y, A_t_x, A_t_y, mask, x_t)
         # -------------------------------------------------------------------------
         # C: Langevin Dynamics splitted into denoise-addnoise steps with Euler Scheme
         # -------------------------------------------------------------------------
@@ -255,18 +258,28 @@ class KSamplerX0Inpaint:
         sigma = sigma[:, None,None,None]
         abt = abt[:, None,None,None]
         # Compute time step (dtx, dty) for x and y branches.
-        dtx = 2 * step_size * sigma_x
-        dty = 2 * step_size * sigma_y
+        dtx = self.truncate_times(current_times, torch.squeeze(2 * step_size * sigma_x))
+        dty = self.truncate_times(current_times, torch.squeeze(2 * step_size * sigma_y))
+        
+        
 
         #ref_dt = 0.1 * (1 - abt) ** b * abt ** a / ( ((a/(a+b))**a*(b/(a+b))**b) )
         abt_end = 1/( 1+self.end_sigma**2 ) 
         ref_dt = 0.1 * (1 -  torch.minimum(abt/abt_end, abt**0) ) ** 0.5
+        ref_dtx = self.truncate_times(current_times, torch.squeeze(2 * sigma_x * ref_dt))
+        ref_dty = self.truncate_times(current_times, torch.squeeze(2 * sigma_y * ref_dt))
         # -------------------------------------------------------------------------
         # Define friction parameter Gamma_hat for each branch.
         # Using dtx**0 provides a tensor of the proper device/dtype.
 
-        Gamma_hat_x = self.friction * dtx / (1e-4+ 2 * sigma_x * ref_dt)
-        Gamma_hat_y = self.friction * dty / (1e-4+ 2 * sigma_y * ref_dt)
+        Gamma_hat_x = self.friction * dtx / (1e-4+ ref_dtx)
+        Gamma_hat_y = self.friction * dty / (1e-4+ ref_dty)
+        # adjust dt to match denoise-addnoise steps sizes
+        Gamma_hat_x /= 2.
+        Gamma_hat_y /= 2.
+
+        A_t_x = 0 * dtx / 2
+        A_t_y =  (1+self.chara_lamb) / ( 1 - abt ) * dty / 2
 
         # Get mid time parameters (sigma_mid and abt_mid) for each branch.
         sigma_mid_x, abt_mid_x = self.mid_times(current_times, torch.squeeze(dtx))
@@ -276,7 +289,7 @@ class KSamplerX0Inpaint:
         sigma_mid_y = sigma_mid_y[:, None,None,None]
         abt_mid_x = abt_mid_x[:, None,None,None]
         abt_mid_y = abt_mid_y[:, None,None,None]
-        return sigma, dtx, dty, Gamma_hat_x, Gamma_hat_y, sigma_mid_x, sigma_mid_y
+        return sigma, dtx, dty, Gamma_hat_x, Gamma_hat_y, sigma_mid_x, sigma_mid_y, A_t_x, A_t_y
     def eps_evalutation(self, x_t, score, args):
         score_model = score(x_t)
         eps_model = -score_model 
@@ -295,72 +308,85 @@ class KSamplerX0Inpaint:
         eps_model_y = eps_model_y* ((torch.sum(mask, dim = (1,2,3), keepdim = True)/torch.sum(eps_model_y**2, dim = (1,2,3), keepdim = True)) **0.5) ** torch.minimum(self.tamed*(dty),sigma**0)#/( 1 + self.tamed*(sigma - sigma_mid_y) * (torch.sum(eps_model_y**2)/torch.sum(mask))**0.5 )
         eps_denoise = eps_model_x * (1 - mask) + eps_model_y * mask
         return eps_denoise
-    def eps_with_momentum(self, eps, eps_model, Gamma_hat_x, Gamma_hat_y, mask):
-        def epxm1Dx(x):
-            # Compute the (exp(x) - 1) / x term with a small value to avoid division by zero.
-            result = torch.special.expm1(x) / x
-            # replace NaN or inf values with 0
-            result = torch.where(torch.isfinite(result), result, torch.zeros_like(result))
-            mask = torch.abs(x) < 1e-2
-            result = torch.where(mask, 1 + x/2. + x**2 / 6., result)
-            return result
-        zeta_x = epxm1Dx(-Gamma_hat_x / 2.)
-        zeta_y = epxm1Dx(-Gamma_hat_y / 2.)
-        eps_bar_x = self.alpha * ( zeta_x * (eps - eps_model) ) + eps_model
-        eps_bar_y = self.alpha * ( zeta_y * (eps - eps_model) ) + eps_model
+    def eps_with_momentum(self, eps, eps_model, Gamma_hat_x, Gamma_hat_y, A_t_x, A_t_y, mask):
+
+        # Compute the coefficients for the momentum update.
+        Delta_x = 1 - 4 * A_t_x / Gamma_hat_x
+        Delta_y = 1 - 4 * A_t_y / Gamma_hat_y
+        zeta_1_x = zeta1( Gamma_hat_x, Delta_x) 
+        zeta_1_y = zeta1( Gamma_hat_y, Delta_y)
+        zeta_2_x = zeta2( Gamma_hat_x, Delta_x)
+        zeta_2_y = zeta2( Gamma_hat_y, Delta_y)
+        e_x = 1 - Gamma_hat_x * zeta_2_x
+        e_y = 1 - Gamma_hat_y * zeta_2_y
+
+        Gamma_hat_asymp_x, Gamma_hat_asymp_y = 1e4 * Gamma_hat_x, 1e4 * Gamma_hat_y
+        Delta_asymp_x, Delta_asymp_y = 1 - 4 * A_t_x / Gamma_hat_asymp_x , 1 - 4 * A_t_y / Gamma_hat_asymp_y
+
+        zeta_1_asymp_x, zeta_2_asymp_x = zeta1( Gamma_hat_asymp_x, Delta_asymp_x), zeta2( Gamma_hat_asymp_x, Delta_asymp_x)
+        zeta_1_asymp_y, zeta_2_asymp_y = zeta1( Gamma_hat_asymp_y, Delta_asymp_y), zeta2( Gamma_hat_asymp_y, Delta_asymp_y)
+
+
+        eps_bar_x = self.alpha * ( zeta_2_x * eps + (1-zeta_1_x) * eps_model) + (1 - self.alpha) * ( zeta_2_asymp_x * eps + (1-zeta_1_asymp_x) * eps_model)
+        eps_bar_y = self.alpha * ( zeta_2_y * eps + (1-zeta_1_y) * eps_model) + (1 - self.alpha) * ( zeta_2_asymp_y * eps + (1-zeta_1_asymp_y) * eps_model)
          # Form the denoised epsilon using self.alpha (assumed to be 1/Ψ)
         eps_denoise = eps_bar_x * (1 - mask) + eps_bar_y * mask 
 
        
 
         # Update the mean epsilon for the next step:
-        eps_x = eps * torch.exp(-0.5 * Gamma_hat_x) + eps_model * (1 - torch.exp(-0.5 * Gamma_hat_x))
-        eps_y = eps * torch.exp(-0.5 * Gamma_hat_y) + eps_model * (1 - torch.exp(-0.5 * Gamma_hat_y))
+        eps_x = eps * (e_x - A_t_x * ( 1 - zeta_1_x ) )+ eps_model * (1 - e_x)
+        eps_y = eps * (e_y - A_t_y * ( 1 - zeta_1_y ) )+ eps_model * (1 - e_y) 
         eps = eps_x * (1 - mask) + eps_y * mask
         return eps, eps_denoise
-    def noise_with_momentum(self, Z, Gamma_hat_x, Gamma_hat_y, mask, x_t):
+    def noise_with_momentum(self, Z, Gamma_hat_x, Gamma_hat_y, A_t_x, A_t_y, mask, x_t):
+
+        Delta_x = 1 - 4 * A_t_x / Gamma_hat_x
+        Delta_y = 1 - 4 * A_t_y / Gamma_hat_y
+        zeta_1_x = zeta1( Gamma_hat_x, Delta_x) 
+        zeta_1_y = zeta1( Gamma_hat_y, Delta_y)
+        zeta_2_x = zeta2( Gamma_hat_x, Delta_x)
+        zeta_2_y = zeta2( Gamma_hat_y, Delta_y)
+        e_x = 1 - Gamma_hat_x * zeta_2_x
+        e_y = 1 - Gamma_hat_y * zeta_2_y
+
+        Sig11_x = sig11(Gamma_hat_x, Delta_x)
+        Sig11_y = sig11(Gamma_hat_y, Delta_y)
+
+        Zcoefs_asymp_x = Zcoefs_asymp( Gamma_hat_x, Delta_x) 
+        Zcoefs_asymp_y = Zcoefs_asymp( Gamma_hat_y, Delta_y)
+
+
         # Generate auxiliary noise terms.
         Z_q     = torch.randn_like(x_t)
         Z_q_avg = torch.randn_like(x_t)
         Z_z     = torch.randn_like(x_t)
 
         # Update Z for each branch:
-        Z_x = torch.exp(-0.5 * Gamma_hat_x) * Z + (1 - torch.exp(-Gamma_hat_x)) ** 0.5 * Z_q
-        Z_y = torch.exp(-0.5 * Gamma_hat_y) * Z + (1 - torch.exp(-Gamma_hat_y)) ** 0.5 * Z_q
+        Z_x = (e_x - A_t_x * ( 1 - zeta_1_x ) ) * Z + (Sig11_x) ** 0.5 * Z_q
+        Z_y = (e_y - A_t_y * ( 1 - zeta_1_y ) ) * Z + (Sig11_y) ** 0.5 * Z_q
         Z_next = Z_x * (1 - mask) + Z_y * mask
-        def epxm1Dx(x):
-            # Compute the (exp(x) - 1) / x term with a small value to avoid division by zero.
-            result = torch.special.expm1(x) / x
-            # replace NaN or inf values with 0
-            result = torch.where(torch.isfinite(result), result, torch.zeros_like(result))
-            mask = torch.abs(x) < 1e-2
-            result = torch.where(mask, 1 + x/2. + x**2 / 6., result)
-            return result
 
-        # Compute the combined noise update following the scheme:
-        zeta_x = epxm1Dx(-Gamma_hat_x / 2.)
-        zeta_y = epxm1Dx(-Gamma_hat_y / 2.)
-        def noise_combination(Gamma_hat, Z, Z_q, Z_q_avg):
-            exp_term = torch.special.expm1(-Gamma_hat / 2.)
-            tanh_term = torch.tanh(Gamma_hat / 4.)
-            
-            term1 = - exp_term / 2**0.5 
-            term2 = - exp_term * tanh_term ** 0.5 / 2**0.5 
-            term3 = torch.sqrt((Gamma_hat / 2.) - 2. * tanh_term) 
 
+
+        def noise_generation(Gamma_hat, Delta, Z, Z_q, Z_q_avg):
+            term1, term2, term3, amplitude = Zcoefs( Gamma_hat, Delta) 
             terms = torch.stack([term1, term2, term3], dim=-1)
-            terms = torch.nn.functional.normalize(terms, dim=-1)
+            #terms = torch.nn.functional.normalize(terms, dim=-1)
 
             Zs = torch.stack([Z, Z_q, Z_q_avg], dim=-1)
             return torch.sum( terms* Zs, dim=-1 )
         # Compute the combined noise update following the scheme:
-        Z_comb_x = (1-zeta_x)**0.5 * noise_combination(Gamma_hat_x, Z, Z_q, Z_q_avg)
-        Z_comb_y = (1-zeta_y)**0.5 * noise_combination(Gamma_hat_y, Z, Z_q, Z_q_avg)
+        Z_comb_x = noise_generation(Gamma_hat_x, Delta_x, Z, Z_q, Z_q_avg)
+        Z_comb_y = noise_generation(Gamma_hat_y, Delta_y, Z, Z_q, Z_q_avg)
 
         Z_comb = Z_comb_x * (1 - mask) + Z_comb_y * mask
 
+        Z_asymp = Z_z * Zcoefs_asymp_x ** 0.5 * (1 - mask) + Z_z * Zcoefs_asymp_y ** 0.5 * mask
+
+
         # Combine with an additional noise term using self.alpha.
-        Z_comb = self.alpha ** 0.5 * Z_comb + (1 - self.alpha) ** 0.5 * Z_z
+        Z_comb = self.alpha ** 0.5 * Z_comb + (1 - self.alpha) ** 0.5 * Z_asymp
         return Z_comb, Z_next
 
 # Custom sampler class extending ComfyUI's KSAMPLER for LanPaint
