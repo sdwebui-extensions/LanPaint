@@ -90,10 +90,11 @@ class KSamplerX0Inpaint:
 
         # unify the notations into variance exploding diffusion model
         if IS_FLUX or IS_FLOW:
-            LanPaint_Sigma = sigma / ( torch.maximum( 1 - sigma , sigma*0 + 5e-2  ))
-            self.LanPaint_Sigmas = self.sigmas / ( torch.maximum( 1 - self.sigmas , self.sigmas*0 + 5e-2  ))
+            VE_Sigma = sigma / ( torch.maximum( 1 - sigma , sigma*0 + 5e-2  ))
+            self.VE_Sigmas = self.sigmas / ( torch.maximum( 1 - self.sigmas , self.sigmas*0 + 5e-2  ))
         else:
-            LanPaint_Sigma = sigma 
+            VE_Sigma = sigma 
+            self.VE_Sigmas = self.sigmas
 
         if denoise_mask is not None:
             if "denoise_mask_function" in model_options:
@@ -103,46 +104,11 @@ class KSamplerX0Inpaint:
 
             latent_mask = 1 - denoise_mask
 
-            abt = 1/( 1+LanPaint_Sigma**2 )
+            abt = 1/( 1+VE_Sigma**2 )
 
-            #step_size = self.step_size * (1 - abt) ** b * abt ** a / ( ((a/(a+b))**a*(b/(a+b))**b) )
-            abt_end = 1/( 1+self.end_sigma**2 ) 
-            step_size = self.step_size * (1 -  torch.minimum(abt/abt_end, abt**0) ) ** 0.5
-            step_size = step_size[:, None, None, None]
+            current_times = (VE_Sigma, abt)
 
-            
-            current_times = (LanPaint_Sigma, abt)
-
-            # self.inner_model.inner_model.scale_latent_inpaint returns variance exploding x_t values
-            x = x * (1 - latent_mask) +  self.inner_model.inner_model.scale_latent_inpaint(x=x, sigma=sigma, noise=self.noise, latent_image=self.latent_image)* latent_mask
-            
-            if IS_FLUX or IS_FLOW:
-                x_t = x * ( 1 + LanPaint_Sigma[:, None,None,None])
-            else:
-                x_t = x #/ ( 1+sigma**2 )**0.5 # switch to variance perserving x_t values
-
-            ############ LanPaint Iterations Start ###############
-            # after noise_scaling, noise = latent_image + noise * sigma, which is x_t in the variance exploding diffusion model notation for the known region.
-            args = None
-            for i in range(self.n_steps):
-                if torch.mean(LanPaint_Sigma) > self.start_sigma or torch.mean(LanPaint_Sigma) < self.end_sigma:
-                    
-                    break
-
-                score_func = partial( self.score_model, y = self.latent_image, mask = latent_mask, abt = abt[:, None,None,None], sigma = LanPaint_Sigma[:, None,None,None], model_options = model_options, seed = seed )
-                if self.step_size_schedule == "linear":
-                    step_size_i = step_size * (1 - i/(self.n_steps) )
-                else:
-                    step_size_i = step_size 
-                x_t, args = self.langevin_dynamics(x_t, score_func , latent_mask, step_size_i , current_times, sigma_x = self.sigma_x(abt)[:, None,None,None], sigma_y = self.sigma_y(abt)[:, None,None,None], args = args)  
-            if IS_FLUX or IS_FLOW:
-                x = x_t / ( 1 + LanPaint_Sigma[:, None,None,None] )
-            else:
-                x = x_t #/ ( 1+sigma**2 )**0.5 # switch to variance perserving x_t values
-            ############ LanPaint Iterations End ###############
-            # out is x_0
-            out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
-            out = out * denoise_mask + self.latent_image * latent_mask
+            out = self.LanPaint(x, sigma, latent_mask, current_times, model_options, seed, IS_FLUX, IS_FLOW, denoise_mask)
         else:
             out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
         
@@ -158,6 +124,61 @@ class KSamplerX0Inpaint:
                 callback({"i": current_step, "denoised": out, "x": x})
     
         return out
+    def LanPaint(self, x, sigma, latent_mask, current_times, model_options, seed, IS_FLUX, IS_FLOW, denoise_mask):
+        VE_Sigma, abt = current_times
+        sigma_ind = torch.argmin(torch.abs(self.VE_Sigmas - torch.mean( VE_Sigma )))
+        VE_Sigma_next = self.VE_Sigmas[ sigma_ind + 1 ] * VE_Sigma**0
+
+        
+        #step_size = self.step_size * (1 - abt) ** b * abt ** a / ( ((a/(a+b))**a*(b/(a+b))**b) )
+
+        if self.step_time_schedule == "dual_shrink":
+            step_size = self.step_size * (1 - abt) ** 0.5 * abt ** 0.5
+        elif self.step_time_schedule == "follow_sampler":
+            tt = torch.log(1+VE_Sigma**2)
+            tt_next = torch.log(1+VE_Sigma_next**2)
+            tt_first = torch.log(1+self.VE_Sigmas[0]**2)
+            tt_second = torch.log(1+self.VE_Sigmas[1]**2)
+            #print("max t step",tt_first - tt_second)
+            step_size = (tt - tt_next) / (tt_first - tt_second) * self.step_size * abt ** 0
+        else:
+            abt_end = 1/( 1+self.end_sigma**2 ) 
+            step_size = self.step_size * (1 -  torch.minimum(abt/abt_end, abt**0) ) ** 0.5
+
+
+
+        step_size = step_size[:, None, None, None]
+        # self.inner_model.inner_model.scale_latent_inpaint returns variance exploding x_t values
+        x = x * (1 - latent_mask) +  self.inner_model.inner_model.scale_latent_inpaint(x=x, sigma=sigma, noise=self.noise, latent_image=self.latent_image)* latent_mask
+        
+        if IS_FLUX or IS_FLOW:
+            x_t = x * ( 1 + VE_Sigma[:, None,None,None])
+        else:
+            x_t = x #/ ( 1+sigma**2 )**0.5 # switch to variance perserving x_t values
+
+        ############ LanPaint Iterations Start ###############
+        # after noise_scaling, noise = latent_image + noise * sigma, which is x_t in the variance exploding diffusion model notation for the known region.
+        args = None
+        for i in range(self.n_steps):
+            if torch.mean(VE_Sigma) > self.start_sigma or torch.mean(VE_Sigma) < self.end_sigma:
+                
+                break
+
+            score_func = partial( self.score_model, y = self.latent_image, mask = latent_mask, abt = abt[:, None,None,None], sigma = VE_Sigma[:, None,None,None], model_options = model_options, seed = seed )
+            if self.step_size_schedule == "linear":
+                step_size_i = step_size * (1 - i/(self.n_steps) )
+            else:
+                step_size_i = step_size 
+            x_t, args = self.langevin_dynamics(x_t, score_func , latent_mask, step_size_i , current_times, sigma_x = self.sigma_x(abt)[:, None,None,None], sigma_y = self.sigma_y(abt)[:, None,None,None], args = args)  
+        if IS_FLUX or IS_FLOW:
+            x = x_t / ( 1 + VE_Sigma[:, None,None,None] )
+        else:
+            x = x_t #/ ( 1+sigma**2 )**0.5 # switch to variance perserving x_t values
+        ############ LanPaint Iterations End ###############
+        # out is x_0
+        out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
+        out = out * denoise_mask + self.latent_image * latent_mask
+        return out
     def truncate_times(self, current_times, step_size):
         sigma, abt = current_times
         tt = torch.log(1+sigma**2)
@@ -169,12 +190,16 @@ class KSamplerX0Inpaint:
         tt = torch.log(1+sigma**2)
         tt_mid = torch.max( tt - step_size, tt*0 )
         sigma_mid = (torch.exp(tt_mid) - 1) ** 0.5
-        sigma_mid_prev = sigma_mid
-        # find the closest sigma to sigma_mid from self.sigmas
-        #sigma_mid = self.model_sigmas[torch.argmin(torch.abs(self.model_sigmas - sigma_mid))]
-
         abt_mid = 1/(1+sigma_mid**2)
-        return sigma_mid, abt_mid
+        
+        if torch.mean(sigma) >= self.LanPaint_Cap_Sigma:
+            return tt - tt_mid, sigma_mid, abt_mid
+        else:
+            sigma_ind = torch.argmin(torch.abs(self.VE_Sigmas - torch.mean( sigma )))
+            VE_Sigma_next = self.VE_Sigmas[ sigma_ind + 1 ] * sigma**0
+            abt_next = 1/( 1+VE_Sigma_next**2 )
+            tt_next = torch.log(1+VE_Sigma_next**2)
+            return tt - tt_next, VE_Sigma_next, abt_next
     def score_model(self, x_t, y, mask, abt, sigma, model_options, seed):
         
         lamb = self.chara_lamb
@@ -258,10 +283,12 @@ class KSamplerX0Inpaint:
         sigma = sigma[:, None,None,None]
         abt = abt[:, None,None,None]
         # Compute time step (dtx, dty) for x and y branches.
-        dtx = self.truncate_times(current_times, torch.squeeze(2 * step_size * sigma_x))
-        dty = torch.squeeze(2 * step_size * sigma_y)
+        dtx = 2 * step_size * sigma_x
+        dty = 2 * step_size * sigma_y
         
-        
+        # Get mid time parameters (sigma_mid and abt_mid) for each branch.
+        dtx, sigma_mid_x, abt_mid_x = self.mid_times((sigma, abt), dtx)
+        dty, sigma_mid_y, abt_mid_y = self.mid_times((sigma, abt), dty)
 
         #ref_dt = 0.1 * (1 - abt) ** b * abt ** a / ( ((a/(a+b))**a*(b/(a+b))**b) )
         abt_end = 1/( 1+self.end_sigma**2 ) 
@@ -272,8 +299,9 @@ class KSamplerX0Inpaint:
         # Define friction parameter Gamma_hat for each branch.
         # Using dtx**0 provides a tensor of the proper device/dtype.
 
-        Gamma_hat_x = self.friction * dtx / (1e-4+ ref_dtx)
-        Gamma_hat_y = self.friction * dty / (1e-4+ ref_dty)
+        Gamma_hat_x = self.friction * self.step_size * sigma_x / 0.1 * sigma**0
+        Gamma_hat_y = self.friction * self.step_size * sigma_y / 0.1 * sigma**0
+        print("Gamma_hat_x", torch.mean(Gamma_hat_x).item(), "Gamma_hat_y", torch.mean(Gamma_hat_y).item())
         # adjust dt to match denoise-addnoise steps sizes
         Gamma_hat_x /= 2.
         Gamma_hat_y /= 2.
@@ -281,14 +309,7 @@ class KSamplerX0Inpaint:
         A_t_x = 0 * dtx / 2
         A_t_y =  (1+self.chara_lamb) / ( 1 - abt ) * dty / 2
 
-        # Get mid time parameters (sigma_mid and abt_mid) for each branch.
-        sigma_mid_x, abt_mid_x = self.mid_times(current_times, torch.squeeze(dtx))
-        sigma_mid_y, abt_mid_y = self.mid_times(current_times, torch.squeeze(dty))
 
-        sigma_mid_x = sigma_mid_x[:, None,None,None]
-        sigma_mid_y = sigma_mid_y[:, None,None,None]
-        abt_mid_x = abt_mid_x[:, None,None,None]
-        abt_mid_y = abt_mid_y[:, None,None,None]
         return sigma, dtx, dty, Gamma_hat_x, Gamma_hat_y, sigma_mid_x, sigma_mid_y, A_t_x, A_t_y
     def eps_evalutation(self, x_t, score, args):
         score_model = score(x_t)
@@ -424,7 +445,7 @@ class KSAMPLER(comfy.samplers.KSAMPLER):
         model_k.start_sigma = model_wrap.model_patcher.LanPaint_StartSigma
         model_k.end_sigma = model_wrap.model_patcher.LanPaint_EndSigma
         model_k.LanPaint_Lambda_Schedule = model_wrap.model_patcher.LanPaint_Lambda_Schedule
-
+        model_k.LanPaint_Cap_Sigma = model_wrap.model_patcher.LanPaint_Cap_Sigma
         noise = model_wrap.inner_model.model_sampling.noise_scaling(sigmas[0], noise, latent_image, self.max_denoise(model_wrap, sigmas))
         #if not inpainting, after noise_scaling, noise = noise * sigma, which is the noise added to the clean latent image in the variance exploding diffusion model notation.
         #if inpainting, after noise_scaling, noise = latent_image + noise * sigma, which is x_t in the variance exploding diffusion model notation for the known region.
@@ -560,6 +581,7 @@ class LanPaint_KSamplerAdvanced:
                 "LanPaint_EndSigma": ("FLOAT", {"default": 3., "min": 0.000, "max": 20.0, "step": 0.1, "round": 0.1, "tooltip": "Stop 'thinking' with Langevin dynamics at this sigma value."}),
                 "LanPaint_cfg_BIG": ("FLOAT", {"default": -0.5, "min": -20, "max": 20.0, "step": 0.1, "round": 0.1, "tooltip": "The CFG scale used in the bidirectional guidance (for the known region only). Higher value results in more closely matching the known region."}),
                 "LanPaint_Lambda_Schedule": (["const", "shrink"], {"default": "const", "tooltip": "The lambda schedule for the bidirectional guidance, const: constant lambda, shrink: decreasing lambda."}),
+                "LanPaint_Cap_Sigma": ("FLOAT", {"default": 1., "min": 0.0001, "max": 20.0, "step": 0.1, "round": 0.1, "tooltip": "Cap the stepsize to scheduler step size below this noise level."}),
                 "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler Advanced. For difficult tasks, first try increasing steps, LanPaint_NumSteps, and LanPaint_cfg_BIG. Then try increase LanPaint_Lambda or LanPaint_StepSize. Decrease LanPaint_Friction if you want to obtain good results with fewer turns of thinking (LanPaint_NumSteps) at the risk of irregular behavior. Increase LanPaint_Tamed or LanPaint_Alpha can suppress irregular behavior. For more information, visit https://github.com/scraed/LanPaint", "multiline": True}),
                      },
                 }
@@ -569,7 +591,7 @@ class LanPaint_KSamplerAdvanced:
 
     CATEGORY = "sampling"
 
-    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_Beta=1, LanPaint_NumSteps=5, LanPaint_Friction=5, LanPaint_Alpha=1, LanPaint_Tamed=0., LanPaint_BetaScale="fixed", LanPaint_StepSizeSchedule = "const", LanPaint_StepTimeSchedule = "shrink",  LanPaint_StartSigma=20, LanPaint_EndSigma=0, LanPaint_cfg_BIG = 5., LanPaint_Lambda_Schedule="const", LanPaint_Info=""):
+    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_Beta=1, LanPaint_NumSteps=5, LanPaint_Friction=5, LanPaint_Alpha=1, LanPaint_Tamed=0., LanPaint_BetaScale="fixed", LanPaint_StepSizeSchedule = "const", LanPaint_StepTimeSchedule = "shrink",  LanPaint_StartSigma=20, LanPaint_EndSigma=0, LanPaint_cfg_BIG = 5., LanPaint_Lambda_Schedule="const", LanPaint_Cap_Sigma = 0., LanPaint_Info=""):
         force_full_denoise = True
         if return_with_leftover_noise == "enable":
             force_full_denoise = False
@@ -590,6 +612,7 @@ class LanPaint_KSamplerAdvanced:
         model.LanPaint_EndSigma = LanPaint_EndSigma
         model.LanPaint_cfg_BIG = LanPaint_cfg_BIG
         model.LanPaint_Lambda_Schedule = LanPaint_Lambda_Schedule
+        model.LanPaint_Cap_Sigma = LanPaint_Cap_Sigma
 
         with override_sample_function():
             return nodes.common_ksampler(model, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise, disable_noise=disable_noise, start_step=start_at_step, last_step=end_at_step, force_full_denoise=force_full_denoise)
