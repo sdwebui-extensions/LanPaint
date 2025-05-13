@@ -1,10 +1,10 @@
 import torch
 from .utils import *
+from functools import partial
 class LanPaint():
-    def __init__(self, Model, NSteps, Friction, Lambda, Alpha, StepSize, EndSigma=0, StepSizeSchedule = "follow_sampler", BetaSchedule = "const", IteStepSchedule="const", CapSigma = 1., IS_FLUX = False, IS_FLOW = False):
+    def __init__(self, Model, NSteps, Friction, Lambda, Alpha, Beta, StepSize, EndSigma=0, StepSizeSchedule = "follow_sampler", BetaSchedule = "const", IteStepSchedule="const", CapSigma = 1., IS_FLUX = False, IS_FLOW = False):
         self.n_steps = NSteps
         self.chara_lamb = Lambda
-        self.LanPaint_Cap_Sigma
         self.IS_FLUX = IS_FLUX
         self.IS_FLOW = IS_FLOW
         self.step_size = StepSize
@@ -15,6 +15,8 @@ class LanPaint():
         self.step_time_schedule = StepSizeSchedule
         self.end_sigma = EndSigma
         self.friction = Friction
+        self.LanPaint_Cap_Sigma = CapSigma
+        self.chara_beta = Beta
         
     def __call__(self, x, latent_image, noise, sigma, Sigmas, latent_mask, current_times, model_options, seed):
         self.VE_Sigmas = Sigmas

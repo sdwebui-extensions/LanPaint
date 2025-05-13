@@ -10,6 +10,7 @@ from comfy.utils import repeat_to_batch_size
 from comfy.samplers import *
 from comfy.model_base import ModelType
 from .utils import *
+from .lanpaint import LanPaint
 # Monkey patch comfy.samplers module by importing with absolute package path
 #exec(inspect.getsource(comfy.samplers).replace("from .", "from comfy."))
 
@@ -108,7 +109,7 @@ class KSamplerX0Inpaint:
 
             current_times = (VE_Sigma, abt)
 
-            out = self.LanPaint(x, sigma, latent_mask, current_times, model_options, seed, IS_FLUX, IS_FLOW, denoise_mask)
+            out = self.PaintMethod(x, self.latent_image, self.noise, sigma, self.VE_Sigmas, latent_mask, current_times, model_options, seed)
         else:
             out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
         
@@ -255,8 +256,6 @@ class KSamplerX0Inpaint:
         # Compute the weighted combination term for epsilon mean update:
         # term = (2/Γ_hat)*(1-exp(-0.5*Γ_hat))
         eps_momentum, eps_denoise = self.eps_with_momentum(eps_momentum, eps_model, Gamma_hat_x, Gamma_hat_y, A_t_x, A_t_y, mask)
-        # tamed eps for more stable updates
-        #eps_denoise = self.tamed_eps(eps_denoise, mask, sigma, dtx, dty)
         Z_comb, Z_next = self.noise_with_momentum(Z, Gamma_hat_x, Gamma_hat_y, A_t_x, A_t_y, mask, x_t)
         # -------------------------------------------------------------------------
         # C: Langevin Dynamics splitted into denoise-addnoise steps with Euler Scheme
@@ -290,11 +289,6 @@ class KSamplerX0Inpaint:
         dtx, sigma_mid_x, abt_mid_x = self.mid_times((sigma, abt), dtx)
         dty, sigma_mid_y, abt_mid_y = self.mid_times((sigma, abt), dty)
 
-        #ref_dt = 0.1 * (1 - abt) ** b * abt ** a / ( ((a/(a+b))**a*(b/(a+b))**b) )
-        abt_end = 1/( 1+self.end_sigma**2 ) 
-        ref_dt = 0.1 * (1 -  torch.minimum(abt/abt_end, abt**0) ) ** 0.5
-        ref_dtx = self.truncate_times(current_times, torch.squeeze(2 * sigma_x * ref_dt))
-        ref_dty = torch.squeeze(2 * sigma_y * ref_dt)
         # -------------------------------------------------------------------------
         # Define friction parameter Gamma_hat for each branch.
         # Using dtx**0 provides a tensor of the proper device/dtype.
@@ -321,14 +315,6 @@ class KSamplerX0Inpaint:
         else:
             eps, Z = args
         return eps, eps_model, Z
-    def tamed_eps(self, eps_denoise, mask, sigma, dtx, dty):
-        # tamed
-        eps_model_x = eps_denoise* (1 - mask)
-        eps_model_x = eps_model_x* ((torch.sum(1 - mask, dim = (1,2,3), keepdim = True)/torch.sum(eps_model_x**2, dim = (1,2,3), keepdim = True)) **0.5) ** torch.minimum(self.tamed*(dtx),sigma**0)#/( 1 + self.tamed*(sigma - sigma_mid_x) * (torch.sum(eps_model_x**2)/torch.sum((1 - mask)))**0.5 )
-        eps_model_y = eps_denoise* mask
-        eps_model_y = eps_model_y* ((torch.sum(mask, dim = (1,2,3), keepdim = True)/torch.sum(eps_model_y**2, dim = (1,2,3), keepdim = True)) **0.5) ** torch.minimum(self.tamed*(dty),sigma**0)#/( 1 + self.tamed*(sigma - sigma_mid_y) * (torch.sum(eps_model_y**2)/torch.sum(mask))**0.5 )
-        eps_denoise = eps_model_x * (1 - mask) + eps_model_y * mask
-        return eps_denoise
     def eps_with_momentum(self, eps, eps_model, Gamma_hat_x, Gamma_hat_y, A_t_x, A_t_y, mask):
 
         # Compute the coefficients for the momentum update.
@@ -425,7 +411,7 @@ class KSAMPLER(comfy.samplers.KSAMPLER):
             model_k.noise = noise
 
         IS_FLUX = model_wrap.inner_model.model_type == ModelType.FLUX
-
+        IS_FLOW = model_wrap.inner_model.model_type == ModelType.FLOW
         # unify the notations into variance exploding diffusion model
         if IS_FLUX:
             model_wrap.cfg_BIG = 1.0
@@ -447,6 +433,21 @@ class KSAMPLER(comfy.samplers.KSAMPLER):
         model_k.LanPaint_Lambda_Schedule = model_wrap.model_patcher.LanPaint_Lambda_Schedule
         model_k.LanPaint_Cap_Sigma = model_wrap.model_patcher.LanPaint_Cap_Sigma
         noise = model_wrap.inner_model.model_sampling.noise_scaling(sigmas[0], noise, latent_image, self.max_denoise(model_wrap, sigmas))
+
+        model_k.PaintMethod = LanPaint(model_k.inner_model, 
+                                       model_wrap.model_patcher.LanPaint_NumSteps,
+                                       model_wrap.model_patcher.LanPaint_Friction,
+                                       model_wrap.model_patcher.LanPaint_Lambda,
+                                       model_wrap.model_patcher.LanPaint_Alpha, 
+                                       model_wrap.model_patcher.LanPaint_Beta,
+                                       model_wrap.model_patcher.LanPaint_StepSize, 
+                                       EndSigma=model_wrap.model_patcher.LanPaint_EndSigma, 
+                                       StepSizeSchedule = model_wrap.model_patcher.LanPaint_StepTimeSchedule, 
+                                       BetaSchedule = model_wrap.model_patcher.LanPaint_BetaScale, 
+                                       IteStepSchedule=model_wrap.model_patcher.LanPaint_StepSizeSchedule, 
+                                       CapSigma = model_wrap.model_patcher.LanPaint_Cap_Sigma, 
+                                       IS_FLUX = IS_FLUX, 
+                                       IS_FLOW = IS_FLOW)
         #if not inpainting, after noise_scaling, noise = noise * sigma, which is the noise added to the clean latent image in the variance exploding diffusion model notation.
         #if inpainting, after noise_scaling, noise = latent_image + noise * sigma, which is x_t in the variance exploding diffusion model notation for the known region.
         k_callback = None
