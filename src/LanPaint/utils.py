@@ -198,5 +198,5 @@ def Zcoefs(gamma_t, delta):
     return Zcoef1 * amplitude, Zcoef2 * amplitude, Zcoef3 * amplitude, amplitude
 
 def Zcoefs_asymp(gamma_t, delta):
-    A_t = gamma_t * (1 - delta) 
+    A_t = ( gamma_t * (1 - delta) )/4
     return epxm1_x(- 2 * A_t)
