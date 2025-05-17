@@ -40,6 +40,10 @@ class LanPaint():
             tt_second = torch.log(1+self.VE_Sigmas[1]**2)
             #print("max t step",tt_first - tt_second)
             step_size = (tt - tt_next) / (tt_first - tt_second) * self.step_size * abt ** 0
+        elif self.step_time_schedule == "shrink_p1":
+            step_size = self.step_size * (1 - abt)
+        elif self.step_time_schedule == "shrink_p2":
+            step_size = self.step_size * (1 - abt)**2
         else:
             step_size = self.step_size * (1 -  abt ) ** 0.5
 
@@ -152,11 +156,13 @@ class LanPaint():
         # Transform x to z using z = x * sqrt(1+sigma^2). Here we have already set x to z to avoid floating point stability issue.
         z_t = x_t #* (1 + sigma**2) ** 0.5
         # Denoise
-        z_mid_x = z_t + eps_denoise * (sigma_mid_x - sigma)
+        #z_mid_x = z_t + eps_denoise * (sigma_mid_x - sigma)
+        z_mid_x = z_t - eps_denoise * (1+sigma**2) / sigma * dtx / 2   
         z_mid_y = z_t - eps_denoise * (1+sigma**2) / sigma * dty / 2   
         z_mid = z_mid_x * (1 - mask) + z_mid_y * mask
         # Compute the change in noise level sigma (dsigma = sqrt(sigma^2 - sigma_mid^2)).
-        dsigma_x = sigma * torch.sqrt(1 - (sigma_mid_x / sigma) ** 2)
+        #dsigma_x = sigma * torch.sqrt(1 - (sigma_mid_x / sigma) ** 2)
+        dsigma_x = torch.sqrt( (1 + sigma**2) * dtx ) 
         dsigma_y = torch.sqrt( (1 + sigma**2) * dty ) 
         dsigma = dsigma_x * (1 - mask) + dsigma_y * mask
         # Add noise
@@ -189,8 +195,8 @@ class LanPaint():
         Gamma_hat_x /= 2.
         Gamma_hat_y /= 2.
 
-        A_t_x = 0 * dtx / 2
-        A_t_y =  (1+self.chara_lamb) / ( 1 - abt ) * dty / 2
+        A_t_x = (1) / ( 1 - abt ) * dtx / 2
+        A_t_y =  (1) / ( 1 - abt ) * dty / 2
 
 
         return sigma, dtx, dty, Gamma_hat_x, Gamma_hat_y, sigma_mid_x, sigma_mid_y, A_t_x, A_t_y
@@ -239,6 +245,8 @@ class LanPaint():
 
         Delta_x = 1 - 4 * A_t_x / Gamma_hat_x
         Delta_y = 1 - 4 * A_t_y / Gamma_hat_y
+
+        print("Delta_x", torch.mean(Delta_x).item(), "Delta_y", torch.mean(Delta_y).item())
         zeta_1_x = zeta1( Gamma_hat_x, Delta_x) 
         zeta_1_y = zeta1( Gamma_hat_y, Delta_y)
         zeta_2_x = zeta2( Gamma_hat_x, Delta_x)
