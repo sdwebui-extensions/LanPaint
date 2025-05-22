@@ -125,51 +125,39 @@ class LanPaint():
         else:
             beta = self.chara_beta * abt ** 0
         return beta
-    def langevin_dynamics(self, x_t, score, mask, step_size, current_times, sigma_x=1, sigma_y=0, args=None):
 
+    def langevin_dynamics(self, x_t, score, mask, step_size, current_times, sigma_x=1, sigma_y=0, args=None):
         # prepare the step size and time parameters
         with torch.autocast(device_type=x_t.device.type, dtype=torch.float32):
             step_sizes = self.prepare_step_size(current_times, step_size, sigma_x, sigma_y)
-            sigma, dtx, dty, Gamma_hat_x, Gamma_hat_y, sigma_mid_x, sigma_mid_y, A_t_x, A_t_y = step_sizes
-
-        if torch.mean(sigma_mid_x) >= torch.mean(sigma) or torch.mean(sigma_mid_y) >= torch.mean(sigma):
+            sigma, abt, dtx, dty, Gamma_x, Gamma_y, A_x, A_y, D_x, D_y = step_sizes
+        # print('mask',mask.device)
+        if torch.mean(dtx) <= 0.:
             return x_t, args
         # -------------------------------------------------------------------------
         # A: Update epsilon (score estimate and noise initialization)
         # -------------------------------------------------------------------------
-        eps_momentum, eps_model, Z = self.eps_evalutation(x_t, score, args)
+        x0 = self.x0_evalutation(x_t, score, sigma, args)
+        C = x0 / (1-abt)
+        A = A_x * (1-mask) + A_y * mask
+        D = D_x * (1-mask) + D_y * mask
+        dt = dtx * (1-mask) + dty * mask
+        Gamma = Gamma_x * (1-mask) + Gamma_y * mask
+
+
+
+        if args is None:
+            #v = torch.zeros_like(x_t)
+            v = None
+        else:
+            v, = args
+
         with torch.autocast(device_type=x_t.device.type, dtype=torch.float32):
-            x_t, eps_momentum, Z = self.Langevin_step(x_t, eps_model, eps_momentum, Z, mask, step_sizes)
-        return x_t, (eps_momentum, Z)
-    def Langevin_step(self, x_t, eps_model, eps_momentum, Z, mask, step_sizes):
-        sigma, dtx, dty, Gamma_hat_x, Gamma_hat_y, sigma_mid_x, sigma_mid_y, A_t_x, A_t_y = step_sizes
-        # -------------------------------------------------------------------------
-        # B: Update epsilon and noise Z with momentum
-        # -------------------------------------------------------------------------
-        # Compute the weighted combination term for epsilon mean update:
-        # term = (2/Γ_hat)*(1-exp(-0.5*Γ_hat))
-        eps_momentum, eps_denoise = self.eps_with_momentum(eps_momentum, eps_model, Gamma_hat_x, Gamma_hat_y, A_t_x, A_t_y, mask)
-        Z_comb, Z_next = self.noise_with_momentum(Z, Gamma_hat_x, Gamma_hat_y, A_t_x, A_t_y, mask, x_t)
-        # -------------------------------------------------------------------------
-        # C: Langevin Dynamics splitted into denoise-addnoise steps with Euler Scheme
-        # -------------------------------------------------------------------------
-        # Transform x to z using z = x * sqrt(1+sigma^2). Here we have already set x to z to avoid floating point stability issue.
-        z_t = x_t #* (1 + sigma**2) ** 0.5
-        # Denoise
-        #z_mid_x = z_t + eps_denoise * (sigma_mid_x - sigma)
-        z_mid_x = z_t - eps_denoise * (1+sigma**2) / sigma * dtx / 2   
-        z_mid_y = z_t - eps_denoise * (1+sigma**2) / sigma * dty / 2   
-        z_mid = z_mid_x * (1 - mask) + z_mid_y * mask
-        # Compute the change in noise level sigma (dsigma = sqrt(sigma^2 - sigma_mid^2)).
-        #dsigma_x = sigma * torch.sqrt(1 - (sigma_mid_x / sigma) ** 2)
-        dsigma_x = torch.sqrt( (1 + sigma**2) * dtx ) 
-        dsigma_y = torch.sqrt( (1 + sigma**2) * dty ) 
-        dsigma = dsigma_x * (1 - mask) + dsigma_y * mask
-        # Add noise
-        z_final = z_mid + Z_comb * dsigma
-        # Transform back to x-space: x = z / sqrt(1+sigma^2)
-        x_t = z_final #/ (1 + sigma**2) ** 0.5
-        return x_t, eps_momentum, Z_next
+            osc = StochasticHarmonicOscillator(Gamma, A, C, D )
+            x_t, v = osc.dynamics(x_t, v, dt )
+  
+        return x_t, (v,)
+
     def prepare_step_size(self, current_times, step_size, sigma_x, sigma_y):
         # -------------------------------------------------------------------------
         # Unpack current times parameters (sigma and abt)
@@ -198,97 +186,21 @@ class LanPaint():
         A_t_x = (1) / ( 1 - abt ) * dtx / 2
         A_t_y =  (1) / ( 1 - abt ) * dty / 2
 
+        A_x = A_t_x / (dtx/2)
+        A_y = A_t_y / (dty/2)
+        Gamma_x = Gamma_hat_x / (dtx/2)
+        Gamma_y = Gamma_hat_y / (dty/2)
 
-        return sigma, dtx, dty, Gamma_hat_x, Gamma_hat_y, sigma_mid_x, sigma_mid_y, A_t_x, A_t_y
-    def eps_evalutation(self, x_t, score, args):
+        D_x = (2 * (1 + sigma**2) )**0.5
+        D_y = (2 * (1 + sigma**2) )**0.5
+
+        return sigma, abt, dtx/2, dty/2, Gamma_x, Gamma_y, A_x, A_y, D_x, D_y
+
+
+
+    def x0_evalutation(self, x_t, score, sigma, args):
         score_model = score(x_t)
         eps_model = -score_model 
-        # Initialize epsilon and Z if not provided in args.
-        if args is None:
-            eps = eps_model
-            Z = torch.randn_like(x_t)
-        else:
-            eps, Z = args
-        return eps, eps_model, Z
-    def eps_with_momentum(self, eps, eps_model, Gamma_hat_x, Gamma_hat_y, A_t_x, A_t_y, mask):
 
-        # Compute the coefficients for the momentum update.
-        Delta_x = 1 - 4 * A_t_x / Gamma_hat_x
-        Delta_y = 1 - 4 * A_t_y / Gamma_hat_y
-        zeta_1_x = zeta1( Gamma_hat_x, Delta_x) 
-        zeta_1_y = zeta1( Gamma_hat_y, Delta_y)
-        zeta_2_x = zeta2( Gamma_hat_x, Delta_x)
-        zeta_2_y = zeta2( Gamma_hat_y, Delta_y)
-        e_x = 1 - Gamma_hat_x * zeta_2_x
-        e_y = 1 - Gamma_hat_y * zeta_2_y
-
-        Gamma_hat_asymp_x, Gamma_hat_asymp_y = 1e4 * Gamma_hat_x, 1e4 * Gamma_hat_y
-        Delta_asymp_x, Delta_asymp_y = 1 - 4 * A_t_x / Gamma_hat_asymp_x , 1 - 4 * A_t_y / Gamma_hat_asymp_y
-
-        zeta_1_asymp_x, zeta_2_asymp_x = zeta1( Gamma_hat_asymp_x, Delta_asymp_x), zeta2( Gamma_hat_asymp_x, Delta_asymp_x)
-        zeta_1_asymp_y, zeta_2_asymp_y = zeta1( Gamma_hat_asymp_y, Delta_asymp_y), zeta2( Gamma_hat_asymp_y, Delta_asymp_y)
-
-
-        eps_bar_x = self.alpha * ( zeta_2_x * eps + (1-zeta_1_x) * eps_model) + (1 - self.alpha) * ( zeta_2_asymp_x * eps + (1-zeta_1_asymp_x) * eps_model)
-        eps_bar_y = self.alpha * ( zeta_2_y * eps + (1-zeta_1_y) * eps_model) + (1 - self.alpha) * ( zeta_2_asymp_y * eps + (1-zeta_1_asymp_y) * eps_model)
-         # Form the denoised epsilon using self.alpha (assumed to be 1/Ψ)
-        eps_denoise = eps_bar_x * (1 - mask) + eps_bar_y * mask 
-
-       
-
-        # Update the mean epsilon for the next step:
-        eps_x = eps * (e_x - A_t_x * ( 1 - zeta_1_x ) )+ eps_model * (1 - e_x)
-        eps_y = eps * (e_y - A_t_y * ( 1 - zeta_1_y ) )+ eps_model * (1 - e_y) 
-        eps = eps_x * (1 - mask) + eps_y * mask
-        return eps, eps_denoise
-    def noise_with_momentum(self, Z, Gamma_hat_x, Gamma_hat_y, A_t_x, A_t_y, mask, x_t):
-
-        Delta_x = 1 - 4 * A_t_x / Gamma_hat_x
-        Delta_y = 1 - 4 * A_t_y / Gamma_hat_y
-
-        print("Delta_x", torch.mean(Delta_x).item(), "Delta_y", torch.mean(Delta_y).item())
-        zeta_1_x = zeta1( Gamma_hat_x, Delta_x) 
-        zeta_1_y = zeta1( Gamma_hat_y, Delta_y)
-        zeta_2_x = zeta2( Gamma_hat_x, Delta_x)
-        zeta_2_y = zeta2( Gamma_hat_y, Delta_y)
-        e_x = 1 - Gamma_hat_x * zeta_2_x
-        e_y = 1 - Gamma_hat_y * zeta_2_y
-
-        Sig11_x = sig11(Gamma_hat_x, Delta_x)
-        Sig11_y = sig11(Gamma_hat_y, Delta_y)
-
-        Zcoefs_asymp_x = Zcoefs_asymp( Gamma_hat_x, Delta_x) 
-        Zcoefs_asymp_y = Zcoefs_asymp( Gamma_hat_y, Delta_y)
-
-
-        # Generate auxiliary noise terms.
-        Z_q     = torch.randn_like(x_t)
-        Z_q_avg = torch.randn_like(x_t)
-        Z_z     = torch.randn_like(x_t)
-
-        # Update Z for each branch:
-        Z_x = (e_x - A_t_x * ( 1 - zeta_1_x ) ) * Z + (Sig11_x) ** 0.5 * Z_q
-        Z_y = (e_y - A_t_y * ( 1 - zeta_1_y ) ) * Z + (Sig11_y) ** 0.5 * Z_q
-        Z_next = Z_x * (1 - mask) + Z_y * mask
-
-
-
-        def noise_generation(Gamma_hat, Delta, Z, Z_q, Z_q_avg):
-            term1, term2, term3, amplitude = Zcoefs( Gamma_hat, Delta) 
-            terms = torch.stack([term1, term2, term3], dim=-1)
-            #terms = torch.nn.functional.normalize(terms, dim=-1)
-
-            Zs = torch.stack([Z, Z_q, Z_q_avg], dim=-1)
-            return torch.sum( terms* Zs, dim=-1 )
-        # Compute the combined noise update following the scheme:
-        Z_comb_x = noise_generation(Gamma_hat_x, Delta_x, Z, Z_q, Z_q_avg)
-        Z_comb_y = noise_generation(Gamma_hat_y, Delta_y, Z, Z_q, Z_q_avg)
-
-        Z_comb = Z_comb_x * (1 - mask) + Z_comb_y * mask
-
-        Z_asymp = Z_z * Zcoefs_asymp_x ** 0.5 * (1 - mask) + Z_z * Zcoefs_asymp_y ** 0.5 * mask
-
-
-        # Combine with an additional noise term using self.alpha.
-        Z_comb = self.alpha ** 0.5 * Z_comb + (1 - self.alpha) ** 0.5 * Z_asymp
-        return Z_comb, Z_next
+        x0 = x_t - sigma * eps_model
+        return x0

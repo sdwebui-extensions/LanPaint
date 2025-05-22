@@ -198,5 +198,91 @@ def Zcoefs(gamma_t, delta):
     return Zcoef1 * amplitude, Zcoef2 * amplitude, Zcoef3 * amplitude, amplitude
 
 def Zcoefs_asymp(gamma_t, delta):
-    A_t = ( gamma_t * (1 - delta) )/4
+    A_t = (gamma_t * (1 - delta) )/4
     return epxm1_x(- 2 * A_t)
+
+class StochasticHarmonicOscillator:
+    """
+    Simulates a stochastic harmonic oscillator governed by the equations:
+        dy(t) = q(t) dt
+        dq(t) = -Γ A y(t) dt + Γ C dt + Γ D dw(t) - Γ q(t) dt
+
+    Also define v(t) = q(t) / √Γ, which is numerically more stable.
+        
+    Where:
+        y(t) - Position variable
+        q(t) - Velocity variable
+        Γ - Damping coefficient
+        A - Harmonic potential strength
+        C - Constant force term
+        D - Noise amplitude
+        dw(t) - Wiener process (Brownian motion)
+    """
+    def __init__(self, Gamma, A, C, D):
+        self.Gamma = Gamma
+        self.A = A
+        self.C = C
+        self.D = D
+        self.Delta = 1 - 4 * A / Gamma
+    def sig11(self, gamma_t, delta):
+        return 1 - torch.exp(-gamma_t) + gamma_t**2 * exp_1mcosh_GD(gamma_t, delta) + exp_sinh_sqrtD(gamma_t, delta)
+    def sig22(self, gamma_t, delta):
+        return 1- zeta1(2*gamma_t, delta) + 2 * gamma_t * exp_1mcosh_GD(gamma_t, delta) 
+    def dynamics(self, y0, v0, t):
+        """
+        Calculates the position and velocity variables at time t.
+
+        Parameters:
+            y0 (float): Initial position
+            v0 (float): Initial velocity v(0) = q(0) / √Γ
+            t (float): Time at which to evaluate the dynamics
+        Returns:
+            tuple: (y(t), v(t))
+        """
+        
+
+        dummyzero = y0.new_zeros(1) # convert scalar to tensor with same device and dtype as y0
+        Delta = self.Delta + dummyzero
+        Gamma_hat = self.Gamma * t + dummyzero
+        A = self.A + dummyzero
+        C = self.C + dummyzero
+        D = self.D + dummyzero
+        Gamma = self.Gamma + dummyzero
+        zeta_1 = zeta1( Gamma_hat, Delta) 
+        zeta_2 = zeta2( Gamma_hat, Delta)
+        EE = 1 - Gamma_hat * zeta_2
+
+        if v0 is None:
+            #v0 = torch.randn_like(y0) * D / 2 ** 0.5
+            v0 = (C - A * y0)/Gamma**0.5
+        
+        # Calculate mean position and velocity
+        term1 = (1 - zeta_1) * (C * t - A * t * y0) + zeta_2 * (Gamma ** 0.5) * v0 * t
+        y_mean = term1 + y0
+        v_mean =  (1 - EE)*(C - A * y0) / (Gamma ** 0.5) + (EE - A * t * (1 - zeta_1)) * v0
+        
+        cov_yy = D**2 * t * self.sig22(Gamma_hat, Delta)
+        cov_vv = D**2 * self.sig11(Gamma_hat, Delta) / 2
+        cov_yv = (zeta2(Gamma_hat, Delta) * Gamma_hat * D ) **2 / 2 / (Gamma ** 0.5)
+
+        # sample new position and velocity with multivariate normal distribution
+
+        batch_shape = y0.shape
+        cov_matrix = torch.zeros(*batch_shape, 2, 2, device=y0.device, dtype=y0.dtype)
+        cov_matrix[..., 0, 0] = cov_yy
+        cov_matrix[..., 0, 1] = cov_yv
+        cov_matrix[..., 1, 0] = cov_yv  # symmetric
+        cov_matrix[..., 1, 1] = cov_vv
+        
+        # Sample correlated noise from multivariate normal
+        mean = torch.zeros(*batch_shape, 2, device=y0.device, dtype=y0.dtype)
+        mean[..., 0] = y_mean
+        mean[..., 1] = v_mean
+        new_yv = torch.distributions.MultivariateNormal(
+            loc=mean,
+            covariance_matrix=cov_matrix
+        ).sample()
+
+        return new_yv[...,0], new_yv[...,1]
+
+
