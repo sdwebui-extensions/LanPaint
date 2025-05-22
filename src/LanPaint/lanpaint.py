@@ -2,20 +2,20 @@ import torch
 from .utils import *
 from functools import partial
 class LanPaint():
-    def __init__(self, Model, NSteps, Friction, Lambda, Alpha, Beta, StepSize, EndSigma=0, StepSizeSchedule = "follow_sampler", BetaSchedule = "const", IteStepSchedule="const", CapSigma = 1., IS_FLUX = False, IS_FLOW = False):
+    def __init__(self, Model, NSteps, Friction, Lambda, Beta, StepSize, IS_FLUX = False, IS_FLOW = False):
         self.n_steps = NSteps
         self.chara_lamb = Lambda
         self.IS_FLUX = IS_FLUX
         self.IS_FLOW = IS_FLOW
         self.step_size = StepSize
         self.inner_model = Model
-        self.alpha = Alpha
-        self.beta_scale = BetaSchedule
-        self.step_size_schedule = IteStepSchedule
-        self.step_time_schedule = StepSizeSchedule
-        self.end_sigma = EndSigma
+        #self.alpha = Alpha
+        #self.beta_scale = BetaSchedule
+        #self.step_size_schedule = IteStepSchedule
+        #self.step_time_schedule = StepSizeSchedule
+        #self.end_sigma = EndSigma
         self.friction = Friction
-        self.LanPaint_Cap_Sigma = CapSigma
+        #self.LanPaint_Cap_Sigma = CapSigma
         self.chara_beta = Beta
         
     def __call__(self, x, latent_image, noise, sigma, Sigmas, latent_mask, current_times, model_options, seed):
@@ -29,26 +29,7 @@ class LanPaint():
         VE_Sigma_next = self.VE_Sigmas[ sigma_ind + 1 ] * VE_Sigma**0
 
         
-        #step_size = self.step_size * (1 - abt) ** b * abt ** a / ( ((a/(a+b))**a*(b/(a+b))**b) )
-
-        if self.step_time_schedule == "dual_shrink":
-            step_size = self.step_size * (1 - abt) ** 0.5 * abt ** 0.5
-        elif self.step_time_schedule == "follow_sampler":
-            tt = torch.log(1+VE_Sigma**2)
-            tt_next = torch.log(1+VE_Sigma_next**2)
-            tt_first = torch.log(1+self.VE_Sigmas[0]**2)
-            tt_second = torch.log(1+self.VE_Sigmas[1]**2)
-            #print("max t step",tt_first - tt_second)
-            step_size = (tt - tt_next) / (tt_first - tt_second) * self.step_size * abt ** 0
-        elif self.step_time_schedule == "shrink_p1":
-            step_size = self.step_size * (1 - abt)
-        elif self.step_time_schedule == "shrink_p2":
-            step_size = self.step_size * (1 - abt)**2
-        else:
-            step_size = self.step_size * (1 -  abt ) ** 0.5
-
-
-
+        step_size = self.step_size * (1 - abt)
         step_size = step_size[:, None, None, None]
         # self.inner_model.inner_model.scale_latent_inpaint returns variance exploding x_t values
         # This is the replace step
@@ -63,15 +44,8 @@ class LanPaint():
         # after noise_scaling, noise = latent_image + noise * sigma, which is x_t in the variance exploding diffusion model notation for the known region.
         args = None
         for i in range(self.n_steps):
-            if torch.mean(VE_Sigma) < self.end_sigma:
-                break
-
             score_func = partial( self.score_model, y = self.latent_image, mask = latent_mask, abt = abt[:, None,None,None], sigma = VE_Sigma[:, None,None,None], model_options = model_options, seed = seed )
-            if self.step_size_schedule == "linear":
-                step_size_i = step_size * (1 - i/(self.n_steps) )
-            else:
-                step_size_i = step_size 
-            x_t, args = self.langevin_dynamics(x_t, score_func , latent_mask, step_size_i , current_times, sigma_x = self.sigma_x(abt)[:, None,None,None], sigma_y = self.sigma_y(abt)[:, None,None,None], args = args)  
+            x_t, args = self.langevin_dynamics(x_t, score_func , latent_mask, step_size , current_times, sigma_x = self.sigma_x(abt)[:, None,None,None], sigma_y = self.sigma_y(abt)[:, None,None,None], args = args)  
         if IS_FLUX or IS_FLOW:
             x = x_t / ( 1 + VE_Sigma[:, None,None,None] )
         else:
@@ -81,21 +55,7 @@ class LanPaint():
         out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
         out = out * (1-latent_mask) + self.latent_image * latent_mask
         return out
-    def mid_times(self, current_times, step_size):
-        sigma, abt = current_times
-        tt = torch.log(1+sigma**2)
-        tt_mid = torch.max( tt - step_size, tt*0 )
-        sigma_mid = (torch.exp(tt_mid) - 1) ** 0.5
-        abt_mid = 1/(1+sigma_mid**2)
-        
-        if torch.mean(sigma) >= self.LanPaint_Cap_Sigma:
-            return tt - tt_mid, sigma_mid, abt_mid
-        else:
-            sigma_ind = torch.argmin(torch.abs(self.VE_Sigmas - torch.mean( sigma )))
-            VE_Sigma_next = self.VE_Sigmas[ sigma_ind + 1 ] * sigma**0
-            abt_next = 1/( 1+VE_Sigma_next**2 )
-            tt_next = torch.log(1+VE_Sigma_next**2)
-            return tt - tt_next, VE_Sigma_next, abt_next
+
     def score_model(self, x_t, y, mask, abt, sigma, model_options, seed):
         
         lamb = self.chara_lamb
@@ -115,15 +75,7 @@ class LanPaint():
         # the time scale for the x_t update
         return abt**0
     def sigma_y(self, abt):
-        # the time scale for the y_t update
-        if self.beta_scale == "shrink":
-            beta = self.chara_beta * (1-abt)**0.5
-        elif self.beta_scale == "dual_shrink":
-            beta = self.chara_beta * (1-abt)**0.5 * abt ** 0.5
-        elif self.beta_scale == "back_shrink":
-            beta = self.chara_beta * abt ** 0.5
-        else:
-            beta = self.chara_beta * abt ** 0
+        beta = self.chara_beta * abt ** 0
         return beta
 
     def langevin_dynamics(self, x_t, score, mask, step_size, current_times, sigma_x=1, sigma_y=0, args=None):
@@ -168,17 +120,13 @@ class LanPaint():
         dtx = 2 * step_size * sigma_x
         dty = 2 * step_size * sigma_y
         
-        # Get mid time parameters (sigma_mid and abt_mid) for each branch.
-        dtx, sigma_mid_x, abt_mid_x = self.mid_times((sigma, abt), dtx)
-        dty, sigma_mid_y, abt_mid_y = self.mid_times((sigma, abt), dty)
-
         # -------------------------------------------------------------------------
         # Define friction parameter Gamma_hat for each branch.
         # Using dtx**0 provides a tensor of the proper device/dtype.
 
-        Gamma_hat_x = self.friction * self.step_size * sigma_x / 0.1 * sigma**0
-        Gamma_hat_y = self.friction * self.step_size * sigma_y / 0.1 * sigma**0
-        print("Gamma_hat_x", torch.mean(Gamma_hat_x).item(), "Gamma_hat_y", torch.mean(Gamma_hat_y).item())
+        Gamma_hat_x = self.friction **2 * self.step_size * sigma_x / 0.1 * sigma**0
+        Gamma_hat_y = self.friction **2 * self.step_size * sigma_y / 0.1 * sigma**0
+        #print("Gamma_hat_x", torch.mean(Gamma_hat_x).item(), "Gamma_hat_y", torch.mean(Gamma_hat_y).item())
         # adjust dt to match denoise-addnoise steps sizes
         Gamma_hat_x /= 2.
         Gamma_hat_y /= 2.

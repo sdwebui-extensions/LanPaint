@@ -153,14 +153,8 @@ class KSAMPLER(comfy.samplers.KSAMPLER):
                                        model_wrap.model_patcher.LanPaint_NumSteps,
                                        model_wrap.model_patcher.LanPaint_Friction,
                                        model_wrap.model_patcher.LanPaint_Lambda,
-                                       model_wrap.model_patcher.LanPaint_Alpha, 
                                        model_wrap.model_patcher.LanPaint_Beta,
                                        model_wrap.model_patcher.LanPaint_StepSize, 
-                                       EndSigma=model_wrap.model_patcher.LanPaint_EndSigma, 
-                                       StepSizeSchedule = model_wrap.model_patcher.LanPaint_StepTimeSchedule, 
-                                       BetaSchedule = model_wrap.model_patcher.LanPaint_BetaScale, 
-                                       IteStepSchedule=model_wrap.model_patcher.LanPaint_StepSizeSchedule, 
-                                       CapSigma = model_wrap.model_patcher.LanPaint_Cap_Sigma, 
                                        IS_FLUX = IS_FLUX, 
                                        IS_FLOW = IS_FLOW)
         #if not inpainting, after noise_scaling, noise = noise * sigma, which is the noise added to the clean latent image in the variance exploding diffusion model notation.
@@ -288,13 +282,7 @@ class LanPaint_KSamplerAdvanced:
                 "LanPaint_StepSize": ("FLOAT", {"default": 0.15, "min": 0.0001, "max": 1., "step": 0.01, "round": 0.001, "tooltip": "The step size for the Langevin dynamics. Higher values result in faster convergence but may be unstable."}),
                 "LanPaint_Beta": ("FLOAT", {"default": 1.5, "min": 0.0001, "max": 5, "step": 0.1, "round": 0.1, "tooltip": "The beta parameter for the bidirectional guidance. Scale the step size for the known region independently for the Langevin dynamics. Higher values result in faster convergence but may be unstable."}),
                 "LanPaint_Friction": ("FLOAT", {"default": 1.5, "min": 0., "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The friction parameter for the underdamped Langevin dynamics, higher values result in faster convergence but may be unstable."}),
-                "LanPaint_Alpha": ("FLOAT", {"default": 0.8, "min": 0.0001, "max": 1., "step": 0.1, "round": 0.1, "tooltip": "The (rescaled) alpha parameter for the HFHR langevin dynamics, mixes Langevin dynamics and underdamped Langevin dynamics with a friction term. 0 corresponds to Langevin dynamics, 1 corresponds to underdamped Langevin dynamics."}),
-                "LanPaint_BetaScale": (["shrink", "fixed", "dual_shrink", "back_shrink"], {"default": "fixed", "tooltip": "The beta scale, determines how the beta parameter changes over time. Shrink: beta = beta * (1 - alpha bar) ** 0.5; Fixed: beta = beta; Dual_shrink: beta = beta * (1 - alpha bar) ** 0.5 *  alpha bar ** 0.5; Back_shrink: beta = beta *  alpha bar ** 0.5; Alpha bar: the alpha cumprod."}),
-                "LanPaint_StepSizeSchedule": (["const", "linear"], {"default": "const", "tooltip": "The step size schedule for the Langevin dynamics, const: constant step size, linear: linearly decreasing step size."}),
-                "LanPaint_StepTimeSchedule": (["shrink", "dual_shrink", "follow_sampler", "shrink_p1","shrink_p2"], {"default": "follow_sampler", "tooltip": "The step size schedule for the first step of Langevin dynamics during diffusion sampling, shrink: step size = step size * (1 - alpha bar) ** 0.5; Dual_shrink: step size = step size * (1 - alpha bar) ** 0.5 *  alpha bar ** 0.5; Follow_sampler: scale with the sampler step size."}),
-                "LanPaint_EndSigma": ("FLOAT", {"default": 3., "min": 0.000, "max": 20.0, "step": 0.1, "round": 0.1, "tooltip": "Stop 'thinking' with Langevin dynamics at this sigma value."}),
                 "LanPaint_cfg_BIG": ("FLOAT", {"default": -0.5, "min": -20, "max": 20.0, "step": 0.1, "round": 0.1, "tooltip": "The CFG scale used in the bidirectional guidance (for the known region only). Higher value results in more closely matching the known region."}),
-                "LanPaint_Cap_Sigma": ("FLOAT", {"default": 0., "min": 0.0001, "max": 20.0, "step": 0.1, "round": 0.1, "tooltip": "Cap the stepsize to scheduler step size below this noise level."}),
                 "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler Advanced. For difficult tasks, first try increasing steps, LanPaint_NumSteps, and LanPaint_cfg_BIG. Then try increase LanPaint_Lambda or LanPaint_StepSize. Decrease LanPaint_Friction if you want to obtain good results with fewer turns of thinking (LanPaint_NumSteps) at the risk of irregular behavior. Increase LanPaint_Tamed or LanPaint_Alpha can suppress irregular behavior. For more information, visit https://github.com/scraed/LanPaint", "multiline": True}),
                      },
                 }
@@ -304,7 +292,7 @@ class LanPaint_KSamplerAdvanced:
 
     CATEGORY = "sampling"
 
-    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_Beta=1, LanPaint_NumSteps=5, LanPaint_Friction=5, LanPaint_Alpha=1, LanPaint_BetaScale="fixed", LanPaint_StepSizeSchedule = "const", LanPaint_StepTimeSchedule = "const",  LanPaint_EndSigma=0, LanPaint_cfg_BIG = 5., LanPaint_Cap_Sigma = 0., LanPaint_Info=""):
+    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_Beta=1, LanPaint_NumSteps=5, LanPaint_Friction=5, LanPaint_cfg_BIG = 5., LanPaint_Info=""):
         force_full_denoise = True
         if return_with_leftover_noise == "enable":
             force_full_denoise = False
@@ -316,13 +304,7 @@ class LanPaint_KSamplerAdvanced:
         model.LanPaint_Beta = LanPaint_Beta
         model.LanPaint_NumSteps = LanPaint_NumSteps
         model.LanPaint_Friction = LanPaint_Friction
-        model.LanPaint_Alpha = LanPaint_Alpha
-        model.LanPaint_BetaScale = LanPaint_BetaScale
-        model.LanPaint_StepSizeSchedule = LanPaint_StepSizeSchedule
-        model.LanPaint_StepTimeSchedule = LanPaint_StepTimeSchedule
-        model.LanPaint_EndSigma = LanPaint_EndSigma
         model.LanPaint_cfg_BIG = LanPaint_cfg_BIG
-        model.LanPaint_Cap_Sigma = LanPaint_Cap_Sigma
 
         with override_sample_function():
             return nodes.common_ksampler(model, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise, disable_noise=disable_noise, start_step=start_at_step, last_step=end_at_step, force_full_denoise=force_full_denoise)
