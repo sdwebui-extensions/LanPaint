@@ -91,8 +91,9 @@ class KSamplerX0Inpaint:
 
         # unify the notations into variance exploding diffusion model
         if IS_FLUX or IS_FLOW:
-            VE_Sigma = sigma / ( torch.maximum( 1 - sigma , sigma*0 + 5e-2  ))
-            self.VE_Sigmas = self.sigmas / ( torch.maximum( 1 - self.sigmas , self.sigmas*0 + 5e-2  ))
+            
+            VE_Sigma = sigma / ( 1 - sigma + 5e-3 * sigma)
+            self.VE_Sigmas = self.sigmas / (  1 - self.sigmas + 5e-3 * self.sigmas )
         else:
             VE_Sigma = sigma 
             self.VE_Sigmas = self.sigmas
@@ -230,9 +231,9 @@ class LanPaint_KSampler():
                 "negative": ("CONDITIONING", {"tooltip": "The conditioning describing the attributes you want to exclude from the image."}),
                 "latent_image": ("LATENT", {"tooltip": "The latent image to denoise."}),
                 "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01, "tooltip": "The amount of denoising applied, lower values will maintain the structure of the initial image allowing for image to image sampling."}),
-                "LanPaint_NumSteps": ("INT", {"default": 5, "min": 0, "max": 20, "tooltip": "The number of steps for the Langevin dynamics, representing the turns of thinking per step."}),  
-                "LanPaint_EndSigma": ("FLOAT", {"default": 3.0, "min": 0.0, "max": 20.0, "step": 0.01, "tooltip": "The noise level at which the thinking process stops. Higher value give less thinking but helps to deal with blurring when turns of thinking is too high."}),
-                "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler. Recommend steps 50, LanPaint NumSteps 1-20 depending on the difficulty of task. LanPaint_EndSigma = 3.0 for anime style, 0.6 for realistic style. For more information, visit https://github.com/scraed/LanPaint", "multiline": True}),
+                "LanPaint_NumSteps": ("INT", {"default": 5, "min": 0, "max": 100, "tooltip": "The number of steps for the Langevin dynamics, representing the turns of thinking per step."}),
+                "LanPaint_PromptMode": (["Image First", "Prompt First"], {"tooltip": "Image First: emphasis image quality, Prompt First: emphasis prompt following"}),
+                "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler. For more info, visit https://github.com/scraed/LanPaint. If you find it useful, please give a star ⭐️!", "multiline": True}),
                   }
         }
 
@@ -243,21 +244,17 @@ class LanPaint_KSampler():
     CATEGORY = "sampling"
     DESCRIPTION = "Uses the provided model, positive and negative conditioning to denoise the latent image."
 
-    def sample(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_NumSteps=5, LanPaint_EndSigma = 3., LanPaint_Info=""):
-        model.LanPaint_StepSize = 0.5
+    def sample(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=1.0, LanPaint_NumSteps=5, LanPaint_PromptMode = "Image First", LanPaint_Info=""):
+
+        model.LanPaint_StepSize = 0.15
         model.LanPaint_Lambda = 8.0
-        model.LanPaint_Beta = 1.2
+        model.LanPaint_Beta = 1.
         model.LanPaint_NumSteps = LanPaint_NumSteps
-        model.LanPaint_Friction = 5.
-        model.LanPaint_Alpha = 0.9
-        model.LanPaint_Tamed = 1.
-        model.LanPaint_BetaScale = "shrink"
-        model.LanPaint_StepSizeSchedule = "linear"
-        model.LanPaint_StepTimeSchedule = "shrink"
-        model.LanPaint_StartSigma = 20.
-        model.LanPaint_EndSigma = LanPaint_EndSigma
-        model.LanPaint_cfg_BIG = -0.5
-        model.LanPaint_Lambda_Schedule = "const"
+        model.LanPaint_Friction = 15
+        if LanPaint_PromptMode == "Image First":
+            model.LanPaint_cfg_BIG = cfg
+        else:
+            model.LanPaint_cfg_BIG = 0*cfg - 0.5
         with override_sample_function():
             return nodes.common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise)
 class LanPaint_KSamplerAdvanced:
@@ -278,12 +275,12 @@ class LanPaint_KSamplerAdvanced:
                     "end_at_step": ("INT", {"default": 10000, "min": 0, "max": 10000}),
                     "return_with_leftover_noise": (["disable", "enable"], ),
                 "LanPaint_NumSteps": ("INT", {"default": 5, "min": 0, "max": 100, "tooltip": "The number of steps for the Langevin dynamics, representing the turns of thinking per step."}),
-                "LanPaint_Lambda": ("FLOAT", {"default": 8., "min": 0.1, "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The lambda parameter for the bidirectional guidance. Higher values align with known regions more closely, but may result in instability."}),
+                "LanPaint_Lambda": ("FLOAT", {"default": 8., "min": 0.1, "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The bidirectional guidance scale. Higher values align with known regions more closely, but may result in instability."}),
                 "LanPaint_StepSize": ("FLOAT", {"default": 0.15, "min": 0.0001, "max": 1., "step": 0.01, "round": 0.001, "tooltip": "The step size for the Langevin dynamics. Higher values result in faster convergence but may be unstable."}),
-                "LanPaint_Beta": ("FLOAT", {"default": 1.5, "min": 0.0001, "max": 5, "step": 0.1, "round": 0.1, "tooltip": "The beta parameter for the bidirectional guidance. Scale the step size for the known region independently for the Langevin dynamics. Higher values result in faster convergence but may be unstable."}),
-                "LanPaint_Friction": ("FLOAT", {"default": 1.5, "min": 0., "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The friction parameter for the underdamped Langevin dynamics, higher values result in faster convergence but may be unstable."}),
-                "LanPaint_cfg_BIG": ("FLOAT", {"default": -0.5, "min": -20, "max": 20.0, "step": 0.1, "round": 0.1, "tooltip": "The CFG scale used in the bidirectional guidance (for the known region only). Higher value results in more closely matching the known region."}),
-                "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler Advanced. For difficult tasks, first try increasing steps, LanPaint_NumSteps, and LanPaint_cfg_BIG. Then try increase LanPaint_Lambda or LanPaint_StepSize. Decrease LanPaint_Friction if you want to obtain good results with fewer turns of thinking (LanPaint_NumSteps) at the risk of irregular behavior. Increase LanPaint_Tamed or LanPaint_Alpha can suppress irregular behavior. For more information, visit https://github.com/scraed/LanPaint", "multiline": True}),
+                "LanPaint_Beta": ("FLOAT", {"default": 1., "min": 0.0001, "max": 5, "step": 0.1, "round": 0.1, "tooltip": "The step size ratio between masked / unmasked regions. Lower value can compensate high values of LanPaint_Lambda."}),
+                "LanPaint_Friction": ("FLOAT", {"default": 15, "min": 0., "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The friction parameter for fast langevin, lower values result in faster convergence but may be unstable."}),
+                "LanPaint_PromptMode": (["Image First", "Prompt First"], {"tooltip": "Image First: emphasis image quality, Prompt First: emphasis prompt following"}),
+                "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler Adv. For more info, visit https://github.com/scraed/LanPaint. If you find it useful, please give a star ⭐️!", "multiline": True}),
                      },
                 }
 
@@ -292,7 +289,7 @@ class LanPaint_KSamplerAdvanced:
 
     CATEGORY = "sampling"
 
-    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_Beta=1, LanPaint_NumSteps=5, LanPaint_Friction=5, LanPaint_cfg_BIG = 5., LanPaint_Info=""):
+    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_Beta=1, LanPaint_NumSteps=5, LanPaint_Friction=5, LanPaint_PromptMode = "Image First", LanPaint_Info=""):
         force_full_denoise = True
         if return_with_leftover_noise == "enable":
             force_full_denoise = False
@@ -304,7 +301,10 @@ class LanPaint_KSamplerAdvanced:
         model.LanPaint_Beta = LanPaint_Beta
         model.LanPaint_NumSteps = LanPaint_NumSteps
         model.LanPaint_Friction = LanPaint_Friction
-        model.LanPaint_cfg_BIG = LanPaint_cfg_BIG
+        if LanPaint_PromptMode == "Image First":
+            model.LanPaint_cfg_BIG = cfg
+        else:
+            model.LanPaint_cfg_BIG = 0*cfg - 0.5
 
         with override_sample_function():
             return nodes.common_ksampler(model, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise, disable_noise=disable_noise, start_step=start_at_step, last_step=end_at_step, force_full_denoise=force_full_denoise)

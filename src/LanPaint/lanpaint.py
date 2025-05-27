@@ -61,7 +61,9 @@ class LanPaint():
         lamb = self.chara_lamb
 
         if self.IS_FLUX or self.IS_FLOW:
-            x_0, x_0_BIG = self.inner_model(x_t / ( 1 + sigma ), sigma[:, 0,0,0] / ( 1 + sigma[:, 0,0,0] ), model_options=model_options, seed=seed)
+            # compute t for flow model, with a small epsilon compensating for numerical error.
+            t_flow =  sigma[:, 0,0,0] / ( 1 + sigma[:, 0,0,0] - 5e-3 * sigma[:, 0,0,0] )
+            x_0, x_0_BIG = self.inner_model(x_t / ( 1 + sigma ), t_flow, model_options=model_options, seed=seed)
         else:
             x_0, x_0_BIG = self.inner_model(x_t, sigma[:, 0,0,0], model_options=model_options, seed=seed)
 
