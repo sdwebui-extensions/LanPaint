@@ -18,15 +18,12 @@ class LanPaint():
         #self.LanPaint_Cap_Sigma = CapSigma
         self.chara_beta = Beta
         
-    def __call__(self, x, latent_image, noise, sigma, Sigmas, latent_mask, current_times, model_options, seed):
-        self.VE_Sigmas = Sigmas
+    def __call__(self, x, latent_image, noise, sigma, latent_mask, current_times, model_options, seed):
         self.latent_image = latent_image
         self.noise = noise
         return self.LanPaint(x, sigma, latent_mask, current_times, model_options, seed, self.IS_FLUX, self.IS_FLOW)
     def LanPaint(self, x, sigma, latent_mask, current_times, model_options, seed, IS_FLUX, IS_FLOW):
-        VE_Sigma, abt = current_times
-        sigma_ind = torch.argmin(torch.abs(self.VE_Sigmas - torch.mean( VE_Sigma )))
-        VE_Sigma_next = self.VE_Sigmas[ sigma_ind + 1 ] * VE_Sigma**0
+        VE_Sigma, abt, Flow_t = current_times
 
         
         step_size = self.step_size * (1 - abt)
@@ -36,42 +33,40 @@ class LanPaint():
         x = x * (1 - latent_mask) +  self.inner_model.inner_model.scale_latent_inpaint(x=x, sigma=sigma, noise=self.noise, latent_image=self.latent_image)* latent_mask
         
         if IS_FLUX or IS_FLOW:
-            x_t = x * ( 1 + VE_Sigma[:, None,None,None])
+            x_t = x * ( abt[:, None,None,None]**0.5 + (1-abt[:, None,None,None])**0.5 )
         else:
-            x_t = x #/ ( 1+sigma**2 )**0.5 # switch to variance perserving x_t values
+            x_t = x / ( 1+VE_Sigma[:, None,None,None]**2 )**0.5 # switch to variance perserving x_t values
 
         ############ LanPaint Iterations Start ###############
         # after noise_scaling, noise = latent_image + noise * sigma, which is x_t in the variance exploding diffusion model notation for the known region.
         args = None
         for i in range(self.n_steps):
-            score_func = partial( self.score_model, y = self.latent_image, mask = latent_mask, abt = abt[:, None,None,None], sigma = VE_Sigma[:, None,None,None], model_options = model_options, seed = seed )
+            score_func = partial( self.score_model, y = self.latent_image, mask = latent_mask, abt = abt[:, None,None,None], sigma = VE_Sigma[:, None,None,None], tflow = Flow_t[:, None,None,None], model_options = model_options, seed = seed )
             x_t, args = self.langevin_dynamics(x_t, score_func , latent_mask, step_size , current_times, sigma_x = self.sigma_x(abt)[:, None,None,None], sigma_y = self.sigma_y(abt)[:, None,None,None], args = args)  
         if IS_FLUX or IS_FLOW:
-            x = x_t / ( 1 + VE_Sigma[:, None,None,None] )
+            x = x_t / ( abt[:, None,None,None]**0.5 + (1-abt[:, None,None,None])**0.5 )
         else:
-            x = x_t #/ ( 1+sigma**2 )**0.5 # switch to variance perserving x_t values
+            x = x_t * ( 1+VE_Sigma[:, None,None,None]**2 )**0.5 # switch to variance perserving x_t values
         ############ LanPaint Iterations End ###############
         # out is x_0
         out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
         out = out * (1-latent_mask) + self.latent_image * latent_mask
         return out
 
-    def score_model(self, x_t, y, mask, abt, sigma, model_options, seed):
+    def score_model(self, x_t, y, mask, abt, sigma, tflow, model_options, seed):
         
         lamb = self.chara_lamb
 
         if self.IS_FLUX or self.IS_FLOW:
             # compute t for flow model, with a small epsilon compensating for numerical error.
-            t_flow =  sigma[:, 0,0,0] / ( 1 + sigma[:, 0,0,0] - 5e-3 * sigma[:, 0,0,0] )
-            x_0, x_0_BIG = self.inner_model(x_t / ( 1 + sigma ), t_flow, model_options=model_options, seed=seed)
+            x = x_t / ( abt**0.5 + (1-abt)**0.5 ) # switch to Gaussian flow matching
+            x_0, x_0_BIG = self.inner_model(x, tflow[:, 0,0,0], model_options=model_options, seed=seed)
         else:
-            x_0, x_0_BIG = self.inner_model(x_t, sigma[:, 0,0,0], model_options=model_options, seed=seed)
+            x = x_t * ( 1+sigma**2 )**0.5 # switch to variance exploding
+            x_0, x_0_BIG = self.inner_model(x, sigma[:, 0,0,0], model_options=model_options, seed=seed)
 
-        e_t = x_t / ((1 - abt) ** 0.5 * (1 + sigma**2) ** 0.5 )- (abt ** 0.5  / (1 - abt) ** 0.5) * x_0
-        e_t_BIG = x_t / ((1 - abt) ** 0.5 * (1 + sigma**2) ** 0.5 )- (abt ** 0.5  / (1 - abt) ** 0.5) * x_0_BIG
-        
-        score_x = -e_t
-        score_y = - (1 + lamb) * ( x_t/ ((1 + sigma**2) ** 0.5 *(1 - abt)**0.5) - abt**0.5 /(1 - abt)**0.5 * y )  + lamb *  e_t_BIG
+        score_x = -(x_t - x_0)
+        score_y =  - (1 + lamb) * ( x_t - y )  + lamb * (x_t - x_0_BIG)  
         return score_x * (1 - mask) + score_y * mask
     def sigma_x(self, abt):
         # the time scale for the x_t update
@@ -89,10 +84,10 @@ class LanPaint():
         if torch.mean(dtx) <= 0.:
             return x_t, args
         # -------------------------------------------------------------------------
-        # A: Update epsilon (score estimate and noise initialization)
+        # Compute the Langevin dynamics update in variance perserving notation
         # -------------------------------------------------------------------------
         x0 = self.x0_evalutation(x_t, score, sigma, args)
-        C = x0 / (1-abt)
+        C = abt**0.5 * x0 / (1-abt)
         A = A_x * (1-mask) + A_y * mask
         D = D_x * (1-mask) + D_y * mask
         dt = dtx * (1-mask) + dty * mask
@@ -115,7 +110,7 @@ class LanPaint():
     def prepare_step_size(self, current_times, step_size, sigma_x, sigma_y):
         # -------------------------------------------------------------------------
         # Unpack current times parameters (sigma and abt)
-        sigma, abt = current_times
+        sigma, abt, flow_t = current_times
         sigma = sigma[:, None,None,None]
         abt = abt[:, None,None,None]
         # Compute time step (dtx, dty) for x and y branches.
@@ -141,16 +136,14 @@ class LanPaint():
         Gamma_x = Gamma_hat_x / (dtx/2)
         Gamma_y = Gamma_hat_y / (dty/2)
 
-        D_x = (2 * (1 + sigma**2) )**0.5
-        D_y = (2 * (1 + sigma**2) )**0.5
-
+        #D_x = (2 * (1 + sigma**2) )**0.5
+        #D_y = (2 * (1 + sigma**2) )**0.5
+        D_x = (2 * abt**0 )**0.5
+        D_y = (2 * abt**0 )**0.5
         return sigma, abt, dtx/2, dty/2, Gamma_x, Gamma_y, A_x, A_y, D_x, D_y
 
 
 
     def x0_evalutation(self, x_t, score, sigma, args):
-        score_model = score(x_t)
-        eps_model = -score_model 
-
-        x0 = x_t - sigma * eps_model
+        x0 = x_t + score(x_t)
         return x0

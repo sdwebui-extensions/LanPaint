@@ -91,12 +91,16 @@ class KSamplerX0Inpaint:
 
         # unify the notations into variance exploding diffusion model
         if IS_FLUX or IS_FLOW:
+            Flow_t = sigma
+            abt = (1 - Flow_t)**2 / ((1 - Flow_t)**2 + Flow_t**2 )
+            VE_Sigma = Flow_t / (1 - Flow_t)
+            #print("t", torch.mean( sigma ).item(), "VE_Sigma", torch.mean( VE_Sigma ).item())
             
-            VE_Sigma = sigma / ( 1 - sigma + 5e-3 * sigma)
-            self.VE_Sigmas = self.sigmas / (  1 - self.sigmas + 5e-3 * self.sigmas )
+
         else:
             VE_Sigma = sigma 
-            self.VE_Sigmas = self.sigmas
+            abt = 1/( 1+VE_Sigma**2 )
+            Flow_t = (1-abt)**0.5 / ( (1-abt)**0.5 + abt**0.5  )
 
         if denoise_mask is not None:
             if "denoise_mask_function" in model_options:
@@ -106,11 +110,11 @@ class KSamplerX0Inpaint:
 
             latent_mask = 1 - denoise_mask
 
-            abt = 1/( 1+VE_Sigma**2 )
+            
 
-            current_times = (VE_Sigma, abt)
+            current_times = (VE_Sigma, abt, Flow_t)
 
-            out = self.PaintMethod(x, self.latent_image, self.noise, sigma, self.VE_Sigmas, latent_mask, current_times, model_options, seed)
+            out = self.PaintMethod(x, self.latent_image, self.noise, sigma, latent_mask, current_times, model_options, seed)
         else:
             out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
         
@@ -248,9 +252,9 @@ class LanPaint_KSampler():
 
         model.LanPaint_StepSize = 0.15
         model.LanPaint_Lambda = 8.0
-        model.LanPaint_Beta = 1.
+        model.LanPaint_Beta = 1.0
         model.LanPaint_NumSteps = LanPaint_NumSteps
-        model.LanPaint_Friction = 15
+        model.LanPaint_Friction = 15.
         if LanPaint_PromptMode == "Image First":
             model.LanPaint_cfg_BIG = cfg
         else:
