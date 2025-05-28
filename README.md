@@ -5,7 +5,7 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 
 ## Features
 
-- **The Most Adaptive Method** - Works immediately with almost ANY model (with/without ControlNet)! SD 1.5, XL, 3.5, Flux, HiDream, even custom models you've trained yourself.
+- **The Most Adaptive Method** - Works immediately with almost ANY model (with/without ControlNet)! SD 1.5, XL, 3.5, Flux, HiDream, even custom loras/models you've trained yourself.
 - **Zero Training** - No need to train anything, it just works on your existing model.
 - **Simple Integration** - Same workflow as standard ComfyUI KSampler
 - **Mask independent** - Inpaint, outpaint, etc. Works for mask of any shape, size, and position.
@@ -25,6 +25,7 @@ LanPaint also implements an accurate, robust, and fast Langevin dynamics solver.
 ## Updates
 - 2025/05/28
     - Major update on the Langevin solver. It is now much faster and more stable.
+    - Greatly simplified the parameters for advanced sampler.
     - Fix performance issue on Flux and SD 3.5
 - 2025/04/16
     - Added Primary HiDream support
@@ -37,20 +38,17 @@ LanPaint also implements an accurate, robust, and fast Langevin dynamics solver.
 ## Examples
 All examples use a random seed 0 to generate batch of 4 images for fair comparison. (Warning: Generating 4 images may exceed your GPU memory; adjust batch size as needed.)
 
+### Example HiDream: InPaint(LanPaint K Sampler, 5 steps of thinking)
+![Inpainting Result 8](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_11.jpg)  
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_8)
 
-
+You need to follow the ComfyUI version of [HiDream workflow](https://docs.comfy.org/tutorials/image/hidream/hidream-i1) to download and install the model.
 
 ### Example SD 3.5: InPaint(LanPaint K Sampler, 5 steps of thinking)
 ![Inpainting Result 8](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_12.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_9)
 
 You need to follow the ComfyUI version of [SD 3.5 workflow](https://comfyui-wiki.com/en/tutorial/advanced/stable-diffusion-3-5-comfyui-workflow) to download and install the model.
-
-### Example HiDream: InPaint(LanPaint K Sampler, 5 steps of thinking)
-![Inpainting Result 8](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_11.jpg)  
-[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_8)
-
-You need to follow the ComfyUI version of [HiDream workflow](https://docs.comfy.org/tutorials/image/hidream/hidream-i1) to download and install the model.
 
 ### Example Flux: InPaint(LanPaint K Sampler, 5 steps of thinking)
 ![Inpainting Result 7](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_10.jpg)  
@@ -186,12 +184,12 @@ If you find the results have wired texture, try
 
 ## ToDo
 - Try Implement Detailer
+- Provide inference code on without GUI.
 
 ## Contribute
 
 - 2025/03/06: Bug Fix for str not callable error and unpack error. Big thanks to [jamesWalker55](https://github.com/jamesWalker55) and [EricBCoding](https://github.com/EricBCoding).
 
-Help us improve LanPaint! **Report bugs**, share **example cases**, or contribute your **personal parameter settings** to benefit the community. 
 
 ## Citation
 
