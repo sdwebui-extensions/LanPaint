@@ -3,6 +3,8 @@
 Unlock precise inpainting without additional training. LanPaint lets the model "think" through multiple iterations before denoising, aiming for seamless and accurate results. 
 ![Inpainting Result 13](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_13.jpg) 
 
+This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference"](https://arxiv.org/abs/2502.03491). 
+
 ## Features
 
 - **Universal Compatibility** – Works instantly with almost any model (SD 1.5, XL, 3.5, Flux, HiDream, or custom LoRAs) and ControlNet.  
@@ -13,7 +15,7 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 - **Beyond Inpainting** – You can even use it as a simple way to generate consistent characters. 
 
 ## How It Works  
-This is the official implementation of "Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference". LanPaint uses Langevin Dynamics as "thinking" steps, which digs deeper into the diffusion process and allows the model to generate more consistent results.
+LanPaint uses Langevin Dynamics as "thinking" steps, which digs deeper into the diffusion process and allows the model to generate more consistent results.
 
 LanPaint introduces "BIG score" that creates a **two-way alignment** between masked and unmasked areas. It continuously evaluates:  
 - *"Does the new content make sense with the existing elements?"*  
