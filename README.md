@@ -1,16 +1,16 @@
 # LanPaint (Thinking mode Inpaint)
 
 Unlock precise inpainting without additional training. LanPaint lets the model "think" through multiple iterations before denoising, aiming for seamless and accurate results. 
-
+![Inpainting Result 13](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_13.jpg) 
 
 ## Features
 
-- **The Most Adaptive Method** - Works immediately with almost ANY model (with/without ControlNet)! SD 1.5, XL, 3.5, Flux, HiDream, even custom loras/models you've trained yourself.
-- **Zero Training** - No need to train anything, it just works on your existing model.
-- **Simple Integration** - Same workflow as standard ComfyUI KSampler
-- **Mask independent** - Inpaint, outpaint, etc. Works for mask of any shape, size, and position.
-- **No Workarounds** - Based on the theory of diffusion, generate seamless and consistent results without smoothing on masks or latents. No need to set default denoise at 0.7 (preserving 30% original pixels in masks) used in conventional methods: 100% **new content creation**, No "painting over" existing content.
-- **Not only inpaint**: You can even use it as a simple way to generate consistent characters.
+- **Universal Compatibility** – Works instantly with almost any model (SD 1.5, XL, 3.5, Flux, HiDream, or custom LoRAs) and ControlNet.  
+- **No Training Needed** – Works out of the box with your existing model.  
+- **Easy to Use** – Same workflow as standard ComfyUI KSampler.  
+- **Flexible Masking** – Supports any mask shape, size, or position for inpainting/outpainting.  
+- **No Workarounds** – Generates 100% new content (no blending or smoothing) without relying on partial denoising.  
+- **Beyond Inpainting** – You can even use it as a simple way to generate consistent characters. 
 
 ## How It Works  
 This is the official implementation of "Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference". LanPaint uses Langevin Dynamics as "thinking" steps, which digs deeper into the diffusion process and allows the model to generate more consistent results.
