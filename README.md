@@ -61,6 +61,13 @@ You need to follow the ComfyUI version of [SD 3.5 workflow](https://comfyui-wiki
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_6)
 [Model Used in This Example](https://civitai.com/models/1188071?modelVersionId=1408658) 
 
+(Tricks 1: You can emphasize the character by copy it's image multiple times with Photoshop. Here I have made one extra copy.)
+
+(Tricks 2: Use prompts like multiple views, multiple angles, clone, turnaround.)
+
+(Tricks 3: Remeber LanPaint can in-paint: Mask non-consistent regions and try again!)
+
+
 ### Example SDXL 1: Basket to Basket Ball (LanPaint K Sampler, 2 steps of thinking).
 ![Inpainting Result 1](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_04.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_1) 
@@ -82,12 +89,6 @@ You need to follow the ComfyUI version of [SD 3.5 workflow](https://comfyui-wiki
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_5)
 [Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl)
 
-
-(Tricks 1: You can emphasize the character by copy it's image multiple times with Photoshop. Here I have made one extra copy.)
-
-(Tricks 2: Use prompts like multiple views, multiple angles, clone, turnaround.)
-
-(Tricks 3: Remeber LanPaint can in-paint: Mask non-consistent regions and try again!)
 
 
 
