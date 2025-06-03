@@ -22,6 +22,24 @@ Based on this evaluation, LanPaint iteratively updates the noise in both the mas
   
 LanPaint also implements an accurate, robust, and fast Langevin dynamics solver.
 
+
+## Quickstart
+
+1. **Install ComfyUI**: Follow the official [ComfyUI installation guide](https://docs.comfy.org/get_started) to set up ComfyUI on your system. Or ensure your ComfyUI version > 0.3.11.
+2. **Install ComfyUI-Manager**: Add the [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager) for easy extension management.  
+3. **Install LanPaint Nodes**:  
+   - **Via ComfyUI-Manager**: Search for "[LanPaint](https://registry.comfy.org/publishers/scraed/nodes/LanPaint)" in the manager and install it directly.  
+   - **Manually**: Click "Install via Git URL" in ComfyUI-Manager and input the GitHub repository link:  
+     ```
+     https://github.com/scraed/LanPaint.git
+     ```  
+     Alternatively, clone this repository into the `ComfyUI/custom_nodes` folder.  
+4. **Restart ComfyUI**: Restart ComfyUI to load the LanPaint nodes.  
+
+Once installed, you'll find the LanPaint nodes under the "sampling" category in ComfyUI. Use them just like the default KSampler for high-quality inpainting!
+
+
+
 ## Updates
 - 2025/05/28
     - Major update on the Langevin solver. It is now much faster and more stable.
@@ -108,20 +126,6 @@ Compare and explore the results from each method!
 
 ![WorkFlow](https://github.com/scraed/LanPaint/blob/master/Example.JPG)  
 
-## Quickstart
-
-1. **Install ComfyUI**: Follow the official [ComfyUI installation guide](https://docs.comfy.org/get_started) to set up ComfyUI on your system. Or ensure your ComfyUI version > 0.3.11.
-2. **Install ComfyUI-Manager**: Add the [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager) for easy extension management.  
-3. **Install LanPaint Nodes**:  
-   - **Via ComfyUI-Manager**: Search for "[LanPaint](https://registry.comfy.org/publishers/scraed/nodes/LanPaint)" in the manager and install it directly.  
-   - **Manually**: Click "Install via Git URL" in ComfyUI-Manager and input the GitHub repository link:  
-     ```
-     https://github.com/scraed/LanPaint.git
-     ```  
-     Alternatively, clone this repository into the `ComfyUI/custom_nodes` folder.  
-4. **Restart ComfyUI**: Restart ComfyUI to load the LanPaint nodes.  
-
-Once installed, you'll find the LanPaint nodes under the "sampling" category in ComfyUI. Use them just like the default KSampler for high-quality inpainting!
 
 ## Usage
 
