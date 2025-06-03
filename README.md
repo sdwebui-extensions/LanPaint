@@ -81,7 +81,7 @@ You need to follow the ComfyUI version of [SD 3.5 workflow](https://comfyui-wiki
 
 (Tricks 1: You can emphasize the character by copy it's image multiple times with Photoshop. Here I have made one extra copy.)
 
-(Tricks 2: Use prompts like multiple views, multiple angles, clone, turnaround.)
+(Tricks 2: Use prompts like multiple views, multiple angles, clone, turnaround. Use LanPaint's Prompt first mode (does not support Flux))
 
 (Tricks 3: Remeber LanPaint can in-paint: Mask non-consistent regions and try again!)
 
