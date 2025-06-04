@@ -149,7 +149,7 @@ Simplified interface with recommended defaults:
 
 - Steps: 20 - 50. More steps will give more "thinking" and better results.
 - LanPaint NumSteps: The turns of thinking before denoising. Recommend 5 for most of tasks ( which means 5 times slower than sampling without thinking). Use 10 for more challenging tasks. 
-- LanPaint Prompt mode: Image First mode and Prompt First mode. Image First mode focuses on the image, while Prompt First mode focuses more on the prompt. Use Prompt First mode for tasks like character consistency. (Technically, it Prompt First mode change CFG scale to negative value in the BIG score to emphasis prompt, which will costs image quality.)
+- LanPaint Prompt mode: Image First mode and Prompt First mode. Image First mode focuses on the image, inpaint based on image context (maybe ignore prompt), while Prompt First mode focuses more on the prompt. Use Prompt First mode for tasks like character consistency. (Technically, it Prompt First mode change CFG scale to negative value in the BIG score to emphasis prompt, which will costs image quality.)
 
 ### LanPaint KSampler (Advanced)
 Full parameter control:
