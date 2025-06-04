@@ -111,7 +111,7 @@ class KSamplerX0Inpaint:
             latent_mask = 1 - denoise_mask
             current_times = (VE_Sigma, abt, Flow_t)
 
-            current_step = torch.argmin( torch.abs( self.sigmas - sigma ) )
+            current_step = torch.argmin( torch.abs( self.sigmas - torch.mean(sigma) ) )
             total_steps = len(self.sigmas)-1
 
             if total_steps - current_step < self.LanPaint_early_stop:
