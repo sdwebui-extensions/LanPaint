@@ -163,7 +163,7 @@ Full parameter control:
 | `LanPaint_StepSize` | 0.1-1.0 | The StepSize of each thinking step. Recommend 0.1-0.5. |
 | `LanPaint_Beta` | 0.1-2.0 | The StepSize ratio between masked / unmasked region. Small value can compensate high lambda values. Recommend 1.0 |
 | `LanPaint_Friction` | 0.0-100.0 | The friction of Langevin dynamics. Higher means more slow but stable, lower means fast but unstable. Recommend 10.0 - 20.0|
-| `LanPaint_PromptMode` | Image First / Prompt First | Image First mode focuses on the image, while Prompt First mode focuses more on the prompt. |
+| `LanPaint_PromptMode` | Image First / Prompt First | Image First mode focuses on the image context, mqybe ignore prompt. Prompt First mode focuses more on the prompt. |
 
 For detailed descriptions of each parameter, simply hover your mouse over the corresponding input field to view tooltips with additional information.
 
