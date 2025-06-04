@@ -109,7 +109,7 @@ You need to follow the ComfyUI version of [SD 3.5 workflow](https://comfyui-wiki
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_5)
 [Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl)
 
-
+Check more for use cases like inpaint on [fine tuned models](https://github.com/scraed/LanPaint/issues/12#issuecomment-2938662021) and [face swapping](https://github.com/scraed/LanPaint/issues/12#issuecomment-2938723501), thanks to [Amazon90](https://github.com/Amazon90).
 
 
 ## **How to Use These Examples:**  
