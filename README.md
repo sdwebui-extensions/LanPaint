@@ -43,6 +43,9 @@ Once installed, you'll find the LanPaint nodes under the "sampling" category in 
 
 
 ## Updates
+- 2025/06/04
+    - Add more sampler support.
+    - Add early stopping to advanced sampler.
 - 2025/05/28
     - Major update on the Langevin solver. It is now much faster and more stable.
     - Greatly simplified the parameters for advanced sampler.
