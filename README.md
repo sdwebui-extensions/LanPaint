@@ -3,6 +3,8 @@
 Unlock precise inpainting without additional training. LanPaint lets the model "think" through multiple iterations before denoising, aiming for seamless and accurate results. 
 ![Inpainting Result 13](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_13.jpg) 
 
+This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference"](https://arxiv.org/abs/2502.03491). 
+
 ## Features
 
 - **Universal Compatibility** – Works instantly with almost any model (SD 1.5, XL, 3.5, Flux, HiDream, or custom LoRAs) and ControlNet.  
@@ -13,7 +15,7 @@ Unlock precise inpainting without additional training. LanPaint lets the model "
 - **Beyond Inpainting** – You can even use it as a simple way to generate consistent characters. 
 
 ## How It Works  
-This is the official implementation of "Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference". LanPaint uses Langevin Dynamics as "thinking" steps, which digs deeper into the diffusion process and allows the model to generate more consistent results.
+LanPaint uses Langevin Dynamics as "thinking" steps, which digs deeper into the diffusion process and allows the model to generate more consistent results.
 
 LanPaint introduces "BIG score" that creates a **two-way alignment** between masked and unmasked areas. It continuously evaluates:  
 - *"Does the new content make sense with the existing elements?"*  
@@ -21,6 +23,24 @@ LanPaint introduces "BIG score" that creates a **two-way alignment** between mas
 Based on this evaluation, LanPaint iteratively updates the noise in both the masked and unmasked regions.  
   
 LanPaint also implements an accurate, robust, and fast Langevin dynamics solver.
+
+
+## Quickstart
+
+1. **Install ComfyUI**: Follow the official [ComfyUI installation guide](https://docs.comfy.org/get_started) to set up ComfyUI on your system. Or ensure your ComfyUI version > 0.3.11.
+2. **Install ComfyUI-Manager**: Add the [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager) for easy extension management.  
+3. **Install LanPaint Nodes**:  
+   - **Via ComfyUI-Manager**: Search for "[LanPaint](https://registry.comfy.org/publishers/scraed/nodes/LanPaint)" in the manager and install it directly.  
+   - **Manually**: Click "Install via Git URL" in ComfyUI-Manager and input the GitHub repository link:  
+     ```
+     https://github.com/scraed/LanPaint.git
+     ```  
+     Alternatively, clone this repository into the `ComfyUI/custom_nodes` folder.  
+4. **Restart ComfyUI**: Restart ComfyUI to load the LanPaint nodes.  
+
+Once installed, you'll find the LanPaint nodes under the "sampling" category in ComfyUI. Use them just like the default KSampler for high-quality inpainting!
+
+
 
 ## Updates
 - 2025/05/28
@@ -63,7 +83,7 @@ You need to follow the ComfyUI version of [SD 3.5 workflow](https://comfyui-wiki
 
 (Tricks 1: You can emphasize the character by copy it's image multiple times with Photoshop. Here I have made one extra copy.)
 
-(Tricks 2: Use prompts like multiple views, multiple angles, clone, turnaround.)
+(Tricks 2: Use prompts like multiple views, multiple angles, clone, turnaround. Use LanPaint's Prompt first mode (does not support Flux))
 
 (Tricks 3: Remeber LanPaint can in-paint: Mask non-consistent regions and try again!)
 
@@ -89,7 +109,7 @@ You need to follow the ComfyUI version of [SD 3.5 workflow](https://comfyui-wiki
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_5)
 [Model Used in This Example](https://civitai.com/models/133005/juggernaut-xl)
 
-
+Check more for use cases like inpaint on [fine tuned models](https://github.com/scraed/LanPaint/issues/12#issuecomment-2938662021) and [face swapping](https://github.com/scraed/LanPaint/issues/12#issuecomment-2938723501), thanks to [Amazon90](https://github.com/Amazon90).
 
 
 ## **How to Use These Examples:**  
@@ -108,20 +128,6 @@ Compare and explore the results from each method!
 
 ![WorkFlow](https://github.com/scraed/LanPaint/blob/master/Example.JPG)  
 
-## Quickstart
-
-1. **Install ComfyUI**: Follow the official [ComfyUI installation guide](https://docs.comfy.org/get_started) to set up ComfyUI on your system. Or ensure your ComfyUI version > 0.3.11.
-2. **Install ComfyUI-Manager**: Add the [ComfyUI-Manager](https://github.com/ltdrdata/ComfyUI-Manager) for easy extension management.  
-3. **Install LanPaint Nodes**:  
-   - **Via ComfyUI-Manager**: Search for "[LanPaint](https://registry.comfy.org/publishers/scraed/nodes/LanPaint)" in the manager and install it directly.  
-   - **Manually**: Click "Install via Git URL" in ComfyUI-Manager and input the GitHub repository link:  
-     ```
-     https://github.com/scraed/LanPaint.git
-     ```  
-     Alternatively, clone this repository into the `ComfyUI/custom_nodes` folder.  
-4. **Restart ComfyUI**: Restart ComfyUI to load the LanPaint nodes.  
-
-Once installed, you'll find the LanPaint nodes under the "sampling" category in ComfyUI. Use them just like the default KSampler for high-quality inpainting!
 
 ## Usage
 
@@ -143,7 +149,7 @@ Simplified interface with recommended defaults:
 
 - Steps: 20 - 50. More steps will give more "thinking" and better results.
 - LanPaint NumSteps: The turns of thinking before denoising. Recommend 5 for most of tasks ( which means 5 times slower than sampling without thinking). Use 10 for more challenging tasks. 
-- LanPaint Prompt mode: Image First mode and Prompt First mode. Image First mode focuses on the image, while Prompt First mode focuses more on the prompt. Use Prompt First mode for tasks like character consistency. (Technically, it Prompt First mode change CFG scale to negative value in the BIG score to emphasis prompt, which will costs image quality.)
+- LanPaint Prompt mode: Image First mode and Prompt First mode. Image First mode focuses on the image, inpaint based on image context (maybe ignore prompt), while Prompt First mode focuses more on the prompt. Use Prompt First mode for tasks like character consistency. (Technically, it Prompt First mode change CFG scale to negative value in the BIG score to emphasis prompt, which will costs image quality.)
 
 ### LanPaint KSampler (Advanced)
 Full parameter control:
@@ -157,7 +163,7 @@ Full parameter control:
 | `LanPaint_StepSize` | 0.1-1.0 | The StepSize of each thinking step. Recommend 0.1-0.5. |
 | `LanPaint_Beta` | 0.1-2.0 | The StepSize ratio between masked / unmasked region. Small value can compensate high lambda values. Recommend 1.0 |
 | `LanPaint_Friction` | 0.0-100.0 | The friction of Langevin dynamics. Higher means more slow but stable, lower means fast but unstable. Recommend 10.0 - 20.0|
-| `LanPaint_PromptMode` | Image First / Prompt First | Image First mode focuses on the image, while Prompt First mode focuses more on the prompt. |
+| `LanPaint_PromptMode` | Image First / Prompt First | Image First mode focuses on the image context, maybe ignore prompt. Prompt First mode focuses more on the prompt. |
 
 For detailed descriptions of each parameter, simply hover your mouse over the corresponding input field to view tooltips with additional information.
 
@@ -167,7 +173,7 @@ For detailed descriptions of each parameter, simply hover your mouse over the co
 For challenging inpainting tasks:  
 
 1️⃣ **Boost Quality**
-Increase **LanPaint_NumSteps** (thinking iterations) or **LanPaint_Lambda** if the inpainted result does not meet your expectations.
+Increase total number of sampling steps, **LanPaint_NumSteps** (thinking iterations) or **LanPaint_Lambda** if the inpainted result does not meet your expectations.
   
 2️⃣ **Boost Speed**
 If you want better results but still need fewer steps, consider:
