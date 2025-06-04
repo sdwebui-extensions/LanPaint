@@ -109,12 +109,15 @@ class KSamplerX0Inpaint:
             denoise_mask = (denoise_mask > 0.5).float()
 
             latent_mask = 1 - denoise_mask
-
-            
-
             current_times = (VE_Sigma, abt, Flow_t)
 
-            out = self.PaintMethod(x, self.latent_image, self.noise, sigma, latent_mask, current_times, model_options, seed)
+            current_step = torch.argmin( torch.abs( self.sigmas - sigma ) )
+            total_steps = len(self.sigmas)-1
+
+            if total_steps - current_step < self.LanPaint_early_stop:
+                out = self.PaintMethod(x, self.latent_image, self.noise, sigma, latent_mask, current_times, model_options, seed, n_steps=0)
+            else:
+                out = self.PaintMethod(x, self.latent_image, self.noise, sigma, latent_mask, current_times, model_options, seed)
         else:
             out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
         
@@ -162,6 +165,7 @@ class KSAMPLER(comfy.samplers.KSAMPLER):
                                        model_wrap.model_patcher.LanPaint_StepSize, 
                                        IS_FLUX = IS_FLUX, 
                                        IS_FLOW = IS_FLOW)
+        model_k.LanPaint_early_stop = model_wrap.model_patcher.LanPaint_EarlyStop
         #if not inpainting, after noise_scaling, noise = noise * sigma, which is the noise added to the clean latent image in the variance exploding diffusion model notation.
         #if inpainting, after noise_scaling, noise = latent_image + noise * sigma, which is x_t in the variance exploding diffusion model notation for the known region.
         k_callback = None
@@ -227,7 +231,7 @@ class LanPaint_KSampler():
             "required": {
                 "model": ("MODEL", {"tooltip": "The model used for denoising the input latent."}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff, "tooltip": "The random seed used for creating the noise."}),
-                "steps": ("INT", {"default": 50, "min": 1, "max": 10000, "tooltip": "The number of steps used in the denoising process."}),
+                "steps": ("INT", {"default": 30, "min": 1, "max": 10000, "tooltip": "The number of steps used in the denoising process."}),
                 "cfg": ("FLOAT", {"default": 5.0, "min": 0.0, "max": 100.0, "step":0.1, "round": 0.01, "tooltip": "The Classifier-Free Guidance scale balances creativity and adherence to the prompt. Higher values result in images more closely matching the prompt however too high values will negatively impact quality."}),
                 "sampler_name": (KSAMPLER_NAMES, {"tooltip": "Recommended: euler."}),
                 "scheduler": (comfy.samplers.KSampler.SCHEDULERS, {"default": "karras", "tooltip": "The scheduler controls how noise is gradually removed to form the image."}),
@@ -255,6 +259,7 @@ class LanPaint_KSampler():
         model.LanPaint_Beta = 1.0
         model.LanPaint_NumSteps = LanPaint_NumSteps
         model.LanPaint_Friction = 15.
+        model.LanPaint_EarlyStop = 1
         if LanPaint_PromptMode == "Image First":
             model.LanPaint_cfg_BIG = cfg
         else:
@@ -268,7 +273,7 @@ class LanPaint_KSamplerAdvanced:
                     {"model": ("MODEL",),
                     "add_noise": (["enable", "disable"], ),
                     "noise_seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
-                    "steps": ("INT", {"default": 50, "min": 1, "max": 10000}),
+                    "steps": ("INT", {"default": 30, "min": 1, "max": 10000}),
                     "cfg": ("FLOAT", {"default": 5.0, "min": 0.0, "max": 100.0, "step":0.1, "round": 0.01}),
                     "sampler_name": (KSAMPLER_NAMES, ),
                     "scheduler": (comfy.samplers.KSampler.SCHEDULERS, ),
@@ -284,6 +289,7 @@ class LanPaint_KSamplerAdvanced:
                 "LanPaint_Beta": ("FLOAT", {"default": 1., "min": 0.0001, "max": 5, "step": 0.1, "round": 0.1, "tooltip": "The step size ratio between masked / unmasked regions. Lower value can compensate high values of LanPaint_Lambda."}),
                 "LanPaint_Friction": ("FLOAT", {"default": 15, "min": 0., "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The friction parameter for fast langevin, lower values result in faster convergence but may be unstable."}),
                 "LanPaint_PromptMode": (["Image First", "Prompt First"], {"tooltip": "Image First: emphasis image quality, Prompt First: emphasis prompt following"}),
+                "LanPaint_EarlyStop": ("INT", {"default": 1, "min": 0, "max": 10000, "tooltip": "The number of steps to stop the LanPaint early, useful for preventing the image from irregular patterns."}),
                 "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler Adv. For more info, visit https://github.com/scraed/LanPaint. If you find it useful, please give a star ⭐️!", "multiline": True}),
                      },
                 }
@@ -293,7 +299,7 @@ class LanPaint_KSamplerAdvanced:
 
     CATEGORY = "sampling"
 
-    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_Beta=1, LanPaint_NumSteps=5, LanPaint_Friction=5, LanPaint_PromptMode = "Image First", LanPaint_Info=""):
+    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_Beta=1, LanPaint_NumSteps=5, LanPaint_Friction=5, LanPaint_PromptMode = "Image First", LanPaint_EarlyStop = 1, LanPaint_Info=""):
         force_full_denoise = True
         if return_with_leftover_noise == "enable":
             force_full_denoise = False
@@ -305,6 +311,7 @@ class LanPaint_KSamplerAdvanced:
         model.LanPaint_Beta = LanPaint_Beta
         model.LanPaint_NumSteps = LanPaint_NumSteps
         model.LanPaint_Friction = LanPaint_Friction
+        model.LanPaint_EarlyStop = LanPaint_EarlyStop
         if LanPaint_PromptMode == "Image First":
             model.LanPaint_cfg_BIG = cfg
         else:

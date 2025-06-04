@@ -9,20 +9,16 @@ class LanPaint():
         self.IS_FLOW = IS_FLOW
         self.step_size = StepSize
         self.inner_model = Model
-        #self.alpha = Alpha
-        #self.beta_scale = BetaSchedule
-        #self.step_size_schedule = IteStepSchedule
-        #self.step_time_schedule = StepSizeSchedule
-        #self.end_sigma = EndSigma
         self.friction = Friction
-        #self.LanPaint_Cap_Sigma = CapSigma
         self.chara_beta = Beta
         
-    def __call__(self, x, latent_image, noise, sigma, latent_mask, current_times, model_options, seed):
+    def __call__(self, x, latent_image, noise, sigma, latent_mask, current_times, model_options, seed, n_steps=None):
         self.latent_image = latent_image
         self.noise = noise
-        return self.LanPaint(x, sigma, latent_mask, current_times, model_options, seed, self.IS_FLUX, self.IS_FLOW)
-    def LanPaint(self, x, sigma, latent_mask, current_times, model_options, seed, IS_FLUX, IS_FLOW):
+        if n_steps is None:
+            n_steps = self.n_steps
+        return self.LanPaint(x, sigma, latent_mask, current_times, n_steps, model_options, seed, self.IS_FLUX, self.IS_FLOW)
+    def LanPaint(self, x, sigma, latent_mask, current_times, n_steps, model_options, seed, IS_FLUX, IS_FLOW):
         VE_Sigma, abt, Flow_t = current_times
 
         
@@ -40,7 +36,7 @@ class LanPaint():
         ############ LanPaint Iterations Start ###############
         # after noise_scaling, noise = latent_image + noise * sigma, which is x_t in the variance exploding diffusion model notation for the known region.
         args = None
-        for i in range(self.n_steps):
+        for i in range(n_steps):
             score_func = partial( self.score_model, y = self.latent_image, mask = latent_mask, abt = abt[:, None,None,None], sigma = VE_Sigma[:, None,None,None], tflow = Flow_t[:, None,None,None], model_options = model_options, seed = seed )
             x_t, args = self.langevin_dynamics(x_t, score_func , latent_mask, step_size , current_times, sigma_x = self.sigma_x(abt)[:, None,None,None], sigma_y = self.sigma_y(abt)[:, None,None,None], args = args)  
         if IS_FLUX or IS_FLOW:
