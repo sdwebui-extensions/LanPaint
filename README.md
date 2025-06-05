@@ -179,7 +179,7 @@ This node blends the original image with the inpainted image based on the mask. 
 For challenging inpainting tasks:  
 
 1️⃣ **Boost Quality**
-Increase total number of sampling steps, **LanPaint_NumSteps** (thinking iterations) or **LanPaint_Lambda** if the inpainted result does not meet your expectations.
+Increase **total number of sampling steps** (very important!), **LanPaint_NumSteps** (thinking iterations) or **LanPaint_Lambda** if the inpainted result does not meet your expectations.
   
 2️⃣ **Boost Speed**
 If you want better results but still need fewer steps, consider:
