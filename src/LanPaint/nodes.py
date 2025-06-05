@@ -334,8 +334,8 @@ class MaskBlend:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "image1": ("IMAGE",),
-                "image2": ("IMAGE",),
+                "image1": ("IMAGE", {"tooltip": "Image before inpaint"}),
+                "image2": ("IMAGE", {"tooltip": "Image after inpaint"}),
                 "mask": ("MASK",),
                 "blend_overlap": ("INT", {"default": 1, "min": 1, "max": 51, "step": 2, "tooltip": "The number of pixels to blend between the two images."})
             },
@@ -349,6 +349,10 @@ class MaskBlend:
     def blend_images(self, image1: torch.Tensor, image2: torch.Tensor, mask: torch.Tensor, blend_overlap: int):
         # smooth the binary 01 mask, keep 1 still 1, but smooth the transition from 1 to 0
         # for each mask pixel, find out the nearest 1 pixel, and set the mask value to the distance between the two pixels
+        # check the size of mask and image1, image2, if not the same, assert error
+        if image1.shape[1] != image2.shape[1] or image1.shape[2] != image2.shape[2]:
+            raise ValueError("Make sure your image size is a multiple of 8. Otherwise the mask will not be aligned with the output image.")
+        
         mask = mask.float()
         mask = torch.nn.functional.max_pool2d(mask, kernel_size=blend_overlap, stride=1, padding=blend_overlap//2)
         # apply Gaussian blur with kernel size blend_overlap
