@@ -126,6 +126,7 @@ Check more for use cases like inpaint on [fine tuned models](https://github.com/
    - **[VAE Encode for Inpainting](https://comfyanonymous.github.io/ComfyUI_examples/inpaint/)** (middle),  
    - **[Set Latent Noise Mask](https://comfyui-wiki.com/en/tutorial/basic/how-to-inpaint-an-image-in-comfyui)** (second from right),  
    - **LanPaint** (far right).  
+8. You also get an output from "masked blend" node, which copy the original image and paste onto the unmasked part of output. It is useful if you want unmasked region to match original picture pixel perfectly.
 
 Compare and explore the results from each method!
 
@@ -171,7 +172,8 @@ Full parameter control:
 
 For detailed descriptions of each parameter, simply hover your mouse over the corresponding input field to view tooltips with additional information.
 
-
+### LanPaint Mask Blend
+This node blends the original image with the inpainted image based on the mask. It is useful if you want the unmasked region to match the original image pixel perfectly.
 
 ## LanPaint KSampler (Advanced) Tuning Guide
 For challenging inpainting tasks:  

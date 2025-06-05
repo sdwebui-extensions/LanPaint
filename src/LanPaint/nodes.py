@@ -114,7 +114,7 @@ class KSamplerX0Inpaint:
             current_step = torch.argmin( torch.abs( self.sigmas - torch.mean(sigma) ) )
             total_steps = len(self.sigmas)-1
 
-            if total_steps - current_step < self.LanPaint_early_stop:
+            if total_steps - current_step <= self.LanPaint_early_stop:
                 out = self.PaintMethod(x, self.latent_image, self.noise, sigma, latent_mask, current_times, model_options, seed, n_steps=0)
             else:
                 out = self.PaintMethod(x, self.latent_image, self.noise, sigma, latent_mask, current_times, model_options, seed)
@@ -326,11 +326,64 @@ class LanPaint_KSamplerAdvanced:
             return nodes.common_ksampler(model, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise, disable_noise=disable_noise, start_step=start_at_step, last_step=end_at_step, force_full_denoise=force_full_denoise)
 
 
+class MaskBlend:
+    def __init__(self):
+        pass
+
+    @classmethod
+    def INPUT_TYPES(s):
+        return {
+            "required": {
+                "image1": ("IMAGE",),
+                "image2": ("IMAGE",),
+                "mask": ("MASK",),
+                "blend_overlap": ("INT", {"default": 1, "min": 1, "max": 51, "step": 2, "tooltip": "The number of pixels to blend between the two images."})
+            },
+        }
+
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "blend_images"
+
+    CATEGORY = "image/postprocessing"
+
+    def blend_images(self, image1: torch.Tensor, image2: torch.Tensor, mask: torch.Tensor, blend_overlap: int):
+        # smooth the binary 01 mask, keep 1 still 1, but smooth the transition from 1 to 0
+        # for each mask pixel, find out the nearest 1 pixel, and set the mask value to the distance between the two pixels
+        mask = mask.float()
+        mask = torch.nn.functional.max_pool2d(mask, kernel_size=blend_overlap, stride=1, padding=blend_overlap//2)
+        # apply Gaussian blur with kernel size blend_overlap
+        kernel = self.gaussian_kernel(blend_overlap)
+        kernel = kernel.to(image1.device)
+        kernel = kernel[None, None, ...]
+        
+        mask = torch.nn.functional.conv2d(mask[:,None,:,:], kernel, padding=blend_overlap//2)[:,0,:,:]
+
+
+        blended_image = image1 * (1 - mask[...,None]) + image2 * mask[...,None]
+        return (blended_image,)
+    def gaussian_kernel(self,kernel_size):
+        """
+        Creates a 2D Gaussian kernel with the given size and standard deviation (sigma).
+        """
+        sigma = (kernel_size - 1)/4
+        # Create a grid of (x, y) coordinates
+        x = torch.arange(kernel_size).float() - kernel_size // 2
+        y = torch.arange(kernel_size).float() - kernel_size // 2
+        x_grid, y_grid = torch.meshgrid(x, y, indexing='ij')
+
+        # Compute the Gaussian function
+        kernel = torch.exp(-(x_grid ** 2 + y_grid ** 2) / (2 * sigma ** 2))
+        kernel = kernel / kernel.sum()  # Normalize the kernel
+
+        return kernel
+
+
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
 NODE_CLASS_MAPPINGS = {
     "LanPaint_KSampler": LanPaint_KSampler,
     "LanPaint_KSamplerAdvanced": LanPaint_KSamplerAdvanced,
+    "LanPaint_MaskBlend": MaskBlend,
 #    "LanPaint_UpSale_LatentNoiseMask": LanPaint_UpSale_LatentNoiseMask,
 }
 
@@ -338,5 +391,6 @@ NODE_CLASS_MAPPINGS = {
 NODE_DISPLAY_NAME_MAPPINGS = {
     "LanPaint_KSampler": "LanPaint KSampler",
     "LanPaint_KSamplerAdvanced": "LanPaint KSampler (Advanced)",
+    "LanPaint_MaskBlend": "LanPaint Mask Blend",
 #    "LanPaint_UpSale_LatentNoiseMask": "LanPaint UpSale Latent Noise Mask"
 }
