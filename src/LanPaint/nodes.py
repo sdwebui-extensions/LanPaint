@@ -11,8 +11,7 @@ from comfy.samplers import *
 from comfy.model_base import ModelType
 from .utils import *
 from .lanpaint import LanPaint
-# Monkey patch comfy.samplers module by importing with absolute package path
-#exec(inspect.getsource(comfy.samplers).replace("from .", "from comfy."))
+
 
 def reshape_mask(input_mask, output_shape):
     dims = len(output_shape) - 2
