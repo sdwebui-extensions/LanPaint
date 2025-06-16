@@ -260,8 +260,8 @@ class LanPaint_KSampler():
     def sample(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=1.0, LanPaint_NumSteps=5, LanPaint_PromptMode = "Image First", LanPaint_Info=""):
 
         model.LanPaint_StepSize = 0.15
-        model.LanPaint_Lambda = 8.0
-        model.LanPaint_Beta = 1.0
+        model.LanPaint_Lambda = 16.0
+        model.LanPaint_Beta = 0.5
         model.LanPaint_NumSteps = LanPaint_NumSteps
         model.LanPaint_Friction = 15.
         model.LanPaint_EarlyStop = 1
