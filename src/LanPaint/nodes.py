@@ -408,6 +408,7 @@ class LanPaint_SamplerCustom:
                      "LanPaint_Friction": ("FLOAT", {"default": 15.0, "min": 0.0, "max": 50.0, "step": 0.1, "tooltip": "Friction parameter for fast Langevin. Lower values speed convergence but may be unstable."}),
                      "LanPaint_PromptMode": (["Image First", "Prompt First"], {"tooltip": "Image First: prioritizes image quality; Prompt First: prioritizes prompt adherence."}),
                      "LanPaint_EarlyStop": ("INT", {"default": 1, "min": 0, "max": 10000, "tooltip": "The number of steps to stop the LanPaint early, useful for preventing the image from irregular patterns."}),
+                     "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler Adv. For more info, visit https://github.com/scraed/LanPaint. If you find it useful, please give a star ⭐️!", "multiline": True}),
                       }
                }
 
@@ -416,7 +417,7 @@ class LanPaint_SamplerCustom:
     FUNCTION = "sample"
     CATEGORY = "sampling/custom_sampling"
 
-    def sample(self, model, sampler, sigmas, add_noise, noise_seed, cfg, positive, negative, latent_image, LanPaint_StepSize, LanPaint_Lambda, LanPaint_Beta, LanPaint_NumSteps, LanPaint_Friction, LanPaint_PromptMode, LanPaint_EarlyStop):
+    def sample(self, model, sampler, sigmas, add_noise, noise_seed, cfg, positive, negative, latent_image, LanPaint_StepSize, LanPaint_Lambda, LanPaint_Beta, LanPaint_NumSteps, LanPaint_Friction, LanPaint_PromptMode, LanPaint_EarlyStop, LanPaint_Info=""):
         model.LanPaint_StepSize = LanPaint_StepSize
         model.LanPaint_Lambda = LanPaint_Lambda
         model.LanPaint_Beta = LanPaint_Beta
@@ -477,6 +478,7 @@ class LanPaint_SamplerCustomAdvanced:
                      "LanPaint_Friction": ("FLOAT", {"default": 15.0, "min": 0.0, "max": 50.0, "step": 0.1, "tooltip": "Friction parameter for fast Langevin. Lower values speed convergence but may be unstable."}),
                      "LanPaint_PromptMode": (["Image First", "Prompt First"], {"tooltip": "Image First: prioritizes image quality; Prompt First: prioritizes prompt adherence."}),
                      "LanPaint_EarlyStop": ("INT", {"default": 1, "min": 0, "max": 10000, "tooltip": "Steps to stop LanPaint early, preventing irregular patterns."}),
+                     "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler Adv. For more info, visit https://github.com/scraed/LanPaint. If you find it useful, please give a star ⭐️!", "multiline": True}),
                     }
                }
 
@@ -485,7 +487,7 @@ class LanPaint_SamplerCustomAdvanced:
     FUNCTION = "sample"
     CATEGORY = "sampling/custom_sampling"
 
-    def sample(self, noise, guider, sampler, sigmas, latent_image, start_at_step, end_at_step, return_with_leftover_noise, LanPaint_NumSteps, LanPaint_Lambda, LanPaint_StepSize, LanPaint_Beta, LanPaint_Friction, LanPaint_PromptMode, LanPaint_EarlyStop):
+    def sample(self, noise, guider, sampler, sigmas, latent_image, start_at_step, end_at_step, return_with_leftover_noise, LanPaint_NumSteps, LanPaint_Lambda, LanPaint_StepSize, LanPaint_Beta, LanPaint_Friction, LanPaint_PromptMode, LanPaint_EarlyStop, LanPaint_Info=""):
         force_full_denoise = True
         if return_with_leftover_noise == "enable":
             force_full_denoise = False
