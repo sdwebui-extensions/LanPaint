@@ -415,7 +415,7 @@ class LanPaint_SamplerCustom:
     FUNCTION = "sample"
     CATEGORY = "sampling/custom_sampling"
 
-    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise, LanPaint_StepSize, LanPaint_Lambda, LanPaint_Beta, LanPaint_NumSteps, LanPaint_Friction, LanPaint_PromptMode, LanPaint_EarlyStop):
+    def sample(self, model, sampler, sigmas, add_noise, noise_seed, cfg, positive, negative, latent_image, LanPaint_StepSize, LanPaint_Lambda, LanPaint_Beta, LanPaint_NumSteps, LanPaint_Friction, LanPaint_PromptMode, LanPaint_EarlyStop):
         model.LanPaint_StepSize = LanPaint_StepSize
         model.LanPaint_Lambda = LanPaint_Lambda
         model.LanPaint_Beta = LanPaint_Beta
