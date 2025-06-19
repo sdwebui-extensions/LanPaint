@@ -488,6 +488,8 @@ class LanPaint_SamplerCustomAdvanced:
 
     def sample(self, noise, guider, sampler, sigmas, latent_image, start_at_step, end_at_step, return_with_leftover_noise, LanPaint_NumSteps, LanPaint_Lambda, LanPaint_StepSize, LanPaint_Beta, LanPaint_Friction, LanPaint_PromptMode, LanPaint_EarlyStop, LanPaint_Info=""):
         force_full_denoise = True
+         if end_at_step <= start_at_step:
+            raise ValueError('end_at_step must be larger than start_at_step')
         if return_with_leftover_noise == "enable":
             force_full_denoise = False
         model = guider.model_patcher
