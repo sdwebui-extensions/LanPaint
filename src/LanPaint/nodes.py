@@ -447,8 +447,7 @@ class LanPaint_SamplerCustom:
             callback = latent_preview.prepare_callback(model, sigmas.shape[-1] - 1, x0_output)
             disable_pbar = not comfy.utils.PROGRESS_BAR_ENABLED
 
-            samples = comfy.sample.sample_custom(model, noise, cfg, sampler, sigmas, positive, negative, latent_image,
-                                                 noise_mask=noise_mask, callback=callback, disable_pbar=disable_pbar, seed=noise_seed)
+            samples = comfy.sample.sample_custom(model, noise, cfg, sampler, sigmas, positive, negative, latent_image,noise_mask=noise_mask, callback=callback, disable_pbar=disable_pbar, seed=noise_seed)
 
             out = latent.copy()
             out["samples"] = samples
@@ -528,18 +527,10 @@ class LanPaint_SamplerCustomAdvanced:
                         return torch.zeros_like(noise)
 
             x0_output = {}
-            callback = latent_preview.prepare_callback(model, len(sigmas) - 1, x0_output)
+            callback = latent_preview.prepare_callback(model, sigmas.shape[-1] - 1, x0_output)
             disable_pbar = not comfy.utils.PROGRESS_BAR_ENABLED
 
-            samples = guider.sample(
-                noise.generate_noise(latent),
-                latent_image_samples,
-                sampler,
-                sigmas,
-                denoise_mask=noise_mask,
-                callback=callback,
-                disable_pbar=disable_pbar,
-                seed=noise.seed
+            samples = guider.sample( noise.generate_noise(latent), latent_image_samples, sampler, sigmas, denoise_mask=noise_mask, callback=callback,disable_pbar=disable_pbar, seed=noise.seed
             )
 
             samples = samples.to(comfy.model_management.intermediate_device())
