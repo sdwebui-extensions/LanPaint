@@ -387,6 +387,7 @@ class Noise_RandomNoise:
         torch.manual_seed(self.seed)
         return torch.randn_like(latent["samples"])
 
+# Custom sampler implementation mimmicking base comfy nodes_custom_sampler.py
 class LanPaint_SamplerCustom:
     @classmethod
     def INPUT_TYPES(s):
@@ -456,6 +457,98 @@ class LanPaint_SamplerCustom:
             else:
                 out_denoised = out
             return (out, out_denoised)
+        
+class LanPaint_SamplerCustomAdvanced:
+    @classmethod
+    def INPUT_TYPES(s):
+        return {"required":
+                    {"noise": ("NOISE",),
+                     "guider": ("GUIDER",),
+                     "sampler": ("SAMPLER",),
+                     "sigmas": ("SIGMAS",),
+                     "latent_image": ("LATENT",),
+                     "start_at_step": ("INT", {"default": 0, "min": 0, "max": 10000}),
+                     "end_at_step": ("INT", {"default": 10000, "min": 0, "max": 10000}),
+                     "return_with_leftover_noise": (["disable", "enable"], ),
+                     "LanPaint_NumSteps": ("INT", {"default": 5, "min": 0, "max": 100, "tooltip": "Number of steps for Langevin dynamics, representing turns of thinking per step."}),
+                     "LanPaint_Lambda": ("FLOAT", {"default": 8.0, "min": 0.1, "max": 50.0, "step": 0.1, "tooltip": "Bidirectional guidance scale. Higher values align with known regions but may cause instability."}),
+                     "LanPaint_StepSize": ("FLOAT", {"default": 0.15, "min": 0.0001, "max": 1.0, "step": 0.01, "tooltip": "Step size for Langevin dynamics. Higher values speed convergence but may be unstable."}),
+                     "LanPaint_Beta": ("FLOAT", {"default": 1.0, "min": 0.0001, "max": 5.0, "step": 0.1, "tooltip": "Step size ratio between masked/unmasked regions. Lower values balance high Lambda."}),
+                     "LanPaint_Friction": ("FLOAT", {"default": 15.0, "min": 0.0, "max": 50.0, "step": 0.1, "tooltip": "Friction parameter for fast Langevin. Lower values speed convergence but may be unstable."}),
+                     "LanPaint_PromptMode": (["Image First", "Prompt First"], {"tooltip": "Image First: prioritizes image quality; Prompt First: prioritizes prompt adherence."}),
+                     "LanPaint_EarlyStop": ("INT", {"default": 1, "min": 0, "max": 10000, "tooltip": "Steps to stop LanPaint early, preventing irregular patterns."}),
+                    }
+               }
+
+    RETURN_TYPES = ("LATENT", "LATENT")
+    RETURN_NAMES = ("output", "denoised_output")
+    FUNCTION = "sample"
+    CATEGORY = "sampling/custom_sampling"
+
+    def sample(self, noise, guider, sampler, sigmas, latent_image, start_at_step, end_at_step, return_with_leftover_noise, LanPaint_NumSteps, LanPaint_Lambda, LanPaint_StepSize, LanPaint_Beta, LanPaint_Friction, LanPaint_PromptMode, LanPaint_EarlyStop):
+        force_full_denoise = True
+        if return_with_leftover_noise == "enable":
+            force_full_denoise = False
+        model = guider.model_patcher
+        model.LanPaint_StepSize = LanPaint_StepSize
+        model.LanPaint_Lambda = LanPaint_Lambda
+        model.LanPaint_Beta = LanPaint_Beta
+        model.LanPaint_NumSteps = LanPaint_NumSteps
+        model.LanPaint_Friction = LanPaint_Friction
+        model.LanPaint_EarlyStop = LanPaint_EarlyStop
+        if LanPaint_PromptMode == "Image First":
+            model.LanPaint_cfg_BIG = guider.cfg
+        else:
+            model.LanPaint_cfg_BIG = 0 * guider.cfg - 0.5
+        with override_sample_function():
+            latent = latent_image.copy()
+            latent_image_samples = latent["samples"]
+            latent_image_samples = comfy.sample.fix_empty_latent_channels(model, latent_image_samples)
+            latent["samples"] = latent_image_samples
+
+            noise_mask = None
+            if "noise_mask" in latent:
+                noise_mask = latent["noise_mask"]
+
+            # From base comfy samplers.py
+            if end_at_step is not None and end_at_step < (len(sigmas) - 1):
+                sigmas = sigmas[:end_at_step + 1]
+                if force_full_denoise:
+                    sigmas[-1] = 0
+
+            if start_at_step is not None:
+                if start_at_step < (len(sigmas) - 1):
+                    sigmas = sigmas[start_at_step:]
+                else:
+                    if latent_image is not None:
+                        return latent_image
+                    else:
+                        return torch.zeros_like(noise)
+
+            x0_output = {}
+            callback = latent_preview.prepare_callback(model, len(sigmas) - 1, x0_output)
+            disable_pbar = not comfy.utils.PROGRESS_BAR_ENABLED
+
+            samples = guider.sample(
+                noise.generate_noise(latent),
+                latent_image_samples,
+                sampler,
+                sigmas,
+                denoise_mask=noise_mask,
+                callback=callback,
+                disable_pbar=disable_pbar,
+                seed=noise.seed
+            )
+
+            samples = samples.to(comfy.model_management.intermediate_device())
+            out = latent.copy()
+            out["samples"] = samples
+            if "x0" in x0_output:
+                out_denoised = latent.copy()
+                out_denoised["samples"] = model.model.process_latent_out(x0_output["x0"].cpu())
+            else:
+                out_denoised = out
+            return (out, out_denoised)
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
@@ -463,6 +556,7 @@ NODE_CLASS_MAPPINGS = {
     "LanPaint_KSampler": LanPaint_KSampler,
     "LanPaint_KSamplerAdvanced": LanPaint_KSamplerAdvanced,
     "LanPaint_SamplerCustom" : LanPaint_SamplerCustom,
+    "LanPaint_SamplerCustomAdvanced" : LanPaint_SamplerCustomAdvanced,
     "LanPaint_MaskBlend": MaskBlend,
 #    "LanPaint_UpSale_LatentNoiseMask": LanPaint_UpSale_LatentNoiseMask,
 }
@@ -472,6 +566,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {
     "LanPaint_KSampler": "LanPaint KSampler",
     "LanPaint_KSamplerAdvanced": "LanPaint KSampler (Advanced)",
     "LanPaint_SamplerCustom" : "LanPaint Sampler Custom",
+    "LanPaint_SamplerCustomAdvanced" : "LanPaint Sampler Custom (Advanced)",
     "LanPaint_MaskBlend": "LanPaint Mask Blend",
 #    "LanPaint_UpSale_LatentNoiseMask": "LanPaint UpSale Latent Noise Mask"
 }
