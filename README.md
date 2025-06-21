@@ -48,6 +48,7 @@ Once installed, you'll find the LanPaint nodes under the "sampling" category in 
 - 2025/06/21
     - Update the algorithm with enhanced stability and outpaint performance.
     - Add outpaint example
+    - Supports Sampler Custom (Thanks to [MINENEMA](https://github.com/MINENEMA))
 - 2025/06/04
     - Add more sampler support.
     - Add early stopping to advanced sampler.
