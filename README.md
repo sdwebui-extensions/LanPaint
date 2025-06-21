@@ -76,7 +76,7 @@ You need to follow the ComfyUI version of [HiDream workflow](https://docs.comfy.
 ![Inpainting Result 8](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_13(1).jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_10)
 
-You need to follow the ComfyUI version of [HiDream workflow](https://docs.comfy.org/tutorials/image/hidream/hidream-i1) to download and install the model.
+You need to follow the ComfyUI version of [HiDream workflow](https://docs.comfy.org/tutorials/image/hidream/hidream-i1) to download and install the model. Thanks [Amazon90](https://github.com/Amazon90) for providing this example.
 
 ### Example SD 3.5: InPaint(LanPaint K Sampler, 5 steps of thinking)
 ![Inpainting Result 8](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_12.jpg)  
