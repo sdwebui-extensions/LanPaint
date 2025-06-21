@@ -240,7 +240,6 @@ class StochasticHarmonicOscillator:
             tuple: (y(t), v(t))
         """
         
-
         dummyzero = y0.new_zeros(1) # convert scalar to tensor with same device and dtype as y0
         Delta = self.Delta + dummyzero
         Gamma_hat = self.Gamma * t + dummyzero
@@ -253,8 +252,8 @@ class StochasticHarmonicOscillator:
         EE = 1 - Gamma_hat * zeta_2
 
         if v0 is None:
-            #v0 = torch.randn_like(y0) * D / 2 ** 0.5
-            v0 = (C - A * y0)/Gamma**0.5
+            v0 = torch.randn_like(y0) * D / 2 ** 0.5
+            #v0 = (C - A * y0)/Gamma**0.5
         
         # Calculate mean position and velocity
         term1 = (1 - zeta_1) * (C * t - A * t * y0) + zeta_2 * (Gamma ** 0.5) * v0 * t
@@ -273,16 +272,30 @@ class StochasticHarmonicOscillator:
         cov_matrix[..., 0, 1] = cov_yv
         cov_matrix[..., 1, 0] = cov_yv  # symmetric
         cov_matrix[..., 1, 1] = cov_vv
+
+
         
+        # Compute the Cholesky decomposition to get scale_tril
+        #scale_tril = torch.linalg.cholesky(cov_matrix)
+        scale_tril = torch.zeros(*batch_shape, 2, 2, device=y0.device, dtype=y0.dtype)
+        tol = 1e-8
+        cov_yy = torch.clamp( cov_yy, min = tol )
+        sd_yy = torch.sqrt( cov_yy )
+        inv_sd_yy = 1/(sd_yy)
+
+        scale_tril[..., 0, 0] = sd_yy
+        scale_tril[..., 0, 1] = 0.
+        scale_tril[..., 1, 0] = cov_yv * inv_sd_yy
+        scale_tril[..., 1, 1] = torch.clamp( cov_vv - cov_yv**2 / cov_yy, min = tol ) ** 0.5
+        # check if it matches torch.linalg.
+        #assert torch.allclose(torch.linalg.cholesky(cov_matrix), scale_tril, atol = 1e-4, rtol = 1e-4 )
         # Sample correlated noise from multivariate normal
         mean = torch.zeros(*batch_shape, 2, device=y0.device, dtype=y0.dtype)
         mean[..., 0] = y_mean
         mean[..., 1] = v_mean
         new_yv = torch.distributions.MultivariateNormal(
             loc=mean,
-            covariance_matrix=cov_matrix
+            scale_tril=scale_tril
         ).sample()
 
         return new_yv[...,0], new_yv[...,1]
-
-

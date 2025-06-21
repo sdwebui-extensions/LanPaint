@@ -14,6 +14,8 @@ This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpai
 - **No Workarounds** – Generates 100% new content (no blending or smoothing) without relying on partial denoising.  
 - **Beyond Inpainting** – You can even use it as a simple way to generate consistent characters. 
 
+**Warning**: LanPaint has degraded performance on distillation models, such as Flux.dev, due to a similar [issue with LORA training](https://medium.com/@zhiwangshi28/why-flux-lora-so-hard-to-train-and-how-to-overcome-it-a0c70bc59eaf). Please use low flux guidance (1.0-2.0) to mitigate this [issue](https://github.com/scraed/LanPaint/issues/30).
+
 ## How It Works  
 LanPaint uses Langevin Dynamics as "thinking" steps, which digs deeper into the diffusion process and allows the model to generate more consistent results.
 
@@ -43,6 +45,9 @@ Once installed, you'll find the LanPaint nodes under the "sampling" category in 
 
 
 ## Updates
+- 2025/06/21
+    - Update the algorithm with enhanced stability and outpaint performance.
+    - Add outpaint example
 - 2025/06/04
     - Add more sampler support.
     - Add early stopping to advanced sampler.
@@ -64,6 +69,12 @@ All examples use a random seed 0 to generate batch of 4 images for fair comparis
 ### Example HiDream: InPaint(LanPaint K Sampler, 5 steps of thinking)
 ![Inpainting Result 8](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_11.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_8)
+
+You need to follow the ComfyUI version of [HiDream workflow](https://docs.comfy.org/tutorials/image/hidream/hidream-i1) to download and install the model.
+
+### Example HiDream: OutPaint(LanPaint K Sampler, 5 steps of thinking)
+![Inpainting Result 8](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_13(1).jpg)  
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_10)
 
 You need to follow the ComfyUI version of [HiDream workflow](https://docs.comfy.org/tutorials/image/hidream/hidream-i1) to download and install the model.
 
