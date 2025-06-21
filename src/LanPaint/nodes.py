@@ -259,8 +259,8 @@ class LanPaint_KSampler():
     def sample(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=1.0, LanPaint_NumSteps=5, LanPaint_PromptMode = "Image First", LanPaint_Info=""):
 
         model.LanPaint_StepSize = 0.15
-        model.LanPaint_Lambda = 8.0
-        model.LanPaint_Beta = 1.0
+        model.LanPaint_Lambda = 16.0
+        model.LanPaint_Beta = 1.
         model.LanPaint_NumSteps = LanPaint_NumSteps
         model.LanPaint_Friction = 15.
         model.LanPaint_EarlyStop = 1
@@ -288,7 +288,7 @@ class LanPaint_KSamplerAdvanced:
                     "end_at_step": ("INT", {"default": 10000, "min": 0, "max": 10000}),
                     "return_with_leftover_noise": (["disable", "enable"], ),
                 "LanPaint_NumSteps": ("INT", {"default": 5, "min": 0, "max": 100, "tooltip": "The number of steps for the Langevin dynamics, representing the turns of thinking per step."}),
-                "LanPaint_Lambda": ("FLOAT", {"default": 8., "min": 0.1, "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The bidirectional guidance scale. Higher values align with known regions more closely, but may result in instability."}),
+                "LanPaint_Lambda": ("FLOAT", {"default": 16., "min": 0.1, "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The bidirectional guidance scale. Higher values align with known regions more closely, but may result in instability."}),
                 "LanPaint_StepSize": ("FLOAT", {"default": 0.15, "min": 0.0001, "max": 1., "step": 0.01, "round": 0.001, "tooltip": "The step size for the Langevin dynamics. Higher values result in faster convergence but may be unstable."}),
                 "LanPaint_Beta": ("FLOAT", {"default": 1., "min": 0.0001, "max": 5, "step": 0.1, "round": 0.1, "tooltip": "The step size ratio between masked / unmasked regions. Lower value can compensate high values of LanPaint_Lambda."}),
                 "LanPaint_Friction": ("FLOAT", {"default": 15, "min": 0., "max": 50.0, "step": 0.1, "round": 0.1, "tooltip": "The friction parameter for fast langevin, lower values result in faster convergence but may be unstable."}),
@@ -333,8 +333,8 @@ class MaskBlend:
     def INPUT_TYPES(s):
         return {
             "required": {
-                "image1": ("IMAGE",),
-                "image2": ("IMAGE",),
+                "image1": ("IMAGE", {"tooltip": "Image before inpaint"}),
+                "image2": ("IMAGE", {"tooltip": "Image after inpaint"}),
                 "mask": ("MASK",),
                 "blend_overlap": ("INT", {"default": 1, "min": 1, "max": 51, "step": 2, "tooltip": "The number of pixels to blend between the two images."})
             },
@@ -348,6 +348,10 @@ class MaskBlend:
     def blend_images(self, image1: torch.Tensor, image2: torch.Tensor, mask: torch.Tensor, blend_overlap: int):
         # smooth the binary 01 mask, keep 1 still 1, but smooth the transition from 1 to 0
         # for each mask pixel, find out the nearest 1 pixel, and set the mask value to the distance between the two pixels
+        # check the size of mask and image1, image2, if not the same, assert error
+        if image1.shape[1] != image2.shape[1] or image1.shape[2] != image2.shape[2]:
+            raise ValueError("Make sure your image size is a multiple of 8. Otherwise the mask will not be aligned with the output image.")
+        
         mask = mask.float()
         mask = torch.nn.functional.max_pool2d(mask, kernel_size=blend_overlap, stride=1, padding=blend_overlap//2)
         # apply Gaussian blur with kernel size blend_overlap

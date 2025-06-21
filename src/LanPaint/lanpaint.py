@@ -90,18 +90,37 @@ class LanPaint():
         Gamma = Gamma_x * (1-mask) + Gamma_y * mask
 
 
-
+        def Coef_C(x_t):
+            x0 = self.x0_evalutation(x_t, score, sigma, args)
+            C = (abt**0.5 * x0  - x_t )/ (1-abt) + A * x_t
+            return C
+        def advance_time(x_t, v, dt, Gamma, A, C, D):
+            dtype = x_t.dtype
+            with torch.autocast(device_type=x_t.device.type, dtype=torch.float32):
+                osc = StochasticHarmonicOscillator(Gamma, A, C, D )
+                x_t, v = osc.dynamics(x_t, v, dt )
+            x_t = x_t.to(dtype)
+            v = v.to(dtype)
+            return x_t, v
         if args is None:
             #v = torch.zeros_like(x_t)
             v = None
+            C = Coef_C(x_t)
+            #print(torch.squeeze(dtx), torch.squeeze(dty))
+            x_t, v = advance_time(x_t, v, dt, Gamma, A, C, D)
         else:
-            v, = args
+            v, C = args
 
-        with torch.autocast(device_type=x_t.device.type, dtype=torch.float32):
-            osc = StochasticHarmonicOscillator(Gamma, A, C, D )
-            x_t, v = osc.dynamics(x_t, v, dt )
+            x_t, v = advance_time(x_t, v, dt/2, Gamma, A, C, D)
+
+            C_new = Coef_C(x_t)
+            v = v + Gamma**0.5 * ( C_new - C) *dt
+
+            x_t, v = advance_time(x_t, v, dt/2, Gamma, A, C, D)
+
+            C = C_new
   
-        return x_t, (v,)
+        return x_t, (v, C)
 
     def prepare_step_size(self, current_times, step_size, sigma_x, sigma_y):
         # -------------------------------------------------------------------------
@@ -125,7 +144,7 @@ class LanPaint():
         Gamma_hat_y /= 2.
 
         A_t_x = (1) / ( 1 - abt ) * dtx / 2
-        A_t_y =  (1) / ( 1 - abt ) * dty / 2
+        A_t_y =  (1+self.chara_lamb) / ( 1 - abt ) * dty / 2
 
         A_x = A_t_x / (dtx/2)
         A_y = A_t_y / (dty/2)
