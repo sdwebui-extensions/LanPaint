@@ -1,6 +1,7 @@
 import torch
 from .utils import *
 from functools import partial
+
 class LanPaint():
     def __init__(self, Model, NSteps, Friction, Lambda, Beta, StepSize, IS_FLUX = False, IS_FLOW = False):
         self.n_steps = NSteps
@@ -11,8 +12,17 @@ class LanPaint():
         self.inner_model = Model
         self.friction = Friction
         self.chara_beta = Beta
-        
+        self.img_dim_size = None
+    def add_none_dims(self, array):
+        # Create a tuple with ':' for the first dimension and 'None' repeated num_nones times
+        index = (slice(None),) + (None,) * (self.img_dim_size-1)
+        return array[index]
+    def remove_none_dims(self, array):
+        # Create a tuple with ':' for the first dimension and 'None' repeated num_nones times
+        index = (slice(None),) + (0,) * (self.img_dim_size-1)
+        return array[index]
     def __call__(self, x, latent_image, noise, sigma, latent_mask, current_times, model_options, seed, n_steps=None):
+        self.img_dim_size = len(x.shape)
         self.latent_image = latent_image
         self.noise = noise
         if n_steps is None:
@@ -23,26 +33,26 @@ class LanPaint():
 
         
         step_size = self.step_size * (1 - abt)
-        step_size = step_size[:, None, None, None]
+        step_size = self.add_none_dims(step_size)
         # self.inner_model.inner_model.scale_latent_inpaint returns variance exploding x_t values
         # This is the replace step
         x = x * (1 - latent_mask) +  self.inner_model.inner_model.scale_latent_inpaint(x=x, sigma=sigma, noise=self.noise, latent_image=self.latent_image)* latent_mask
         
         if IS_FLUX or IS_FLOW:
-            x_t = x * ( abt[:, None,None,None]**0.5 + (1-abt[:, None,None,None])**0.5 )
+            x_t = x * ( self.add_none_dims(abt)**0.5 + (1-self.add_none_dims(abt))**0.5 )
         else:
-            x_t = x / ( 1+VE_Sigma[:, None,None,None]**2 )**0.5 # switch to variance perserving x_t values
+            x_t = x / ( 1+self.add_none_dims(VE_Sigma)**2 )**0.5 # switch to variance perserving x_t values
 
         ############ LanPaint Iterations Start ###############
         # after noise_scaling, noise = latent_image + noise * sigma, which is x_t in the variance exploding diffusion model notation for the known region.
         args = None
         for i in range(n_steps):
-            score_func = partial( self.score_model, y = self.latent_image, mask = latent_mask, abt = abt[:, None,None,None], sigma = VE_Sigma[:, None,None,None], tflow = Flow_t[:, None,None,None], model_options = model_options, seed = seed )
-            x_t, args = self.langevin_dynamics(x_t, score_func , latent_mask, step_size , current_times, sigma_x = self.sigma_x(abt)[:, None,None,None], sigma_y = self.sigma_y(abt)[:, None,None,None], args = args)  
+            score_func = partial( self.score_model, y = self.latent_image, mask = latent_mask, abt = self.add_none_dims(abt), sigma = self.add_none_dims(VE_Sigma), tflow = self.add_none_dims(Flow_t), model_options = model_options, seed = seed )
+            x_t, args = self.langevin_dynamics(x_t, score_func , latent_mask, step_size , current_times, sigma_x = self.add_none_dims(self.sigma_x(abt)), sigma_y = self.add_none_dims(self.sigma_y(abt)), args = args)  
         if IS_FLUX or IS_FLOW:
-            x = x_t / ( abt[:, None,None,None]**0.5 + (1-abt[:, None,None,None])**0.5 )
+            x = x_t / ( self.add_none_dims(abt)**0.5 + (1-self.add_none_dims(abt))**0.5 )
         else:
-            x = x_t * ( 1+VE_Sigma[:, None,None,None]**2 )**0.5 # switch to variance perserving x_t values
+            x = x_t * ( 1+self.add_none_dims(VE_Sigma)**2 )**0.5 # switch to variance perserving x_t values
         ############ LanPaint Iterations End ###############
         # out is x_0
         out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
@@ -56,10 +66,10 @@ class LanPaint():
         if self.IS_FLUX or self.IS_FLOW:
             # compute t for flow model, with a small epsilon compensating for numerical error.
             x = x_t / ( abt**0.5 + (1-abt)**0.5 ) # switch to Gaussian flow matching
-            x_0, x_0_BIG = self.inner_model(x, tflow[:, 0,0,0], model_options=model_options, seed=seed)
+            x_0, x_0_BIG = self.inner_model(x, self.remove_none_dims(tflow), model_options=model_options, seed=seed)
         else:
             x = x_t * ( 1+sigma**2 )**0.5 # switch to variance exploding
-            x_0, x_0_BIG = self.inner_model(x, sigma[:, 0,0,0], model_options=model_options, seed=seed)
+            x_0, x_0_BIG = self.inner_model(x, self.remove_none_dims(sigma), model_options=model_options, seed=seed)
 
         score_x = -(x_t - x_0)
         score_y =  - (1 + lamb) * ( x_t - y )  + lamb * (x_t - x_0_BIG)  
@@ -126,8 +136,8 @@ class LanPaint():
         # -------------------------------------------------------------------------
         # Unpack current times parameters (sigma and abt)
         sigma, abt, flow_t = current_times
-        sigma = sigma[:, None,None,None]
-        abt = abt[:, None,None,None]
+        sigma = self.add_none_dims(sigma)
+        abt = self.add_none_dims(abt)
         # Compute time step (dtx, dty) for x and y branches.
         dtx = 2 * step_size * sigma_x
         dty = 2 * step_size * sigma_y
@@ -142,9 +152,9 @@ class LanPaint():
         # adjust dt to match denoise-addnoise steps sizes
         Gamma_hat_x /= 2.
         Gamma_hat_y /= 2.
-
         A_t_x = (1) / ( 1 - abt ) * dtx / 2
         A_t_y =  (1+self.chara_lamb) / ( 1 - abt ) * dty / 2
+
 
         A_x = A_t_x / (dtx/2)
         A_y = A_t_y / (dty/2)
