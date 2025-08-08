@@ -45,6 +45,8 @@ Once installed, you'll find the LanPaint nodes under the "sampling" category in 
 
 
 ## Updates
+- 2025/08/08
+    - Add Qwen image support
 - 2025/06/21
     - Update the algorithm with enhanced stability and outpaint performance.
     - Add outpaint example
@@ -65,9 +67,18 @@ Once installed, you'll find the LanPaint nodes under the "sampling" category in 
     - LanPaint has received a major update! All examples now use the LanPaint K Sampler, offering a simplified interface with enhanced performance and stability.
 
 ## Examples
-All examples use a random seed 0 to generate batch of 4 images for fair comparison. (Warning: Generating 4 images may exceed your GPU memory; adjust batch size as needed.)
 
-### Example HiDream: InPaint(LanPaint K Sampler, 5 steps of thinking)
+### Example Qwen Image: InPaint(LanPaint K Sampler, 5 steps of thinking)
+We are excited to announce that LanPaint now supports Qwen Image, providing powerful inpainting capabilities for image editing.
+
+![Inpainting Result 14](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_14.jpg)  
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_11)
+
+You need to follow the ComfyUI version of [Qwen Image workflow](https://docs.comfy.org/tutorials/image/qwen/qwen-image) to download and install the model.
+
+The following examples utilize a random seed of 0 to generate a batch of 4 images for variance demonstration and fair comparison. (Note: Generating 4 images may exceed your GPU memory; please adjust the batch size as necessary.)
+
+### Example HiDream: InPaint (LanPaint K Sampler, 5 steps of thinking)
 ![Inpainting Result 8](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_11.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_8)
 
