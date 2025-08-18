@@ -22,15 +22,17 @@ Check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/master/exa
 
 **Warning**: LanPaint has degraded performance on distillation models, such as Flux.dev, due to a similar [issue with LORA training](https://medium.com/@zhiwangshi28/why-flux-lora-so-hard-to-train-and-how-to-overcome-it-a0c70bc59eaf). Please use low flux guidance (1.0-2.0) to mitigate this [issue](https://github.com/scraed/LanPaint/issues/30).
 
-## How It Works  
-LanPaint uses Langevin Dynamics as "thinking" steps, which digs deeper into the diffusion process and allows the model to generate more consistent results.
 
-LanPaint introduces "BIG score" that creates a **two-way alignment** between masked and unmasked areas. It continuously evaluates:  
-- *"Does the new content make sense with the existing elements?"*  
-- *"Do the existing elements support the new creation?"*  
-Based on this evaluation, LanPaint iteratively updates the noise in both the masked and unmasked regions.  
-  
-LanPaint also implements an accurate, robust, and fast Langevin dynamics solver.
+## **How to Use Examples:**  
+1. Navigate to the **example** folder (i.e example_1), download all pictures.  
+2. Drag **InPainted_Drag_Me_to_ComfyUI.png** into ComfyUI to load the workflow.  
+3. Download the required model (i.e clicking **Model Used in This Example**).  
+4. Load the model in ComfyUI.
+5. Upload **Masked_Load_Me_in_Loader.png** to the **"Load image"** node in the **"Mask image for inpainting"** group (second from left), or the **Prepare Image** node.  
+7. Queue the task, you will get inpainted results from LanPaint. Some example also gives you inpainted results from the following methods for comparison:
+   - **[VAE Encode for Inpainting](https://comfyanonymous.github.io/ComfyUI_examples/inpaint/)**
+   - **[Set Latent Noise Mask](https://comfyui-wiki.com/en/tutorial/basic/how-to-inpaint-an-image-in-comfyui)**
+
 
 
 ## Quickstart
@@ -145,22 +147,6 @@ You need to follow the ComfyUI version of [SD 3.5 workflow](https://comfyui-wiki
 Check more for use cases like inpaint on [fine tuned models](https://github.com/scraed/LanPaint/issues/12#issuecomment-2938662021) and [face swapping](https://github.com/scraed/LanPaint/issues/12#issuecomment-2938723501), thanks to [Amazon90](https://github.com/Amazon90).
 
 
-## **How to Use These Examples:**  
-1. Navigate to the **example** folder (i.e example_1) by clicking **View Workflow & Masks**, download all pictures.  
-2. Drag **InPainted_Drag_Me_to_ComfyUI.png** into ComfyUI to load the workflow.  
-3. Download the required model from Civitai by clicking **Model Used in This Example**.  
-4. Load the model into the **"Load Checkpoint"** node.  
-5. Upload **Original_No_Mask.png** to the **"Load image"** node in the **"Original Image"** group (far left).  
-6. Upload **Masked_Load_Me_in_Loader.png** to the **"Load image"** node in the **"Mask image for inpainting"** group (second from left).  
-7. Queue the task, you will get inpainted results from three methods:  
-   - **[VAE Encode for Inpainting](https://comfyanonymous.github.io/ComfyUI_examples/inpaint/)** (middle),  
-   - **[Set Latent Noise Mask](https://comfyui-wiki.com/en/tutorial/basic/how-to-inpaint-an-image-in-comfyui)** (second from right),  
-   - **LanPaint** (far right).  
-8. You also get an output from "masked blend" node, which copy the original image and paste onto the unmasked part of output. It is useful if you want unmasked region to match original picture pixel perfectly.
-
-Compare and explore the results from each method!
-
-![WorkFlow](https://github.com/scraed/LanPaint/blob/master/Example.JPG)  
 
 
 ## Usage
