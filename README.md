@@ -1,13 +1,17 @@
-# LanPaint (Thinking mode Inpaint)
+# LanPaint: Universal Inpainting Sampler with "Think Mode"
 
-Unlock precise inpainting without additional training. LanPaint lets the model "think" through multiple iterations before denoising, enabling you to invest more computation time for superior quality.  
-![Inpainting Result 13](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_13.jpg) 
+Universally applicable inpainting ability for every model. LanPaint sampler lets the model "think" through multiple iterations before denoising, enabling you to invest more computation time for superior inpainting quality.  
+
+![Qwen Result 1](https://github.com/scraed/LanPaint/blob/master/examples/LanPaintQwen_01.jpg) 
+
+[Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_12) [Qwen Outpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_13). You need to follow the ComfyUI version of [Qwen Image workflow](https://docs.comfy.org/tutorials/image/qwen/qwen-image) to download and install the model.
 
 This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference"](https://arxiv.org/abs/2502.03491). 
 
 ## Features
 
 - **Universal Compatibility** – Works instantly with almost any model (SD 1.5, XL, 3.5, Flux, HiDream, or custom LoRAs) and ControlNet.  
+![Inpainting Result 13](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_13.jpg) 
 - **No Training Needed** – Works out of the box with your existing model.  
 - **Easy to Use** – Same workflow as standard ComfyUI KSampler.  
 - **Flexible Masking** – Supports any mask shape, size, or position for inpainting/outpainting.  
@@ -73,6 +77,7 @@ We are excited to announce that LanPaint now supports Qwen Image, providing powe
 
 ![Inpainting Result 14](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_14.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_11)
+
 
 You need to follow the ComfyUI version of [Qwen Image workflow](https://docs.comfy.org/tutorials/image/qwen/qwen-image) to download and install the model.
 
