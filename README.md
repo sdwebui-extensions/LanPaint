@@ -2,9 +2,10 @@
 
 # LanPaint: Universal Inpainting Sampler with "Think Mode"
 [![arXiv](https://img.shields.io/badge/Arxiv-2502.03491-b31b1b.svg?logo=arXiv)](https://arxiv.org/abs/2502.03491)
-[![GitHub stars](https://img.shields.io/github/stars/scraed/LanPaint)](https://github.com/scraed/LanPaint/stargazers)
+[![Python Benchmark](https://img.shields.io/badge/🐍-Python_Benchmark-3776AB?logo=python)](https://github.com/scraed/LanPaintBench)
 [![ComfyUI Extension](https://img.shields.io/badge/ComfyUI-Extension-7B5DFF)](https://github.com/comfyanonymous/ComfyUI)
 [![Blog](https://img.shields.io/badge/📝-Blog-9cf)](https://scraed.github.io/scraedBlog/)
+[![GitHub stars](https://img.shields.io/github/stars/scraed/LanPaint)](https://github.com/scraed/LanPaint/stargazers)
 </div>
 
 Universally applicable inpainting ability for every model. LanPaint sampler lets the model "think" through multiple iterations before denoising, enabling you to invest more computation time for superior inpainting quality.  
