@@ -8,7 +8,23 @@ This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpai
 
 Check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_13) and [Qwen Outpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_12). You need to follow the ComfyUI version of [Qwen Image workflow](https://docs.comfy.org/tutorials/image/qwen/qwen-image) to download and install the model.
 
-
+## Table of Contents
+- [Features](#features)
+- [Quickstart](#quickstart)
+- [How to Use Examples](#how-to-use-examples)
+- [Examples](#examples)
+  - [Qwen Image](#example-qwen-image-inpaintlanpaint-k-sampler-5-steps-of-thinking)
+  - [HiDream](#example-hidream-inpaint-lanpaint-k-sampler-5-steps-of-thinking)
+  - [SD 3.5](#example-sd-35-inpaintlanpaint-k-sampler-5-steps-of-thinking)
+  - [Flux](#example-flux-inpaintlanpaint-k-sampler-5-steps-of-thinking)
+  - [SDXL Examples](#example-sdxl-0-character-consistency-side-view-generation-lanpaint-k-sampler-5-steps-of-thinking)
+- [Usage](#usage)
+  - [Basic Sampler](#basic-sampler)
+  - [Advanced Sampler](#lanpaint-ksampler-advanced)
+  - [Tuning Guide](#lanpaint-ksampler-advanced-tuning-guide)
+- [Updates](#updates)
+- [ToDo](#todo)
+- [Citation](#citation)
 
 ## Features
 
@@ -21,19 +37,6 @@ Check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/master/exa
 - **Beyond Inpainting** – You can even use it as a simple way to generate consistent characters. 
 
 **Warning**: LanPaint has degraded performance on distillation models, such as Flux.dev, due to a similar [issue with LORA training](https://medium.com/@zhiwangshi28/why-flux-lora-so-hard-to-train-and-how-to-overcome-it-a0c70bc59eaf). Please use low flux guidance (1.0-2.0) to mitigate this [issue](https://github.com/scraed/LanPaint/issues/30).
-
-
-## **How to Use Examples:**  
-1. Navigate to the **example** folder (i.e example_1), download all pictures.  
-2. Drag **InPainted_Drag_Me_to_ComfyUI.png** into ComfyUI to load the workflow.  
-3. Download the required model (i.e clicking **Model Used in This Example**).  
-4. Load the model in ComfyUI.
-5. Upload **Masked_Load_Me_in_Loader.png** to the **"Load image"** node in the **"Mask image for inpainting"** group (second from left), or the **Prepare Image** node.  
-7. Queue the task, you will get inpainted results from LanPaint. Some example also gives you inpainted results from the following methods for comparison:
-   - **[VAE Encode for Inpainting](https://comfyanonymous.github.io/ComfyUI_examples/inpaint/)**
-   - **[Set Latent Noise Mask](https://comfyui-wiki.com/en/tutorial/basic/how-to-inpaint-an-image-in-comfyui)**
-
-
 
 ## Quickstart
 
@@ -51,28 +54,15 @@ Check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/master/exa
 Once installed, you'll find the LanPaint nodes under the "sampling" category in ComfyUI. Use them just like the default KSampler for high-quality inpainting!
 
 
-
-## Updates
-- 2025/08/08
-    - Add Qwen image support
-- 2025/06/21
-    - Update the algorithm with enhanced stability and outpaint performance.
-    - Add outpaint example
-    - Supports Sampler Custom (Thanks to [MINENEMA](https://github.com/MINENEMA))
-- 2025/06/04
-    - Add more sampler support.
-    - Add early stopping to advanced sampler.
-- 2025/05/28
-    - Major update on the Langevin solver. It is now much faster and more stable.
-    - Greatly simplified the parameters for advanced sampler.
-    - Fix performance issue on Flux and SD 3.5
-- 2025/04/16
-    - Added Primary HiDream support
-- 2025/03/22
-    - Added Primary Flux support
-    - Added Tease Mode
-- 2025/03/10
-    - LanPaint has received a major update! All examples now use the LanPaint K Sampler, offering a simplified interface with enhanced performance and stability.
+## **How to Use Examples:**  
+1. Navigate to the **example** folder (i.e example_1), download all pictures.  
+2. Drag **InPainted_Drag_Me_to_ComfyUI.png** into ComfyUI to load the workflow.  
+3. Download the required model (i.e clicking **Model Used in This Example**).  
+4. Load the model in ComfyUI.
+5. Upload **Masked_Load_Me_in_Loader.png** to the **"Load image"** node in the **"Mask image for inpainting"** group (second from left), or the **Prepare Image** node.  
+7. Queue the task, you will get inpainted results from LanPaint. Some example also gives you inpainted results from the following methods for comparison:
+   - **[VAE Encode for Inpainting](https://comfyanonymous.github.io/ComfyUI_examples/inpaint/)**
+   - **[Set Latent Noise Mask](https://comfyui-wiki.com/en/tutorial/basic/how-to-inpaint-an-image-in-comfyui)**
 
 ## Examples
 
@@ -147,8 +137,6 @@ You need to follow the ComfyUI version of [SD 3.5 workflow](https://comfyui-wiki
 Check more for use cases like inpaint on [fine tuned models](https://github.com/scraed/LanPaint/issues/12#issuecomment-2938662021) and [face swapping](https://github.com/scraed/LanPaint/issues/12#issuecomment-2938723501), thanks to [Amazon90](https://github.com/Amazon90).
 
 
-
-
 ## Usage
 
 **Workflow Setup**  
@@ -211,14 +199,33 @@ If you find the results have wired texture, try
 ⚠️ **Notes**:  
 - For effective tuning, **fix the seed** and adjust parameters incrementally while observing the results. This helps isolate the impact of each setting.  Better to do it with a batche of images to avoid overfitting on a single image.
 
+## Updates
+- 2025/08/08
+    - Add Qwen image support
+- 2025/06/21
+    - Update the algorithm with enhanced stability and outpaint performance.
+    - Add outpaint example
+    - Supports Sampler Custom (Thanks to [MINENEMA](https://github.com/MINENEMA))
+- 2025/06/04
+    - Add more sampler support.
+    - Add early stopping to advanced sampler.
+- 2025/05/28
+    - Major update on the Langevin solver. It is now much faster and more stable.
+    - Greatly simplified the parameters for advanced sampler.
+    - Fix performance issue on Flux and SD 3.5
+- 2025/04/16
+    - Added Primary HiDream support
+- 2025/03/22
+    - Added Primary Flux support
+    - Added Tease Mode
+- 2025/03/10
+    - LanPaint has received a major update! All examples now use the LanPaint K Sampler, offering a simplified interface with enhanced performance and stability.
+- 2025/03/06:
+    - Bug Fix for str not callable error and unpack error. Big thanks to [jamesWalker55](https://github.com/jamesWalker55) and [EricBCoding](https://github.com/EricBCoding).
+
 ## ToDo
 - Try Implement Detailer
 - ~~Provide inference code on without GUI.~~ Check our local Python benchmark code [LanPaintBench](https://github.com/scraed/LanPaintBench).
-
-## Contribute
-
-- 2025/03/06: Bug Fix for str not callable error and unpack error. Big thanks to [jamesWalker55](https://github.com/jamesWalker55) and [EricBCoding](https://github.com/EricBCoding).
-
 
 ## Citation
 
