@@ -211,9 +211,10 @@ If you find the results have wired texture, try
 
 Discover how the community is using LanPaint! Here are some user-created tutorials:
 
-- [ComfyUI: HiDream with Perturbation Upscale, LanPaint Inpainting (Workflow Tutorial)](https://www.youtube.com/watch?v=2-mGe4QVIIw&t=2785s)
 - [Ai绘画进阶148-三大王炸！庆祝高允贞出道6周年！T8即将直播？当AI绘画学会深度思考？！万能修复神器LanPaint，万物皆可修！-T8 Comfyui教程](https://www.youtube.com/watch?v=Z4DSTv3UPJo)
-- [Ai绘画进阶151-真相了！T8竟是个AI？！LanPaint进阶（二），人物一致性，多视角实验性测试，新参数讲解，工作流分享-T8 Comfyui教程](https://www.youtube.com/watch?v=landiRhvF3k) 
+- [Ai绘画进阶151-真相了！T8竟是个AI？！LanPaint进阶（二），人物一致性，多视角实验性测试，新参数讲解，工作流分享-T8 Comfyui教程](https://www.youtube.com/watch?v=landiRhvF3k)
+- [重绘和三视图角色一致性解决新方案！LanPaint节点尝试](https://www.youtube.com/watch?v=X0WbXdm6FA0)
+- [ComfyUI: HiDream with Perturbation Upscale, LanPaint Inpainting (Workflow Tutorial)](https://www.youtube.com/watch?v=2-mGe4QVIIw&t=2785s)
 
 Submit a PR to add your tutorial/video here, or open an [Issue](https://github.com/scraed/LanPaint/issues) with details!
 
