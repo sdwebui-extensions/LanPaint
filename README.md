@@ -213,7 +213,7 @@ If you find the results have wired texture, try
 
 ## ToDo
 - Try Implement Detailer
-- Provide inference code on without GUI.
+- ~~Provide inference code on without GUI.~~ Check our local Python benchmark code [LanPaintBench](https://github.com/scraed/LanPaintBench).
 
 ## Contribute
 
