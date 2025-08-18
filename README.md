@@ -4,6 +4,7 @@
 [![arXiv](https://img.shields.io/badge/Arxiv-2502.03491-b31b1b.svg?logo=arXiv)](https://arxiv.org/abs/2502.03491)
 [![GitHub stars](https://img.shields.io/github/stars/scraed/LanPaint)](https://github.com/scraed/LanPaint/stargazers)
 [![ComfyUI Extension](https://img.shields.io/badge/ComfyUI-Extension-7B5DFF)](https://github.com/comfyanonymous/ComfyUI)
+[![Blog](https://img.shields.io/badge/📝-Blog-9cf)](https://scraed.github.io/scraedBlog/)
 </div>
 
 Universally applicable inpainting ability for every model. LanPaint sampler lets the model "think" through multiple iterations before denoising, enabling you to invest more computation time for superior inpainting quality.  
@@ -28,6 +29,7 @@ Check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/master/exa
   - [Basic Sampler](#basic-sampler)
   - [Advanced Sampler](#lanpaint-ksampler-advanced)
   - [Tuning Guide](#lanpaint-ksampler-advanced-tuning-guide)
+- [Community Showcase](#community-showcase)
 - [Updates](#updates)
 - [ToDo](#todo)
 - [Citation](#citation)
@@ -204,6 +206,16 @@ If you find the results have wired texture, try
 
 ⚠️ **Notes**:  
 - For effective tuning, **fix the seed** and adjust parameters incrementally while observing the results. This helps isolate the impact of each setting.  Better to do it with a batche of images to avoid overfitting on a single image.
+
+## Community Showcase 🎥
+
+Discover how the community is using LanPaint! Here are some user-created tutorials:
+
+- [ComfyUI: HiDream with Perturbation Upscale, LanPaint Inpainting (Workflow Tutorial)](https://www.youtube.com/watch?v=2-mGe4QVIIw&t=2785s)
+- [Ai绘画进阶148-三大王炸！庆祝高允贞出道6周年！T8即将直播？当AI绘画学会深度思考？！万能修复神器LanPaint，万物皆可修！-T8 Comfyui教程](https://www.youtube.com/watch?v=Z4DSTv3UPJo)
+- [Ai绘画进阶151-真相了！T8竟是个AI？！LanPaint进阶（二），人物一致性，多视角实验性测试，新参数讲解，工作流分享-T8 Comfyui教程](https://www.youtube.com/watch?v=landiRhvF3k) 
+
+Submit a PR to add your tutorial/video here, or open an [Issue](https://github.com/scraed/LanPaint/issues) with details!
 
 ## Updates
 - 2025/08/08
