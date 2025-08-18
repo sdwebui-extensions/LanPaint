@@ -6,7 +6,7 @@ Universally applicable inpainting ability for every model. LanPaint sampler lets
 
 [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_12) [Qwen Outpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_13). You need to follow the ComfyUI version of [Qwen Image workflow](https://docs.comfy.org/tutorials/image/qwen/qwen-image) to download and install the model.
 
-This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference"](https://arxiv.org/abs/2502.03491). 
+This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference"](https://arxiv.org/abs/2502.03491). The repository is for ComfyUI extension. Local Python benchmark code is published here: [LanPaintBench](https://github.com/scraed/LanPaintBench).
 
 ## Features
 
