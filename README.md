@@ -12,7 +12,7 @@ Check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/master/exa
 
 ## Features
 
-- **Universal Compatibility** – Works instantly with almost any model (SD 1.5, XL, 3.5, Flux, HiDream, or custom LoRAs) and ControlNet.  
+- **Universal Compatibility** – Works instantly with almost any model (SD 1.5, XL, 3.5, Flux, HiDream, Qwen-Image or custom LoRAs) and ControlNet.  
 ![Inpainting Result 13](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_13.jpg) 
 - **No Training Needed** – Works out of the box with your existing model.  
 - **Easy to Use** – Same workflow as standard ComfyUI KSampler.  
