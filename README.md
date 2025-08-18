@@ -6,7 +6,7 @@ This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpai
 
 ![Qwen Result 1](https://github.com/scraed/LanPaint/blob/master/examples/LanPaintQwen_01.jpg) 
 
-Check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_12) and [Qwen Outpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_13). You need to follow the ComfyUI version of [Qwen Image workflow](https://docs.comfy.org/tutorials/image/qwen/qwen-image) to download and install the model.
+Check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_13) and [Qwen Outpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_12). You need to follow the ComfyUI version of [Qwen Image workflow](https://docs.comfy.org/tutorials/image/qwen/qwen-image) to download and install the model.
 
 
 
