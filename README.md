@@ -29,7 +29,7 @@ Check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/master/exa
   - [Basic Sampler](#basic-sampler)
   - [Advanced Sampler](#lanpaint-ksampler-advanced)
   - [Tuning Guide](#lanpaint-ksampler-advanced-tuning-guide)
-- [Community Showcase](#community-showcase)
+- [Community Showcase](#community-showcase-) 
 - [Updates](#updates)
 - [ToDo](#todo)
 - [Citation](#citation)
@@ -207,7 +207,7 @@ If you find the results have wired texture, try
 ⚠️ **Notes**:  
 - For effective tuning, **fix the seed** and adjust parameters incrementally while observing the results. This helps isolate the impact of each setting.  Better to do it with a batche of images to avoid overfitting on a single image.
 
-## Community Showcase 🎥
+## Community Showcase [](#community-showcase-)
 
 Discover how the community is using LanPaint! Here are some user-created tutorials:
 
