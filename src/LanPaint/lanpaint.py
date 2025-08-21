@@ -62,7 +62,6 @@ class LanPaint():
     def score_model(self, x_t, y, mask, abt, sigma, tflow, model_options, seed):
         
         lamb = self.chara_lamb
-
         if self.IS_FLUX or self.IS_FLOW:
             # compute t for flow model, with a small epsilon compensating for numerical error.
             x = x_t / ( abt**0.5 + (1-abt)**0.5 ) # switch to Gaussian flow matching
@@ -92,8 +91,8 @@ class LanPaint():
         # -------------------------------------------------------------------------
         # Compute the Langevin dynamics update in variance perserving notation
         # -------------------------------------------------------------------------
-        x0 = self.x0_evalutation(x_t, score, sigma, args)
-        C = abt**0.5 * x0 / (1-abt)
+        #x0 = self.x0_evalutation(x_t, score, sigma, args)
+        #C = abt**0.5 * x0 / (1-abt)
         A = A_x * (1-mask) + A_y * mask
         D = D_x * (1-mask) + D_y * mask
         dt = dtx * (1-mask) + dty * mask
