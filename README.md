@@ -12,9 +12,12 @@ Universally applicable inpainting ability for every model. LanPaint sampler lets
 
 This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference"](https://arxiv.org/abs/2502.03491). The repository is for ComfyUI extension. Local Python benchmark code is published here: [LanPaintBench](https://github.com/scraed/LanPaintBench).
 
+![Qwen Result 2](https://github.com/scraed/LanPaint/blob/master/examples/LanPaintQwen_03.jpg) 
+Check [Mased Qwen Edit Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_14). You need to follow the ComfyUI version of [Qwen Image Edit workflow](https://docs.comfy.org/tutorials/image/qwen/qwen-image-edit) to download and install the model.
+
 ![Qwen Result 1](https://github.com/scraed/LanPaint/blob/master/examples/LanPaintQwen_01.jpg) 
 
-Check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_13) and [Qwen Outpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_12). You need to follow the ComfyUI version of [Qwen Image workflow](https://docs.comfy.org/tutorials/image/qwen/qwen-image) to download and install the model.
+Also check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_13) and [Qwen Outpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_12). You need to follow the ComfyUI version of [Qwen Image workflow](https://docs.comfy.org/tutorials/image/qwen/qwen-image) to download and install the model.
 
 ## Table of Contents
 - [Features](#features)
