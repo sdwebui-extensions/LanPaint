@@ -198,7 +198,7 @@ For challenging inpainting tasks:
 Increase **total number of sampling steps** (very important!), **LanPaint_NumSteps** (thinking iterations) or **LanPaint_Lambda** if the inpainted result does not meet your expectations.
   
 2️⃣ **Boost Speed**
-If you want better results but still need fewer steps, consider:
+Decrease **LanPaint_NumSteps** to accelerate generation! If you want better results but still need fewer steps, consider:
     - **Increasing LanPaint_StepSize** to speed up the thinking process.
     - **Decreasing LanPaint_Friction** to make the Langevin dynamics converges more faster.
     
