@@ -80,8 +80,17 @@ Once installed, you'll find the LanPaint nodes under the "sampling" category in 
 
 ## Examples
 
+### Example Wan2.2: InPaint(LanPaint K Sampler, 5 steps of thinking)
+We are excited to announce that LanPaint now supports Wan2.2 text to image generation with Wan2.2 T2V model.
+
+![Inpainting Result 45](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_45.jpg)  
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_15)
+
+
+You need to follow the ComfyUI version of [Wan2.2 T2V workflow](https://docs.comfy.org/tutorials/video/wan/wan2_2) to download and install the T2V model.
+
+
 ### Example Qwen Image: InPaint(LanPaint K Sampler, 5 steps of thinking)
-We are excited to announce that LanPaint now supports Qwen Image, providing powerful inpainting capabilities for image editing.
 
 ![Inpainting Result 14](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_14.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_11)
