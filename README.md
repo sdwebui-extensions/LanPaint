@@ -26,6 +26,7 @@ Also check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/maste
 - [Quickstart](#quickstart)
 - [How to Use Examples](#how-to-use-examples)
 - [Examples](#examples)
+  - [Wan 2.2 T2I](#example-wan22-inpaintlanpaint-k-sampler-5-steps-of-thinking)
   - [Qwen Image](#example-qwen-image-inpaintlanpaint-k-sampler-5-steps-of-thinking)
   - [HiDream](#example-hidream-inpaint-lanpaint-k-sampler-5-steps-of-thinking)
   - [SD 3.5](#example-sd-35-inpaintlanpaint-k-sampler-5-steps-of-thinking)
