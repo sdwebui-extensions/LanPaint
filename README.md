@@ -27,6 +27,7 @@ Also check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/maste
 - [How to Use Examples](#how-to-use-examples)
 - [Examples](#examples)
   - [Wan 2.2 T2I](#example-wan22-inpaintlanpaint-k-sampler-5-steps-of-thinking)
+  - [Wan 2.2 T2I with reference](#example-wan22-partial-inpaintlanpaint-k-sampler-5-steps-of-thinking)
   - [Qwen Image](#example-qwen-image-inpaintlanpaint-k-sampler-5-steps-of-thinking)
   - [HiDream](#example-hidream-inpaint-lanpaint-k-sampler-5-steps-of-thinking)
   - [SD 3.5](#example-sd-35-inpaintlanpaint-k-sampler-5-steps-of-thinking)
@@ -86,6 +87,15 @@ We are excited to announce that LanPaint now supports Wan2.2 text to image gener
 
 ![Inpainting Result 45](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_45.jpg)  
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_15)
+
+
+You need to follow the ComfyUI version of [Wan2.2 T2V workflow](https://docs.comfy.org/tutorials/video/wan/wan2_2) to download and install the T2V model.
+
+### Example Wan2.2: Partial InPaint(LanPaint K Sampler, 5 steps of thinking)
+Sometimes we don't want to inpaint completely new content, but rather let the inpainted image reference the original image. One option to achieve this is to inpaint with an edit model like Qwen Image Edit. Another option is to perform a partial inpaint: allowing the diffusion process to start at some middle steps rather than from 0.
+
+![Inpainting Result 46](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_46.jpg)  
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_16)
 
 
 You need to follow the ComfyUI version of [Wan2.2 T2V workflow](https://docs.comfy.org/tutorials/video/wan/wan2_2) to download and install the T2V model.
