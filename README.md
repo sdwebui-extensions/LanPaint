@@ -18,8 +18,7 @@ This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpai
 Check our latest [Wan2.2](#example-wan22-inpaintlanpaint-k-sampler-5-steps-of-thinking) and 
 [Qwen Image Edit 2509](#example-qwen-edit-2509-inpaint) support.
 
-[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_15) 
-
+![Inpainting Result 45](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_45.jpg)  
 
 ## Table of Contents
 - [Features](#features)
