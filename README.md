@@ -15,9 +15,7 @@ Universally applicable inpainting ability for every model. LanPaint sampler lets
 This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference"](https://arxiv.org/abs/2502.03491), accepted by TMLR. The repository is for ComfyUI extension. Local Python benchmark code is published here: [LanPaintBench](https://github.com/scraed/LanPaintBench).
 
 
-Check our latest updated [Mased Qwen Edit Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_14) for Qwen Image Edit 2509. Download the model at [Qwen Image Edit 2509 Comfy](https://huggingface.co/Comfy-Org/Qwen-Image-Edit_ComfyUI/tree/main/split_files/diffusion_models).
 
-![Qwen Result 3](https://github.com/scraed/LanPaint/blob/master/examples/LanPaintQwen_04.jpg) 
 
 
 ## Table of Contents
@@ -27,6 +25,7 @@ Check our latest updated [Mased Qwen Edit Workflow](https://github.com/scraed/La
 - [Examples](#examples)
   - [Wan 2.2 T2I](#example-wan22-inpaintlanpaint-k-sampler-5-steps-of-thinking)
   - [Wan 2.2 T2I with reference](#example-wan22-partial-inpaintlanpaint-k-sampler-5-steps-of-thinking)
+  - [Qwen Image Edit 2509](#example-qwen-edit-2509-inpaint)
   - [Qwen Image Edit 2508](#example-qwen-edit-2508-inpaint)
   - [Qwen Image](#example-qwen-image-inpaintlanpaint-k-sampler-5-steps-of-thinking)
   - [HiDream](#example-hidream-inpaint-lanpaint-k-sampler-5-steps-of-thinking)
@@ -99,6 +98,11 @@ Sometimes we don't want to inpaint completely new content, but rather let the in
 
 
 You need to follow the ComfyUI version of [Wan2.2 T2V workflow](https://docs.comfy.org/tutorials/video/wan/wan2_2) to download and install the T2V model.
+
+### Example Qwen Edit 2509: InPaint
+Check our latest updated [Mased Qwen Edit Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_14) for Qwen Image Edit 2509. Download the model at [Qwen Image Edit 2509 Comfy](https://huggingface.co/Comfy-Org/Qwen-Image-Edit_ComfyUI/tree/main/split_files/diffusion_models).
+
+![Qwen Result 3](https://github.com/scraed/LanPaint/blob/master/examples/LanPaintQwen_04.jpg) 
 
 ### Example Qwen Edit 2508: InPaint
 ![Qwen Result 2](https://github.com/scraed/LanPaint/blob/master/examples/LanPaintQwen_03.jpg) 
