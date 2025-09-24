@@ -15,7 +15,10 @@ Universally applicable inpainting ability for every model. LanPaint sampler lets
 This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference"](https://arxiv.org/abs/2502.03491), accepted by TMLR. The repository is for ComfyUI extension. Local Python benchmark code is published here: [LanPaintBench](https://github.com/scraed/LanPaintBench).
 
 
+Check our latest [Wan2.2](#example-wan22-inpaintlanpaint-k-sampler-5-steps-of-thinking) and 
+[Qwen Image Edit 2509](#example-qwen-edit-2509-inpaint) support.
 
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_15) 
 
 
 ## Table of Contents
