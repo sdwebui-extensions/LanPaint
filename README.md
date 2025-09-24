@@ -12,14 +12,11 @@
 
 Universally applicable inpainting ability for every model. LanPaint sampler lets the model "think" through multiple iterations before denoising, enabling you to invest more computation time for superior inpainting quality.  
 
-This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference"](https://arxiv.org/abs/2502.03491). The repository is for ComfyUI extension. Local Python benchmark code is published here: [LanPaintBench](https://github.com/scraed/LanPaintBench).
+This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference"](https://arxiv.org/abs/2502.03491), accepted by TMLR. The repository is for ComfyUI extension. Local Python benchmark code is published here: [LanPaintBench](https://github.com/scraed/LanPaintBench).
 
-![Qwen Result 2](https://github.com/scraed/LanPaint/blob/master/examples/LanPaintQwen_03.jpg) 
-Check [Mased Qwen Edit Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_14). You need to follow the ComfyUI version of [Qwen Image Edit workflow](https://docs.comfy.org/tutorials/image/qwen/qwen-image-edit) to download and install the model.
+![Qwen Result 3](https://github.com/scraed/LanPaint/blob/master/examples/LanPaintQwen_04.jpg) 
+Check the updated [Mased Qwen Edit Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_14) for Qwen Image Edit 2509. Download the model at [Qwen Image Edit 2509 Comfy](https://huggingface.co/Comfy-Org/Qwen-Image-Edit_ComfyUI/tree/main/split_files/diffusion_models).
 
-![Qwen Result 1](https://github.com/scraed/LanPaint/blob/master/examples/LanPaintQwen_01.jpg) 
-
-Also check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_13) and [Qwen Outpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_12). You need to follow the ComfyUI version of [Qwen Image workflow](https://docs.comfy.org/tutorials/image/qwen/qwen-image) to download and install the model.
 
 ## Table of Contents
 - [Features](#features)
@@ -28,6 +25,7 @@ Also check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/maste
 - [Examples](#examples)
   - [Wan 2.2 T2I](#example-wan22-inpaintlanpaint-k-sampler-5-steps-of-thinking)
   - [Wan 2.2 T2I with reference](#example-wan22-partial-inpaintlanpaint-k-sampler-5-steps-of-thinking)
+  - [Qwen Image Edit 2508](#example-qwen-edit-2508-inpaint)
   - [Qwen Image](#example-qwen-image-inpaintlanpaint-k-sampler-5-steps-of-thinking)
   - [HiDream](#example-hidream-inpaint-lanpaint-k-sampler-5-steps-of-thinking)
   - [SD 3.5](#example-sd-35-inpaintlanpaint-k-sampler-5-steps-of-thinking)
@@ -100,6 +98,11 @@ Sometimes we don't want to inpaint completely new content, but rather let the in
 
 You need to follow the ComfyUI version of [Wan2.2 T2V workflow](https://docs.comfy.org/tutorials/video/wan/wan2_2) to download and install the T2V model.
 
+### Example Qwen Edit 2508: InPaint
+![Qwen Result 2](https://github.com/scraed/LanPaint/blob/master/examples/LanPaintQwen_03.jpg) 
+Check [Mased Qwen Edit Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_14). You need to follow the ComfyUI version of [Qwen Image Edit workflow](https://docs.comfy.org/tutorials/image/qwen/qwen-image-edit) to download and install the model.
+
+
 
 ### Example Qwen Image: InPaint(LanPaint K Sampler, 5 steps of thinking)
 
@@ -110,6 +113,9 @@ You need to follow the ComfyUI version of [Wan2.2 T2V workflow](https://docs.com
 You need to follow the ComfyUI version of [Qwen Image workflow](https://docs.comfy.org/tutorials/image/qwen/qwen-image) to download and install the model.
 
 The following examples utilize a random seed of 0 to generate a batch of 4 images for variance demonstration and fair comparison. (Note: Generating 4 images may exceed your GPU memory; please adjust the batch size as necessary.)
+
+![Qwen Result 1](https://github.com/scraed/LanPaint/blob/master/examples/LanPaintQwen_01.jpg) 
+Also check [Qwen Inpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_13) and [Qwen Outpaint Workflow](https://github.com/scraed/LanPaint/tree/master/examples/Example_12). You need to follow the ComfyUI version of [Qwen Image workflow](https://docs.comfy.org/tutorials/image/qwen/qwen-image) to download and install the model.
 
 ### Example HiDream: InPaint (LanPaint K Sampler, 5 steps of thinking)
 ![Inpainting Result 8](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_11.jpg)  

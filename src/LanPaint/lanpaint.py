@@ -25,6 +25,8 @@ class LanPaint():
         self.img_dim_size = len(x.shape)
         self.latent_image = latent_image
         self.noise = noise
+        if torch.mean(torch.abs(self.noise)) < 1e-8:
+            self.noise = torch.randn_like(self.noise)
         if n_steps is None:
             n_steps = self.n_steps
         return self.LanPaint(x, sigma, latent_mask, current_times, n_steps, model_options, seed, self.IS_FLUX, self.IS_FLOW)
