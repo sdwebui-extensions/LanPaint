@@ -33,7 +33,7 @@ Check our latest [Wan2.2](#example-wan22-inpaintlanpaint-k-sampler-5-steps-of-th
   - [HiDream](#example-hidream-inpaint-lanpaint-k-sampler-5-steps-of-thinking)
   - [SD 3.5](#example-sd-35-inpaintlanpaint-k-sampler-5-steps-of-thinking)
   - [Flux](#example-flux-inpaintlanpaint-k-sampler-5-steps-of-thinking)
-  - [SDXL Examples](#example-sdxl-0-character-consistency-side-view-generation-lanpaint-k-sampler-5-steps-of-thinking)
+  - [SDXL](#example-sdxl-0-character-consistency-side-view-generation-lanpaint-k-sampler-5-steps-of-thinking)
 - [Usage](#usage)
   - [Basic Sampler](#basic-sampler)
   - [Advanced Sampler](#lanpaint-ksampler-advanced)
@@ -45,7 +45,7 @@ Check our latest [Wan2.2](#example-wan22-inpaintlanpaint-k-sampler-5-steps-of-th
 
 ## Features
 
-- **Universal Compatibility** – Works instantly with almost any model (**SD 1.5, XL, 3.5, Flux, HiDream, Qwen-Image or custom LoRAs**) and ControlNet.  
+- **Universal Compatibility** – Works instantly with almost any model (**SD 1.5, XL, 3.5, Flux, HiDream, Qwen-Image, Wan2.2 or custom LoRAs**) and ControlNet.  
 ![Inpainting Result 13](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_13.jpg) 
 - **No Training Needed** – Works out of the box with your existing model.  
 - **Easy to Use** – Same workflow as standard ComfyUI KSampler.  
