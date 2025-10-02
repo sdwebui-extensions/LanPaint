@@ -13,17 +13,55 @@ from .utils import *
 from .lanpaint import LanPaint
 
 
-def reshape_mask(input_mask, output_shape):
+def reshape_mask(input_mask, output_shape,video_inpainting=False):
     dims = len(output_shape) - 2
-
+    print('output shape',output_shape)
     scale_mode = "nearest-exact"
-    mask = torch.nn.functional.interpolate(input_mask, size=output_shape[-2:], mode=scale_mode)
-    if mask.shape[1] < output_shape[1]:
-        mask = mask.repeat((1, output_shape[1]) + (1,) * dims)[:,:output_shape[1]]
-    mask = repeat_to_batch_size(mask, output_shape[0])
+    print('input mask',input_mask.shape,type(input_mask),torch.max(input_mask),torch.min(input_mask))
+    print('target output_shape',output_shape)
+    print('input_mask.ndim:', input_mask.ndim, 'output_shape len:', len(output_shape))
+    
+    # Handle video case with temporal dimension
+    if video_inpainting:  # Video case: (batch, channels, frames, height, width)
+        target_frames = output_shape[2]
+        target_height, target_width = output_shape[-2:]
+        
+        print('Video case - input_mask initial shape:', input_mask.shape)
+        
+        # First reshape input_mask to have proper dimensions for video processing
+        # Assume input is (frames, channels, height, width) -> (1, channels, frames, height, width)
+        input_mask = input_mask.permute(1, 0, 2, 3).unsqueeze(0)
+        print('Video case - input_mask after reshaping:', input_mask.shape)
+        # Ensure we have the correct 5D shape: (batch, channels, frames, height, width)
+        batch_size, channels, frames, height, width = input_mask.shape
+        print('Video case - dimensions: batch_size={}, channels={}, frames={}, height={}, width={}'.format(batch_size, channels, frames, height, width))
+        print('Video case - target size:', (target_frames, target_height, target_width))
+        
+        # 3D nearest-exact interpolation: (batch, channels, frames, height, width) -> (batch, channels, target_frames, target_height, target_width)
+        temp_mask = torch.nn.functional.interpolate(
+            input_mask, 
+            size=(target_frames, target_height, target_width), 
+            mode=scale_mode, 
+        )
+        
+        # temp_mask is already 5D: (batch, channels, target_frames, target_height, target_width)
+        mask = temp_mask
+        print('after mask',mask.shape)
+        # Handle channel dimension expansion if needed
+        if mask.shape[1] < output_shape[1]:
+            mask = mask.repeat(1, output_shape[1], 1, 1, 1)[:, :output_shape[1]]
+        # Handle batch dimension
+        mask = repeat_to_batch_size(mask, output_shape[0])
+    else:  # Original 2D image case
+        mask = torch.nn.functional.interpolate(input_mask, size=output_shape[-2:], mode=scale_mode)
+        if mask.shape[1] < output_shape[1]:
+            mask = mask.repeat((1, output_shape[1]) + (1,) * dims)[:,:output_shape[1]]
+        mask = repeat_to_batch_size(mask, output_shape[0])
+    
+    print('resize mask',mask.shape,type(mask),torch.max(mask),torch.min(mask))
     return mask
-def prepare_mask(noise_mask, shape, device):
-    return reshape_mask(noise_mask, shape).to(device)
+def prepare_mask(noise_mask, shape, device,video_inpainting=False):
+    return reshape_mask(noise_mask, shape,video_inpainting).to(device)
 def sampling_function_LanPaint(model, x, timestep, uncond, cond, cond_scale, cond_scale_BIG, model_options={}, seed=None):
     if math.isclose(cond_scale, 1.0) and model_options.get("disable_cfg1_optimization", False) == False:
         uncond_ = None
@@ -48,7 +86,8 @@ class CFGGuider_LanPaint:
         device = self.model_patcher.load_device
 
         if denoise_mask is not None:
-            denoise_mask = prepare_mask(denoise_mask, noise.shape, device)
+            video_inpainting = self.model_options.get("video_inpainting", False)
+            denoise_mask = prepare_mask(denoise_mask, noise.shape, device, video_inpainting)
 
         noise = noise.to(device)
         latent_image = latent_image.to(device)
@@ -245,6 +284,7 @@ class LanPaint_KSampler():
                 "LanPaint_NumSteps": ("INT", {"default": 5, "min": 0, "max": 100, "tooltip": "The number of steps for the Langevin dynamics, representing the turns of thinking per step."}),
                 "LanPaint_PromptMode": (["Image First", "Prompt First"], {"tooltip": "Image First: emphasis image quality, Prompt First: emphasis prompt following"}),
                 "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler. For more info, visit https://github.com/scraed/LanPaint. If you find it useful, please give a star ⭐️!", "multiline": True}),
+                "Inpainting_mode": (["🖼️ Image Inpainting", "🎬 Video Inpainting"], {"default": "🖼️ Image Inpainting", "tooltip": "Choose Image mode for photos or Video mode for video frames with temporal consistency"}),
                   }
         }
 
@@ -255,7 +295,7 @@ class LanPaint_KSampler():
     CATEGORY = "sampling"
     DESCRIPTION = "Uses the provided model, positive and negative conditioning to denoise the latent image."
 
-    def sample(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=1.0, LanPaint_NumSteps=5, LanPaint_PromptMode = "Image First", LanPaint_Info=""):
+    def sample(self, model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=1.0, LanPaint_NumSteps=5, LanPaint_PromptMode="Image First",  LanPaint_Info="",Inpainting_mode="🖼️ Image Inpainting"):
 
         model.LanPaint_StepSize = 0.15
         model.LanPaint_Lambda = 16.0
@@ -267,6 +307,13 @@ class LanPaint_KSampler():
             model.LanPaint_cfg_BIG = cfg
         else:
             model.LanPaint_cfg_BIG = 0*cfg - 0.5
+        
+        # Convert inpainting_mode to boolean for video_inpainting
+        video_inpainting = (Inpainting_mode == "🎬 Video Inpainting")
+        if not hasattr(model, 'model_options') or model.model_options is None:
+            model.model_options = {}
+        model.model_options["video_inpainting"] = video_inpainting
+        
         with override_sample_function():
             return nodes.common_ksampler(model, seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise)
 class LanPaint_KSamplerAdvanced:
@@ -294,6 +341,7 @@ class LanPaint_KSamplerAdvanced:
                 "LanPaint_PromptMode": (["Image First", "Prompt First"], {"tooltip": "Image First: emphasis image quality, Prompt First: emphasis prompt following"}),
                 "LanPaint_EarlyStop": ("INT", {"default": 1, "min": 0, "max": 10000, "tooltip": "The number of steps to stop the LanPaint early, useful for preventing the image from irregular patterns."}),
                 "LanPaint_Info": ("STRING", {"default": "LanPaint KSampler Adv. For more info, visit https://github.com/scraed/LanPaint. If you find it useful, please give a star ⭐️!", "multiline": True}),
+                "Inpainting_mode": (["🖼️ Image Inpainting", "🎬 Video Inpainting"], {"default": "🖼️ Image Inpainting", "tooltip": "Choose Image mode for photos or Video mode for video frames with temporal consistency"}),
                      },
                 }
 
@@ -302,7 +350,7 @@ class LanPaint_KSamplerAdvanced:
 
     CATEGORY = "sampling"
 
-    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, denoise=1.0, LanPaint_StepSize=0.05, LanPaint_Lambda=5, LanPaint_Beta=1, LanPaint_NumSteps=5, LanPaint_Friction=5, LanPaint_PromptMode = "Image First", LanPaint_EarlyStop = 1, LanPaint_Info=""):
+    def sample(self, model, add_noise, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, start_at_step, end_at_step, return_with_leftover_noise, LanPaint_NumSteps=5, LanPaint_Lambda=16.0, LanPaint_StepSize=0.15, LanPaint_Beta=1.0, LanPaint_Friction=15.0, LanPaint_PromptMode="Image First", LanPaint_EarlyStop=1, LanPaint_Info="", Inpainting_mode="🖼️ Image Inpainting"):
         force_full_denoise = True
         if return_with_leftover_noise == "enable":
             force_full_denoise = False
@@ -319,9 +367,15 @@ class LanPaint_KSamplerAdvanced:
             model.LanPaint_cfg_BIG = cfg
         else:
             model.LanPaint_cfg_BIG = 0*cfg - 0.5
+        
+        # Convert inpainting_mode to boolean for video_inpainting
+        video_inpainting = (Inpainting_mode == "🎬 Video Inpainting")
+        if not hasattr(model, 'model_options') or model.model_options is None:
+            model.model_options = {}
+        model.model_options["video_inpainting"] = video_inpainting
 
         with override_sample_function():
-            return nodes.common_ksampler(model, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=denoise, disable_noise=disable_noise, start_step=start_at_step, last_step=end_at_step, force_full_denoise=force_full_denoise)
+            return nodes.common_ksampler(model, noise_seed, steps, cfg, sampler_name, scheduler, positive, negative, latent_image, denoise=1.0, disable_noise=disable_noise, start_step=start_at_step, last_step=end_at_step, force_full_denoise=force_full_denoise)
 
 
 class MaskBlend:

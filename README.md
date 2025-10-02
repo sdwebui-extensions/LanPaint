@@ -14,6 +14,7 @@ Universally applicable inpainting ability for every model. LanPaint sampler lets
 
 This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference"](https://arxiv.org/abs/2502.03491), accepted by TMLR. The repository is for ComfyUI extension. Local Python benchmark code is published here: [LanPaintBench](https://github.com/scraed/LanPaintBench).
 
+**🎬 NEW: LanPaint now supports video inpainting and outpainting based on Wan 2.2!**
 
 Check our latest [Wan2.2](#example-wan22-inpaintlanpaint-k-sampler-5-steps-of-thinking) and 
 [Qwen Image Edit 2509](#example-qwen-edit-2509-inpaint) support.
@@ -24,7 +25,11 @@ Check our latest [Wan2.2](#example-wan22-inpaintlanpaint-k-sampler-5-steps-of-th
 - [Features](#features)
 - [Quickstart](#quickstart)
 - [How to Use Examples](#how-to-use-examples)
-- [Examples](#examples)
+- [Video Examples (Beta)](#video-examples-beta)
+  - [Wan 2.2 Video Inpainting](#wan-22-video-inpainting)
+  - [Wan 2.2 Video Outpainting](#wan-22-video-outpainting)
+  - [Resource Consumption](#resource-consumption)
+- [Image Examples](#image-examples)
   - [Wan 2.2 T2I](#example-wan22-inpaintlanpaint-k-sampler-5-steps-of-thinking)
   - [Wan 2.2 T2I with reference](#example-wan22-partial-inpaintlanpaint-k-sampler-5-steps-of-thinking)
   - [Qwen Image Edit 2509](#example-qwen-edit-2509-inpaint)
@@ -81,7 +86,104 @@ Once installed, you'll find the LanPaint nodes under the "sampling" category in 
    - **[VAE Encode for Inpainting](https://comfyanonymous.github.io/ComfyUI_examples/inpaint/)**
    - **[Set Latent Noise Mask](https://comfyui-wiki.com/en/tutorial/basic/how-to-inpaint-an-image-in-comfyui)**
 
-## Examples
+## Video Examples (Beta)
+
+LanPaint now supports video inpainting with Wan 2.2, enabling you to seamlessly inpaint masked regions across video frames while maintaining temporal consistency.
+
+**Note:** LanPaint supports video inpainting for longer sequences (e.g., 81 frames), but processing time increases significantly (please check the [Resource Consumption](#resource-consumption) section for details) and performance may become unstable. For optimal results and stability, we recommend limiting video inpainting to **40 frames or fewer**.
+
+### Wan 2.2 Video Inpainting 
+
+*Example: Wan2.2 t2v 14B, 480p video (11:6), 40 frames, LanPaint K Sampler, 2 steps of thinking*
+
+| Original Video | Mask (Add a white hat) | Inpainted Result |
+|:--------------:|:----:|:----------------:|
+| ![Original Video](https://github.com/scraed/LanPaint/blob/master/examples/Original_No_Mask_example17.gif) | ![Mask](https://github.com/scraed/LanPaint/blob/master/examples/Example_17/Masked_Load_Me_in_Loader.png) | ![Inpainted Result](https://github.com/scraed/LanPaint/blob/master/examples/Inpainted_40frames_Drag_Me_to_ComfyUI_example17.gif) |
+
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_17)
+
+You need to follow the ComfyUI version of [Wan2.2 T2V workflow](https://docs.comfy.org/tutorials/video/wan/wan2_2) to download and install the T2V model.
+
+### Wan 2.2 Video Outpainting
+
+Extend your videos beyond their original boundaries with LanPaint's video outpainting capability based on Wan 2.2. This feature allows you to expand the canvas of your videos while maintaining coherent motion and context.
+
+*Example: Wan2.2 t2v 14B, 480p video (1:1 outpaint to 11:6), 40 frames, LanPaint K Sampler, 2 steps of thinking*
+
+| Original Video | Mask (Expand to 880x480) | Outpainted Result |
+|:--------------:|:----:|:-----------------:|
+| ![Original Video](https://github.com/scraed/LanPaint/blob/master/examples/Original_Load_Me_in_Loader_example19.gif) | ![Mask](https://github.com/scraed/LanPaint/blob/master/examples/Mask_Example19_.png) | ![Outpainted Result](https://github.com/scraed/LanPaint/blob/master/examples/Outpainted_40frames_Drag_Me_to_ComfyUI_example19.gif) |
+
+[View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_19)
+
+You need to follow the ComfyUI version of [Wan2.2 T2V workflow](https://docs.comfy.org/tutorials/video/wan/wan2_2) to download and install the T2V model.
+
+### Resource Consumption
+
+
+<table>
+<thead>
+<tr>
+<th align="left">Processing Mode</th>
+<th align="left">Resolution</th>
+<th align="left">Frames Processed</th>
+<th align="left">VRAM Required</th>
+<th align="left">Total Runtime (20 steps)</th>
+</tr>
+</thead>
+<tbody>
+<tr style="background-color: #e8f4f8;">
+<td><strong>Inpainting</strong></td>
+<td>880×480 (11:6)</td>
+<td>40 frames</td>
+<td>39.8 GB</td>
+<td><strong>05:37 min</strong></td>
+</tr>
+<tr style="background-color: #e8f4f8;">
+<td><strong>Inpainting</strong></td>
+<td>480×480 (1:1)</td>
+<td>40 frames</td>
+<td>38.0 GB</td>
+<td><strong>05:35 min</strong></td>
+</tr>
+<tr style="background-color: #e8f4f8;">
+<td><strong>Outpainting</strong></td>
+<td>880×480 (11:6)</td>
+<td>40 frames</td>
+<td>40.2 GB</td>
+<td><strong>05:36 min</strong></td>
+</tr>
+<tr style="background-color: #fff4e6;">
+<td><strong>Inpainting</strong></td>
+<td>880×480 (11:6)</td>
+<td>81 frames</td>
+<td>43.3 GB</td>
+<td><strong>16:23 min</strong></td>
+</tr>
+<tr style="background-color: #fff4e6;">
+<td><strong>Inpainting</strong></td>
+<td>480×480 (1:1)</td>
+<td>81 frames</td>
+<td>39.8 GB</td>
+<td><strong>14:25 min</strong></td>
+</tr>
+<tr style="background-color: #fff4e6;">
+<td><strong>Outpainting</strong></td>
+<td>880×480 (11:6)</td>
+<td>81 frames</td>
+<td>42.6 GB</td>
+<td><strong>13:46 min</strong></td>
+</tr>
+</tbody>
+</table>
+
+<sub>**Test Platform**: All tests were conducted on an NVIDIA RTX Pro 6000.<br>
+**Model Used**: `wan2.2_t2v_low_noise_14B_fp18_scaled.safetensors` and `wan2.2_t2v_high_noise_14B_fp18_scaled.safetensors`.<br>
+**Processing Steps**:  20 sampling steps x 2 (LanPaint steps of thinking).</sub>
+
+**Note:** To further reduce VRAM requirements, we recommend loading CLIP on CPU.
+
+## Image Examples
 
 ### Example Wan2.2: InPaint(LanPaint K Sampler, 5 steps of thinking)
 We are excited to announce that LanPaint now supports Wan2.2 text to image generation with Wan2.2 T2V model.
