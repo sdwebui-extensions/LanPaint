@@ -16,7 +16,17 @@ This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpai
 
 **🎬 NEW: LanPaint now supports video inpainting and outpainting based on Wan 2.2!**
 
-Check our latest [Wan2.2](#example-wan22-inpaintlanpaint-k-sampler-5-steps-of-thinking) and 
+<div align="center">
+
+| Original Video | Mask (edit T-shirt text) | Inpainted Result |
+|:--------------:|:----:|:----------------:|
+| ![Original](https://github.com/scraed/LanPaint/blob/master/examples/Original_No_Mask-example18.gif) | ![Mask](https://github.com/scraed/LanPaint/blob/master/examples/Example_18/Masked_Load_Me_in_Loader.png) | ![Result](https://github.com/scraed/LanPaint/blob/master/examples/Inpainted_81frames_Drag_Me_to_ComfyUI_example18.gif) |
+
+*Video Inpainting Example: 81 frames with temporal consistency*
+
+</div>
+
+Check our latest [Wan 2.2 Video Examples](#video-examples-beta), [Wan 2.2 Image Examples](#example-wan22-inpaintlanpaint-k-sampler-5-steps-of-thinking), and 
 [Qwen Image Edit 2509](#example-qwen-edit-2509-inpaint) support.
 
 ![Inpainting Result 45](https://github.com/scraed/LanPaint/blob/master/examples/InpaintChara_45.jpg)  
