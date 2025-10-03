@@ -187,7 +187,7 @@ You need to follow the ComfyUI version of [Wan2.2 T2V workflow](https://docs.com
 </table>
 
 <sub>**Test Platform**: All tests were conducted on an NVIDIA RTX Pro 6000.<br>
-**Model Used**: `wan2.2_t2v_low_noise_14B_fp18_scaled.safetensors` and `wan2.2_t2v_high_noise_14B_fp18_scaled.safetensors`.<br>
+**Model Used**: `wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors` and `wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors`.<br>
 **Processing Steps**:  20 sampling steps x 2 (LanPaint steps of thinking).</sub>
 
 **Note:** To further reduce VRAM requirements, we recommend loading CLIP on CPU.
