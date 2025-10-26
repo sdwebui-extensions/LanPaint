@@ -80,7 +80,7 @@ def sampling_function_LanPaint(model, x, timestep, uncond, cond, cond_scale, con
 
 
 class CFGGuider_LanPaint:
-    def outer_sample(self, noise, latent_image, sampler, sigmas, denoise_mask=None, callback=None, disable_pbar=False, seed=None):
+    def outer_sample(self, noise, latent_image, sampler, sigmas, denoise_mask=None, callback=None, disable_pbar=False, seed=None, **kwargs):
         print("CFGGuider outer_sample")
         self.inner_model, self.conds, self.loaded_models = comfy.sampler_helpers.prepare_sampling(self.model_patcher, noise.shape, self.conds, self.model_options)
         device = self.model_patcher.load_device
@@ -96,7 +96,7 @@ class CFGGuider_LanPaint:
 
         try:
             self.model_patcher.pre_run()
-            output = self.inner_sample(noise, latent_image, device, sampler, sigmas, denoise_mask, callback, disable_pbar, seed)
+            output = self.inner_sample(noise, latent_image, device, sampler, sigmas, denoise_mask, callback, disable_pbar, seed, **kwargs)
         finally:
             self.model_patcher.cleanup()
 
