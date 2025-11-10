@@ -53,7 +53,8 @@ Check our latest [Wan 2.2 Video Examples](#video-examples-beta), [Wan 2.2 Image 
   - [Basic Sampler](#basic-sampler)
   - [Advanced Sampler](#lanpaint-ksampler-advanced)
   - [Tuning Guide](#lanpaint-ksampler-advanced-tuning-guide)
-- [Community Showcase](#community-showcase-) 
+- [Community Showcase](#community-showcase-)
+- [FAQ](#faq)
 - [Updates](#updates)
 - [ToDo](#todo)
 - [Citation](#citation)
@@ -378,6 +379,9 @@ Discover how the community is using LanPaint! Here are some user-created tutoria
 - [ComfyUI必备LanPaint插件超详细使用教程](https://plugin.aix.ink/archives/lanpaint)
 
 Submit a PR to add your tutorial/video here, or open an [Issue](https://github.com/scraed/LanPaint/issues) with details!
+
+## FAQ
+[Working togather with crop&stitch](https://github.com/scraed/LanPaint/issues/46)
 
 ## Updates
 - 2025/08/08
