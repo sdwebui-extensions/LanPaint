@@ -11,7 +11,7 @@ from comfy.samplers import *
 from comfy.model_base import ModelType
 from .utils import *
 from .lanpaint import LanPaint
-
+from comfy.model_base import WAN22
 
 def reshape_mask(input_mask, output_shape,video_inpainting=False):
     dims = len(output_shape) - 2
@@ -85,6 +85,10 @@ class CFGGuider_LanPaint:
         self.inner_model, self.conds, self.loaded_models = comfy.sampler_helpers.prepare_sampling(self.model_patcher, noise.shape, self.conds, self.model_options)
         device = self.model_patcher.load_device
 
+        if isinstance(self.inner_model, WAN22):
+            print("WAN22 detected")
+            self.inner_model.extra_conds = super(WAN22, self.inner_model).extra_conds
+
         if denoise_mask is not None:
             video_inpainting = self.model_options.get("video_inpainting", False)
             denoise_mask = prepare_mask(denoise_mask, noise.shape, device, video_inpainting)
@@ -125,8 +129,9 @@ class KSamplerX0Inpaint:
 
         IS_FLUX = self.inner_model.inner_model.model_type == ModelType.FLUX
         IS_FLOW = self.inner_model.inner_model.model_type == ModelType.FLOW
-        print("model type", self.inner_model.inner_model.model_type, "IS_FLUX", IS_FLUX, "IS_FLOW", IS_FLOW)
-        print("sigma", torch.mean(sigma).item(), torch.min(sigma).item(), torch.max(sigma).item())
+        #print("model class", type(self.inner_model.inner_model))
+        #print("model type", self.inner_model.inner_model.model_type, "IS_FLUX", IS_FLUX, "IS_FLOW", IS_FLOW)
+        #print("sigma", torch.mean(sigma).item(), torch.min(sigma).item(), torch.max(sigma).item())
         # unify the notations into variance exploding diffusion model
         if IS_FLUX or IS_FLOW:
             Flow_t = sigma

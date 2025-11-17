@@ -13,6 +13,7 @@ class LanPaint():
         self.friction = Friction
         self.chara_beta = Beta
         self.img_dim_size = None
+
     def add_none_dims(self, array):
         # Create a tuple with ':' for the first dimension and 'None' repeated num_nones times
         index = (slice(None),) + (None,) * (self.img_dim_size-1)
@@ -42,6 +43,8 @@ class LanPaint():
             return self.inner_model.inner_model.model_sampling.noise_scaling(sigma.reshape([sigma.shape[0]] + [1] * (len(noise.shape) - 1)), noise, latent_image)
 
         x = x * (1 - latent_mask) +  scale_latent_inpaint(x=x, sigma=sigma, noise=self.noise, latent_image=self.latent_image)* latent_mask
+        
+
 
         if IS_FLUX or IS_FLOW:
             x_t = x * ( self.add_none_dims(abt)**0.5 + (1-self.add_none_dims(abt))**0.5 )
@@ -61,7 +64,7 @@ class LanPaint():
         ############ LanPaint Iterations End ###############
         # out is x_0
         out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
-        out = out * (1-latent_mask) + self.latent_image * latent_mask
+        #out = out * (1-latent_mask) + self.latent_image * latent_mask
         return out
 
     def score_model(self, x_t, y, mask, abt, sigma, tflow, model_options, seed):
