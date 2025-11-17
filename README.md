@@ -36,6 +36,7 @@ Check our latest [Wan 2.2 Video Examples](#video-examples-beta), [Wan 2.2 Image 
 - [How to Use Examples](#how-to-use-examples)
 - [Video Examples (Beta)](#video-examples-beta)
   - [Wan 2.2 Video Inpainting](#wan-22-video-inpainting)
+  - [Wan 2.2 5B Video Inpainting](#wan-22-5b-video-inpainting)
   - [Wan 2.2 Video Outpainting](#wan-22-video-outpainting)
   - [Resource Consumption](#resource-consumption)
 - [Image Examples](#image-examples)
@@ -114,6 +115,10 @@ LanPaint now supports video inpainting with Wan 2.2, enabling you to seamlessly 
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_17)
 
 You need to follow the ComfyUI version of [Wan2.2 T2V workflow](https://docs.comfy.org/tutorials/video/wan/wan2_2) to download and install the T2V model.
+
+### Wan 2.2 5B Video Inpainting 
+
+Similar to Wan 2.2 14B with slightly different workflow. [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_17)
 
 ### Wan 2.2 Video Outpainting
 
