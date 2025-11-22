@@ -64,7 +64,7 @@ class LanPaint():
         ############ LanPaint Iterations End ###############
         # out is x_0
         out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
-        #out = out * (1-latent_mask) + self.latent_image * latent_mask
+        out = out * (1-latent_mask) + self.latent_image * latent_mask
         return out
 
     def score_model(self, x_t, y, mask, abt, sigma, tflow, model_options, seed):
