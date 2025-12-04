@@ -233,7 +233,7 @@ LanPaint also supports inpainting with the Z-image text-to-image model.
 
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_21)
 
-<details>
+<details open>
 <summary>View Z-image Outpainting (Original / Masked / Outpainted)</summary>
 
 | Original | Masked | Outpainted |
