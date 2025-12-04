@@ -40,7 +40,7 @@ Check our latest [Wan 2.2 Video Examples](#video-examples-beta), [Wan 2.2 Image 
   - [Wan 2.2 Video Outpainting](#wan-22-video-outpainting)
   - [Resource Consumption](#resource-consumption)
 - [Image Examples](#image-examples)
-  - [Z-image Inpainting](#example-z-image-inpaintlanpaint-k-sampler-5-steps-of-thinking)
+  - [Z-image](#example-z-image-inpaintlanpaint-k-sampler-5-steps-of-thinking)
   - [Hunyuan T2I](#example-hunyuan-t2i-inpaintlanpaint-k-sampler-5-steps-of-thinking)
   - [Wan 2.2 T2I](#example-wan22-inpaintlanpaint-k-sampler-5-steps-of-thinking)
   - [Wan 2.2 T2I with reference](#example-wan22-partial-inpaintlanpaint-k-sampler-5-steps-of-thinking)
@@ -222,7 +222,7 @@ You need to follow the ComfyUI version of [Wan2.2 T2V workflow](https://docs.com
 ### Example Z-image: InPaint(LanPaint K Sampler, 5 steps of thinking)
 LanPaint also supports inpainting with the Z-image text-to-image model.
 
-<details>
+<details open>
 <summary>View Original / Masked / Inpainted Comparison</summary>
 
 | Original | Masked | Inpainted |
