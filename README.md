@@ -233,6 +233,17 @@ LanPaint also supports inpainting with the Z-image text-to-image model.
 
 [View Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_21)
 
+<details>
+<summary>View Z-image Outpainting (Original / Masked / Outpainted)</summary>
+
+| Original | Masked | Outpainted |
+|:--------:|:------:|:----------:|
+| ![Original Z-image Outpaint](https://github.com/scraed/LanPaint/blob/master/examples/Example_22/Original_No_Mask.png) | ![Masked Z-image Outpaint](https://github.com/scraed/LanPaint/blob/master/examples/Example_22/Masked_Load_Me_in_Loader.png) | ![Outpainted Z-image](https://github.com/scraed/LanPaint/blob/master/examples/Example_22/InPainted_Drag_Me_to_ComfyUI.png) |
+
+</details>
+
+[View Outpaint Workflow & Masks](https://github.com/scraed/LanPaint/tree/master/examples/Example_22)
+
 You can download the Z-image model for ComfyUI from [Z-image](https://docs.comfy.org/zh-CN/tutorials/image/z-image/z-image-turbo).
 
 ### Example Wan2.2: Partial InPaint(LanPaint K Sampler, 5 steps of thinking)
