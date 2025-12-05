@@ -13,6 +13,12 @@
 Universally applicable inpainting ability for every model. LanPaint sampler lets the model "think" through multiple iterations before denoising, enabling you to invest more computation time for superior inpainting quality.  
 
 This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference"](https://arxiv.org/abs/2502.03491), accepted by TMLR. The repository is for ComfyUI extension. Local Python benchmark code is published here: [LanPaintBench](https://github.com/scraed/LanPaintBench).
+**🎬 NEW: LanPaint now supports inpainting and outpainting based on Z-Image!**
+
+| Original | Masked | Inpainted |
+|:--------:|:------:|:---------:|
+| ![Original Z-image](https://github.com/scraed/LanPaint/blob/master/examples/Example_21/Original_No_Mask.png) | ![Masked Z-image](https://github.com/scraed/LanPaint/blob/master/examples/Example_21/Masked_Load_Me_in_Loader.png) | ![Inpainted Z-image](https://github.com/scraed/LanPaint/blob/master/examples/Example_21/InPainted_Drag_Me_to_ComfyUI.png) |
+
 
 **🎬 NEW: LanPaint now supports video inpainting and outpainting based on Wan 2.2!**
 
@@ -198,7 +204,7 @@ You need to follow the ComfyUI version of [Wan2.2 T2V workflow](https://docs.com
 **Model Used**: `wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors` and `wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors`.<br>
 **Processing Steps**:  20 sampling steps x 2 (LanPaint steps of thinking).</sub>
 
-**Note:** To further reduce VRAM requirements, we recommend loading CLIP on CPU.
+**Note:** Vram is required by the model, not LanPaint. To further reduce VRAM requirements, we recommend generating less frames and loading CLIP on CPU.
 
 ## Image Examples
 
