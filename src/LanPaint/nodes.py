@@ -409,8 +409,16 @@ class MaskBlend:
         # for each mask pixel, find out the nearest 1 pixel, and set the mask value to the distance between the two pixels
         # check the size of mask and image1, image2, if not the same, assert error
         if image1.shape[1] != image2.shape[1] or image1.shape[2] != image2.shape[2]:
-            raise ValueError("Make sure your image size is a multiple of 8. Otherwise the mask will not be aligned with the output image.")
-        
+            raise ValueError(
+                "Image size mismatch: Image1 and Image2 must have the same dimensions.\n"
+                "Additionally, ensure both images have width and height that are multiples of 8.\n"
+                "This is required because VAE decode always generates images with dimensions that are multiples of 8.\n"
+                "If your input images are not multiples of 8, a size mismatch will occur during the decoding process.\n"
+                "Please resize your images using an image resize node to ensure compatibility.\n"
+                "Current sizes - Image1: {}x{}, Image2: {}x{}".format(
+                    image1.shape[2], image1.shape[1], image2.shape[2], image2.shape[1]
+                )
+            )
         mask = mask.float()
         mask = torch.nn.functional.max_pool2d(mask, kernel_size=blend_overlap, stride=1, padding=blend_overlap//2)
         # apply Gaussian blur with kernel size blend_overlap
