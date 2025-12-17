@@ -1,7 +1,7 @@
 <div align="center">
 
 # LanPaint: Universal Inpainting Sampler with "Think Mode"
-[![arXiv](https://img.shields.io/badge/Arxiv-2502.03491-b31b1b.svg?logo=arXiv)](https://arxiv.org/abs/2502.03491)
+[![TMLR PDF](https://img.shields.io/badge/TMLR-PDF-8A2BE2?logo=openreview&logoColor=white)](https://openreview.net/pdf?id=JPC8JyOUSW)
 [![Python Benchmark](https://img.shields.io/badge/🐍-Python_Benchmark-3776AB?logo=python)](https://github.com/scraed/LanPaintBench)
 [![ComfyUI Extension](https://img.shields.io/badge/ComfyUI-Extension-7B5DFF)](https://github.com/comfyanonymous/ComfyUI)
 [![Hugging Face](https://img.shields.io/badge/Hugging%20Face-yellow?logo=huggingface&logoColor=white)](https://huggingface.co/charrywhite/LanPaint)
@@ -13,6 +13,22 @@
 Universally applicable inpainting ability for every model. LanPaint sampler lets the model "think" through multiple iterations before denoising, enabling you to invest more computation time for superior inpainting quality.  
 
 This is the official implementation of ["Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference"](https://arxiv.org/abs/2502.03491), accepted by TMLR. The repository is for ComfyUI extension. Local Python benchmark code is published here: [LanPaintBench](https://github.com/scraed/LanPaintBench).
+
+## Citation
+
+```
+@article{
+zheng2025lanpaint,
+title={LanPaint: Training-Free Diffusion Inpainting with Asymptotically Exact and Fast Conditional Sampling},
+author={Candi Zheng and Yuan Lan and Yang Wang},
+journal={Transactions on Machine Learning Research},
+issn={2835-8856},
+year={2025},
+url={https://openreview.net/forum?id=JPC8JyOUSW},
+note={}
+}
+```
+
 **🎬 NEW: LanPaint now supports inpainting and outpainting based on Z-Image!**
 
 | Original | Masked | Inpainted |
@@ -451,20 +467,21 @@ Submit a PR to add your tutorial/video here, or open an [Issue](https://github.c
 - Try Implement Detailer
 - ~~Provide inference code on without GUI.~~ Check our local Python benchmark code [LanPaintBench](https://github.com/scraed/LanPaintBench).
 
+
 ## Citation
 
 ```
-@misc{zheng2025lanpainttrainingfreediffusioninpainting,
-      title={Lanpaint: Training-Free Diffusion Inpainting with Exact and Fast Conditional Inference}, 
-      author={Candi Zheng and Yuan Lan and Yang Wang},
-      year={2025},
-      eprint={2502.03491},
-      archivePrefix={arXiv},
-      primaryClass={eess.IV},
-      url={https://arxiv.org/abs/2502.03491}, 
+@article{
+zheng2025lanpaint,
+title={LanPaint: Training-Free Diffusion Inpainting with Asymptotically Exact and Fast Conditional Sampling},
+author={Candi Zheng and Yuan Lan and Yang Wang},
+journal={Transactions on Machine Learning Research},
+issn={2835-8856},
+year={2025},
+url={https://openreview.net/forum?id=JPC8JyOUSW},
+note={}
 }
 ```
-
 
 
 
