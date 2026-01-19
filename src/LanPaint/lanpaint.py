@@ -1,5 +1,5 @@
 import torch
-from .utils import *
+from .utils import StochasticHarmonicOscillator
 from functools import partial
 
 class LanPaint():
@@ -34,7 +34,6 @@ class LanPaint():
     def LanPaint(self, x, sigma, latent_mask, current_times, n_steps, model_options, seed, IS_FLUX, IS_FLOW):
         VE_Sigma, abt, Flow_t = current_times
 
-        
         step_size = self.step_size * (1 - abt)
         step_size = self.add_none_dims(step_size)
         # self.inner_model.inner_model.scale_latent_inpaint returns variance exploding x_t values
@@ -43,8 +42,6 @@ class LanPaint():
             return self.inner_model.inner_model.model_sampling.noise_scaling(sigma.reshape([sigma.shape[0]] + [1] * (len(noise.shape) - 1)), noise, latent_image)
 
         x = x * (1 - latent_mask) +  scale_latent_inpaint(x=x, sigma=sigma, noise=self.noise, latent_image=self.latent_image)* latent_mask
-        
-
 
         if IS_FLUX or IS_FLOW:
             x_t = x * ( self.add_none_dims(abt)**0.5 + (1-self.add_none_dims(abt))**0.5 )
@@ -68,7 +65,6 @@ class LanPaint():
         return out
 
     def score_model(self, x_t, y, mask, abt, sigma, tflow, model_options, seed):
-        
         lamb = self.chara_lamb
         if self.IS_FLUX or self.IS_FLOW:
             # compute t for flow model, with a small epsilon compensating for numerical error.
@@ -119,24 +115,71 @@ class LanPaint():
             x_t = x_t.to(dtype)
             v = v.to(dtype)
             return x_t, v
-        if args is None:
-            #v = torch.zeros_like(x_t)
-            v = None
-            C = Coef_C(x_t)
-            #print(torch.squeeze(dtx), torch.squeeze(dty))
-            x_t, v = advance_time(x_t, v, dt, Gamma, A, C, D)
-        else:
-            v, C = args
 
-            x_t, v = advance_time(x_t, v, dt/2, Gamma, A, C, D)
+        def advance_time_overdamped(x_t, dt, A, C, D):
+            """
+            Overdamped (Gamma -> infinity) limit:
+                dx = -A x dt + C dt + D dW_t
+            with C treated as constant over this substep.
+            """
+            dtype = x_t.dtype
+            with torch.autocast(device_type=x_t.device.type, dtype=torch.float32):
+                A_dt = A * dt
+                exp_neg = torch.exp(-A_dt)
 
-            C_new = Coef_C(x_t)
-            v = v + Gamma**0.5 * ( C_new - C) *dt
+                eps = 1e-8
+                abs_A = torch.abs(A)
+                # k  = (1 - exp(-A dt)) / A  -> dt when A -> 0
+                k = torch.where(abs_A < eps, dt, (-torch.expm1(-A_dt)) / A)
+                # k2 = (1 - exp(-2 A dt)) / (2 A) -> dt when A -> 0
+                k2 = torch.where(abs_A < eps, dt, (-torch.expm1(-2 * A_dt)) / (2 * A))
 
-            x_t, v = advance_time(x_t, v, dt/2, Gamma, A, C, D)
+                mean = exp_neg * x_t + k * C
+                var = (D ** 2) * k2
+                noise = torch.randn_like(x_t) * torch.sqrt(torch.clamp(var, min=0.0))
+                x_t = mean + noise
+            return x_t.to(dtype)
 
-            C = C_new
-  
+        def run_damped(x_t, args):
+            if args is None:
+                v = None
+                C = Coef_C(x_t)
+                x_t, v = advance_time(x_t, v, dt, Gamma, A, C, D)
+            else:
+                v, C = args
+                x_t, v = advance_time(x_t, v, dt/2, Gamma, A, C, D)
+                C_new = Coef_C(x_t)
+                v = v + Gamma**0.5 * ( C_new - C) *dt
+                x_t, v = advance_time(x_t, v, dt/2, Gamma, A, C, D)
+                C = C_new
+            return x_t, (v, C)
+
+        def run_overdamped(x_t, args):
+            if args is None:
+                C = Coef_C(x_t)
+                x_t = advance_time_overdamped(x_t, dt, A, C, D)
+            else:
+                _, C = args
+                x_t = advance_time_overdamped(x_t, dt / 2, A, C, D)
+                C_new = Coef_C(x_t)
+                x_t = x_t + (C_new - C) * dt
+                x_t = advance_time_overdamped(x_t, dt / 2, A, C, D)
+                C = C_new
+            return x_t, (None, C)
+
+        try:
+            x_t_next, (v_next, C_next) = run_damped(x_t, args)
+
+            if torch.isnan(x_t_next).any() or torch.isnan(v_next).any():
+                raise ValueError("NaN detected")
+
+            x_t = x_t_next
+            v = v_next
+            C = C_next
+
+        except Exception:
+            x_t, (v, C) = run_overdamped(x_t, args)
+
         return x_t, (v, C)
 
     def prepare_step_size(self, current_times, step_size, sigma_x, sigma_y):
@@ -148,7 +191,7 @@ class LanPaint():
         # Compute time step (dtx, dty) for x and y branches.
         dtx = 2 * step_size * sigma_x
         dty = 2 * step_size * sigma_y
-        
+
         # -------------------------------------------------------------------------
         # Define friction parameter Gamma_hat for each branch.
         # Using dtx**0 provides a tensor of the proper device/dtype.
