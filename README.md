@@ -41,6 +41,8 @@ note={}
 
 **🎬 NEW: LanPaint now supports inpainting and outpainting based on Z-Image!**
 
+`v1.5.0` fixes a hidden bug that reduced performance and could blur images, especially with `z-image-base`.
+
 | Original | Masked | Inpainted |
 |:--------:|:------:|:---------:|
 | ![Original Z-image](https://github.com/scraed/LanPaint/blob/master/examples/Example_21/Original_No_Mask.png) | ![Masked Z-image](https://github.com/scraed/LanPaint/blob/master/examples/Example_21/Masked_Load_Me_in_Loader.png) | ![Inpainted Z-image](https://github.com/scraed/LanPaint/blob/master/examples/Example_21/InPainted_Drag_Me_to_ComfyUI.png) |
@@ -510,6 +512,8 @@ Submit a PR to add your tutorial/video here, or open an [Issue](https://github.c
 [Working togather with crop&stitch](https://github.com/scraed/LanPaint/issues/46)
 
 ## Updates
+- 2026/03/02
+    - `v1.5.0`: Fixed a hidden bug that hurt performance and caused image blur, especially when using z-image-base.
 - 2026/01/30
     - Add Z-image-base documentation and Example_25 workflow images.
 - 2025/08/08
