@@ -37,6 +37,7 @@ class LanPaint():
             n_steps = self.n_steps
         return self.LanPaint(x, sigma, latent_mask, current_times, n_steps, model_options, seed, self.IS_FLUX, self.IS_FLOW)
     def LanPaint(self, x, sigma, latent_mask, current_times, n_steps, model_options, seed, IS_FLUX, IS_FLOW):
+        input_x = x
         VE_Sigma, abt, Flow_t = current_times
 
         step_size = self.step_size * (1 - abt)
@@ -102,8 +103,11 @@ class LanPaint():
             x = x_t * ( 1+self.add_none_dims(VE_Sigma)**2 )**0.5 # switch to variance perserving x_t values
         ############ LanPaint Iterations End ###############
         # out is x_0
+
         out, _ = self.inner_model(x, sigma, model_options=model_options, seed=seed)
         out = out * (1-latent_mask) + self.latent_image * latent_mask
+
+        input_x.copy_(x)
         return out
 
     def score_model(self, x_t, y, mask, abt, sigma, tflow, model_options, seed):
